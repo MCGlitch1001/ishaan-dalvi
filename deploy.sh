@@ -10,7 +10,7 @@ if ! command -v wrangler &> /dev/null; then
     npm install -g wrangler
 fi
 
-# Deploy
-wrangler pages deploy /home/work/ishaan-site --project-name=ishaan
+# Deploy current directory
+wrangler pages deploy . --project-name=ishaan
 
 echo "✅ Deployed! Check https://ishaan.pages.dev"

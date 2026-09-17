@@ -1,11 +1,11 @@
 {
-  "name": "Ishaan Dalvi | 14yo Builder from Pune",
+  "name": "Ishaan Dalvi | Systems Builder & AI Developer",
   "short_name": "Ishaan Dalvi",
-  "description": "Personal website and portfolio of Ishaan Dalvi, a 14-year-old developer and builder from Pune, India.",
+  "description": "Portfolio of Ishaan Dalvi: 14yo Systems Builder & AI Developer from Pune, India. Edge infrastructure, local AI agents, and IoT bio-habitats.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAF8F5",
-  "theme_color": "#1B3B2B",
+  "background_color": "#080C10",
+  "theme_color": "#00E5FF",
   "icons": [
     {
       "src": "favicon.svg",
