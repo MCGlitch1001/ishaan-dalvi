@@ -1,0 +1,168 @@
+{
+  "schema": "AID-1.0",
+  "entity": "person",
+  "id": "ishaan-dalvi",
+  "version": "2026-08-07",
+  "core": {
+    "name": "Ishaan Dalvi",
+    "age": 14,
+    "grade": "10th",
+    "location": {
+      "city": "Pune",
+      "area": "Life Republic (3BHK rental)",
+      "state": "Maharashtra",
+      "country": "India"
+    },
+    "family": {
+      "father": {
+        "home": "Blueridge 5BHK (owned)",
+        "bike": "Yamaha YZ 250x"
+      },
+      "sister": "younger"
+    }
+  },
+  "routine": {
+    "wake_time": "06:00 (05:00 exams, 05:30 target for run)",
+    "sleep_time": "23:00 (asleep ~00:00)",
+    "school_bus": "1hr each way (phones banned but carries)",
+    "school_hours": "07:00+",
+    "tuition": "Marathi",
+    "study_approach": "only for next exam, low boards stress"
+  },
+  "health_fitness": {
+    "running": {
+      "history": "2.5-5km @ 6min/km",
+      "current": "target 5:30 AM run, inconsistent"
+    },
+    "gym": "1hr daily (stopped)",
+    "pushups": "50 daily (consistent)",
+    "skips": "100 (boring)",
+    "treks": "GGIM institute, 10km/6hrs (Katraj side)"
+  },
+  "hobbies": [
+    "3x3 cube",
+    "ant keeping (fire ants → nanitics died, now 2 queens: possible marauder/carpenter)",
+    "enduro KLX 230r (with dad)",
+    "Minecraft (Flux SMP admin, 30 players)"
+  ],
+  "social": {
+    "friends": "school, bus, online, society (rarely meets in-person)",
+    "notable_friend": "Harsith (AI/tech interest)",
+    "activities": "movies (Spider-Man), LAN Minecraft"
+  },
+  "finance": {
+    "income": "none from business",
+    "stocks": "some investments (details private)",
+    "budget": "zero for paid tools until revenue",
+    "ant_farm_presell": "₹1k (₹500 advance), DIY 15x15cm nests ~₹500 cost"
+  },
+  "tech_stack": {
+    "local_llm": {
+      "primary": "qwen2.5-coder:14b (Ollama)",
+      "secondary": "qwen3:30b MoE, qwen3:8b",
+      "hardware": "VPS (8-core AMD EPYC, 32GB RAM, no GPU)"
+    },
+    "database": "PostgreSQL (local)",
+    "media_gen": "PIL (rejected quality), SMPG dark aesthetic pipeline",
+    "proxy": "SkillClaw on port 30000",
+    "media_server": "port 8080 (75+ assets)",
+    "automation": {
+      "n8n": {
+        "workflow_id": "CSwLLw4JoFH5jOmH",
+        "schedule": "daily 9 AM + webhook"
+      },
+      "composio": "v3 MCP-only (Instagram, GitHub, Discord, Reddit, Facebook)",
+      "telegram_bot": "@mcglitch1001work4everbot"
+    },
+    "hosting": "this VPS (Flux SMP, media, proxy)",
+    "minecraft_server": {
+      "name": "Flux SMP",
+      "software": "PaperMC",
+      "players": 30,
+      "custom_plugins": true
+    }
+  },
+  "projects": [
+    {
+      "name": "Ant Farm Business",
+      "status": "building",
+      "description": "DIY 15x15cm formicariums for Indian species (Camponotus, Carebara, Messor). ₹500 cost, ₹1k pre-sell. Zero India competition.",
+      "validation": "Google Form, target Indian ant communities (Reddit r/ant_trade, r/pune, Discord Ant-Keeping & Ethology)",
+      "stack": ["Google Forms", "pre-sell", "plaster/3D print"]
+    },
+    {
+      "name": "RTO Calculator",
+      "status": "building",
+      "description": "Maharashtra RTO fee calculator. Clean UI, accurate slabs, offline-first. Pre-launch security scan with Strix.",
+      "stack": ["Python", "Strix AI pentesting", "offline-first"]
+    },
+    {
+      "name": "Flux SMP",
+      "status": "live",
+      "description": "Minecraft SMP (PaperMC), 30 active players, custom plugins, economy, claims. Hosted on this VPS.",
+      "stack": ["PaperMC", "Linux", "custom plugins"]
+    },
+    {
+      "name": "Instagram Automation",
+      "status": "live",
+      "handle": "@_work4ever_",
+      "description": "15 posts scheduled Aug 2026. n8n daily 9AM trigger, Composio v3 MCP, Telegram bot for manual review. 75+ SMPG-branded assets.",
+      "stack": ["n8n", "Composio v3 MCP", "Telegram Bot"],
+      "constraints": "Graph API banned, Composio v1 deprecated (410), $0 tool budget"
+    },
+    {
+      "name": "SkillClaw Proxy",
+      "status": "live",
+      "description": "Local proxy on port 30000 for AI tooling. Routes Ollama, handles auth, rate limits.",
+      "stack": ["Node.js", "proxy", "Ollama"]
+    },
+    {
+      "name": "SMPG Media Pipeline",
+      "status": "live",
+      "description": "Dark aesthetic brand system: radial gradients, honeycomb patterns, BigShoulders/Bricolage fonts, red/amber/gold palette. 75+ assets (Reels, Carousels, Stories).",
+      "stack": ["Python/PIL", "fonts", "design system"]
+    },
+    {
+      "name": "Personal Site",
+      "status": "live",
+      "url": "https://generators-people-busy-advisory.trycloudflare.com",
+      "description": "AID schema + portfolio. Dark theme, JSON-LD Person schema, responsive, no JS.",
+      "stack": ["HTML/CSS", "Cloudflare Tunnel", "Cloudflare Pages (pending)"]
+    }
+  ],
+  "skills": [
+    "Python (automation, security tooling, media gen)",
+    "n8n (workflow automation, daily triggers)",
+    "Composio MCP (Instagram, GitHub, Discord integrations)",
+    "Ollama local LLMs (qwen2.5-coder:14b, qwen3:30b MoE)",
+    "Linux/VPS (Docker, nginx, PaperMC, PostgreSQL)",
+    "Telegram Bots (manual posting, notifications)",
+    "Ant Keeping (formicarium design, species knowledge)",
+    "Minecraft Admin (PaperMC, plugins, economy, 30 players)"
+  ],
+  "goals": [
+    "Validate ant farm pre-sell (5+ orders → build prototypes)",
+    "Launch RTO calculator (security scanned)",
+    "Deploy personal site to Cloudflare Pages (permanent)",
+    "Establish morning run habit (phone out of room 22:30, wake 5:30)",
+    "Get Knowledge Panel via entity SEO (Wikidata, 3rd-party coverage)",
+    "One deep AI skill + one hobby deep (avoid scattered effort)"
+  ],
+  "constraints": {
+    "age": 14,
+    "school_priority": "10th grade exams",
+    "budget": "$0 for paid tools until revenue",
+    "api_bans": "Instagram Graph API banned",
+    "parental_capital": "none",
+    "execution_bias": "lazy/low-friction, pre-sell before build"
+  },
+  "links": {
+    "github": "https://github.com/ishaan",
+    "twitter": "https://twitter.com/ishaan",
+    "linkedin": "https://linkedin.com/in/ishaan",
+    "instagram": "https://instagram.com/_work4ever_",
+    "telegram_bot": "https://t.me/mcglitch1001work4everbot",
+    "site_temp": "https://generators-people-busy-advisory.trycloudflare.com",
+    "site_target": "https://ishaan.pages.dev"
+  }
+}
