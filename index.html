@@ -176,6 +176,7 @@
 
     html {
       scroll-behavior: smooth;
+      scroll-padding-top: 80px;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       color-scheme: dark;
@@ -554,9 +555,9 @@
        4. HERO SECTION WITH INTERACTIVE TERMINAL
        ------------------------------------------------------------- */
     #hero {
-      padding-top: clamp(7.5rem, 12vw, 10rem);
-      padding-bottom: clamp(4rem, 7vw, 6rem);
-      min-height: 90vh;
+      padding-top: clamp(6.5rem, 10vw, 8.5rem);
+      padding-bottom: clamp(3.5rem, 5vw, 5rem);
+      min-height: min(90vh, 860px);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -1092,6 +1093,122 @@
       box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
     }
 
+    /* -------------------------------------------------------------
+       COMPANIES & CLIENTS WORK EXPERIENCE SECTION
+       ------------------------------------------------------------- */
+    #experience {
+      padding: clamp(3.5rem, 6vw, 5rem) 0;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(13, 19, 27, 0.4);
+    }
+    .experience-header {
+      margin-bottom: 32px;
+    }
+    .companies-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+    .company-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 140px;
+      transition: all var(--transition-fast);
+      position: relative;
+      overflow: hidden;
+    }
+    .company-card:hover {
+      border-color: var(--border-active);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 18px rgba(0, 229, 255, 0.15);
+      transform: translateY(-3px);
+    }
+    .company-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      opacity: 0;
+      transition: opacity var(--transition-fast);
+    }
+    .company-card:hover::after {
+      opacity: 1;
+    }
+    .company-badge-tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--cyan);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    .company-logo-slot {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      margin-bottom: 14px;
+    }
+    .logo-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 12px;
+      border: 1px dashed rgba(0, 229, 255, 0.25);
+      border-radius: var(--radius-sm);
+      width: 100%;
+      background: rgba(0, 229, 255, 0.02);
+    }
+    .logo-symbol {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.08em;
+    }
+    .logo-meta {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--emerald);
+    }
+    .company-subtext {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+      line-height: 1.4;
+    }
+
+    /* -------------------------------------------------------------
+       INTERACTIVE FAQ / POPULAR Q&A TERMINAL SECTION
+       ------------------------------------------------------------- */
+    #faq {
+      padding: clamp(5rem, 9vw, 7.5rem) 0;
+      border-top: 1px solid var(--border-subtle);
+      background: linear-gradient(180deg, rgba(8, 12, 16, 0.9) 0%, rgba(13, 19, 27, 0.6) 100%);
+    }
+    .faq-container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .faq-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .faq-header .section-desc {
+      margin: 0 auto;
+      max-width: 620px;
+    }
+
     /* About Content & Stats */
     .about-content h2 {
       margin-bottom: 8px;
@@ -1622,6 +1739,9 @@
         grid-template-columns: 1fr;
         gap: 40px;
       }
+      .companies-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
       .about-grid {
         grid-template-columns: 1fr;
         gap: 48px;
@@ -1640,6 +1760,9 @@
     }
 
     @media (max-width: 768px) {
+      .companies-grid {
+        grid-template-columns: 1fr;
+      }
       .nav-links {
         display: none;
         position: absolute;
@@ -1709,9 +1832,10 @@
       <nav aria-label="Main Navigation">
         <ul class="nav-links" id="nav-links">
           <li><a href="#about" class="nav-link"><span>//</span>whoami</a></li>
+          <li><a href="#experience" class="nav-link"><span>//</span>clients</a></li>
           <li><a href="#projects" class="nav-link"><span>//</span>systems</a></li>
-          <li><a href="#journey" class="nav-link"><span>//</span>commits</a></li>
-          <li><a href="#skills" class="nav-link"><span>//</span>stack</a></li>
+          <li><a href="#skills" class="nav-link"><span>//</span>arsenal</a></li>
+          <li><a href="#faq" class="nav-link"><span>//</span>qa</a></li>
           <li><a href="#contact" class="nav-link"><span>//</span>connect</a></li>
         </ul>
       </nav>
@@ -1836,55 +1960,69 @@
 
         </div>
 
-        <!-- Interactive Terminal Console Below Hero Grid -->
-        <div class="hero-terminal-row">
-          <div class="terminal-container" id="interactive-terminal">
-            <div class="terminal-topbar">
-              <div class="terminal-dots">
-                <span class="terminal-dot dot-red"></span>
-                <span class="terminal-dot dot-yellow"></span>
-                <span class="terminal-dot dot-green"></span>
-              </div>
-              <div class="terminal-title">ishaan@pune-box: ~ (zsh) — Click any command below to test live!</div>
-              <div class="terminal-tab-pill">ONLINE</div>
-            </div>
+      </div>
+    </section>
 
-            <div class="terminal-body" id="term-body" role="region" aria-live="polite">
-              <div class="terminal-line">
-                <span class="terminal-prompt-sym">$</span>
-                <span class="terminal-cmd">whoami</span>
-                <div class="terminal-output highlight-ai">
-                  Ishaan Dalvi — 14-year-old hacker &amp; AI maker in Pune, India.
-                </div>
-              </div>
-              <div class="terminal-line">
-                <span class="terminal-prompt-sym">$</span>
-                <span class="terminal-cmd">cat rules.txt</span>
-                <div class="terminal-output">
-                  1. Build cool technology that actually works in real life.<br>
-                  2. Spend ₹0 on expensive cloud servers. Run private AI on local hardware &amp; free global edge tiers.<br>
-                  3. Ship code, not talk.
-                </div>
-              </div>
-              <div class="terminal-line" id="term-active-line">
-                <span class="terminal-prompt-sym">$</span>
-                <span class="terminal-cmd" id="term-typing"></span>
-                <span class="cursor-blink"></span>
-              </div>
-            </div>
-
-            <!-- Interactive Command Chips -->
-            <div class="terminal-chips">
-              <span class="chip-label">CLICK TO RUN:</span>
-              <button class="term-chip" data-cmd="get-stack">--stack</button>
-              <button class="term-chip" data-cmd="ls-projects">projects/</button>
-              <button class="term-chip" data-cmd="run-bot">run-bot</button>
-              <button class="term-chip" data-cmd="ping">ping</button>
-              <button class="term-chip" data-cmd="clear">clear</button>
-            </div>
-          </div>
+    <!-- -----------------------------------------------------------
+         1.5 COMPANIES & CLIENTS / WORK EXPERIENCE SECTION
+         ----------------------------------------------------------- -->
+    <section id="experience" aria-label="Companies and Experience">
+      <div class="container">
+        <div class="section-header experience-header">
+          <div class="section-badge">// 01. TRACK_RECORD</div>
+          <h2>Companies I've Worked With</h2>
+          <p class="section-desc">Building autonomous agents, edge infrastructure, and systems for real-world companies.</p>
         </div>
 
+        <div class="companies-grid">
+          <!-- Company 1 -->
+          <div class="company-card">
+            <div class="company-badge-tag">// CLIENT_01</div>
+            <div class="company-logo-slot">
+              <div class="logo-placeholder">
+                <span class="logo-symbol">[ COMPANY LOGO 01 ]</span>
+                <span class="logo-meta">HORIZONTAL LOGO // READY</span>
+              </div>
+            </div>
+            <div class="company-subtext">AI Workflows &amp; Autonomous Bots</div>
+          </div>
+
+          <!-- Company 2 -->
+          <div class="company-card">
+            <div class="company-badge-tag">// CLIENT_02</div>
+            <div class="company-logo-slot">
+              <div class="logo-placeholder">
+                <span class="logo-symbol">[ COMPANY LOGO 02 ]</span>
+                <span class="logo-meta">HORIZONTAL LOGO // READY</span>
+              </div>
+            </div>
+            <div class="company-subtext">Full-Stack &amp; Edge Systems</div>
+          </div>
+
+          <!-- Company 3 -->
+          <div class="company-card">
+            <div class="company-badge-tag">// CLIENT_03</div>
+            <div class="company-logo-slot">
+              <div class="logo-placeholder">
+                <span class="logo-symbol">[ COMPANY LOGO 03 ]</span>
+                <span class="logo-meta">HORIZONTAL LOGO // READY</span>
+              </div>
+            </div>
+            <div class="company-subtext">Backend Infrastructure &amp; APIs</div>
+          </div>
+
+          <!-- Company 4 -->
+          <div class="company-card">
+            <div class="company-badge-tag">// CLIENT_04</div>
+            <div class="company-logo-slot">
+              <div class="logo-placeholder">
+                <span class="logo-symbol">[ COMPANY LOGO 04 ]</span>
+                <span class="logo-meta">HORIZONTAL LOGO // READY</span>
+              </div>
+            </div>
+            <div class="company-subtext">Automation &amp; Data Pipelines</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1895,7 +2033,7 @@
       <div class="container">
         <div class="about-grid">
           
-          <!-- Left Column: 3D Topographical Wireframe Map of Pune -->
+          <!-- Left Column: 3D Boundary Wireframe Map of Maharashtra & Pune -->
           <div class="topo-card-wrapper">
             <div class="topo-map-card">
               <!-- Corner Targeting Reticles [ + ] -->
@@ -1906,29 +2044,29 @@
 
               <!-- Top Telemetry Header -->
               <div class="topo-top-meta">
-                <span class="hud-id-tag">3D TERRAIN SCAN // PUNE BASIN</span>
+                <span class="hud-id-tag">3D REAL BOUNDARY SCAN // MAHARASHTRA &amp; PUNE</span>
                 <span class="code-font" id="topo-coords">18.5204° N, 73.8567° E</span>
               </div>
 
               <!-- 3D Canvas Viewport -->
               <div class="topo-canvas-viewport" id="topo-viewport">
-                <canvas id="pune-topo-canvas" width="700" height="750" aria-label="Interactive 3D spinning wireframe topographical map of Pune basin and Katraj mountain ridges"></canvas>
+                <canvas id="mh-topo-canvas" width="700" height="750" aria-label="Interactive 3D spinning wireframe topographical boundary map of Maharashtra with Pune beacon"></canvas>
                 <div class="hud-scanlines"></div>
                 
                 <!-- Overlay HUD markers -->
                 <div class="topo-overlay-badge topo-badge-summit">
                   <span class="topo-pin-pulse"></span>
-                  <span>KATRAJ SUMMIT (750M)</span>
+                  <span>PUNE (HOME BASE)</span>
                 </div>
                 <div class="topo-overlay-badge topo-badge-pune">
                   <span class="topo-pin-dot"></span>
-                  <span>PUNE URBAN BASIN (560M)</span>
+                  <span>WESTERN GHATS RIDGE</span>
                 </div>
                 
                 <!-- Interactive Hint -->
                 <div class="topo-hint">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                  <span>SPINNING // DRAG TO ROTATE 3D</span>
+                  <span>SPINNING // DRAG TO ROTATE MAHARASHTRA 3D</span>
                 </div>
               </div>
 
@@ -1937,9 +2075,9 @@
                 <div class="topo-status-col">
                   <span class="hud-status-badge">
                     <span class="pulse-dot"></span>
-                    TOPOGRAPHY 3D LIVE
+                    MAHARASHTRA 3D LIVE
                   </span>
-                  <span class="code-font" id="topo-rot-display">ROT: 0° // ELEV: 560M-750M</span>
+                  <span class="code-font" id="topo-rot-display">ROT: 0° // PUNE LAT: 18.52°N</span>
                 </div>
                 <button class="topo-toggle-btn" id="topo-spin-toggle" type="button" aria-label="Toggle auto spin">
                   <span>[ PAUSE SPIN ]</span>
@@ -1950,7 +2088,7 @@
 
           <!-- Right Column: Story & Metrics -->
           <div class="about-content">
-            <div class="section-badge">// 01. WHOAMI</div>
+            <div class="section-badge">// 02. WHOAMI</div>
             <h2>A 14-Year-Old Building Real Tech in Pune</h2>
             <div class="about-subtitle">Curious Tinkerer. AI Builder. Hardware Maker.</div>
             
@@ -1998,7 +2136,7 @@
     <section id="projects" aria-label="Featured Systems and Engineering Projects">
       <div class="container">
         <div class="section-header">
-          <div class="section-badge">// 02. WHAT_I_SHIPPED</div>
+          <div class="section-badge">// 03. WHAT_I_SHIPPED</div>
           <h2>Cool Projects I Built &amp; Shipped</h2>
           <p class="section-desc">Real working software, hardware microchips, and autonomous bots. No fluff.</p>
         </div>
@@ -2216,7 +2354,7 @@
     <section id="journey" aria-label="Development Timeline">
       <div class="container">
         <div class="section-header">
-          <div class="section-badge">// 03. HOW_I_LEVELED_UP</div>
+          <div class="section-badge">// 04. HOW_I_LEVELED_UP</div>
           <h2>The Journey So Far</h2>
           <p class="section-desc">From writing my first line of code to hacking autonomous AI bots and hardware.</p>
         </div>
@@ -2290,154 +2428,101 @@
     <!-- -----------------------------------------------------------
          5. TECH STACK & AI TOOLBOX
          ----------------------------------------------------------- -->
+    <!-- -----------------------------------------------------------
+         5. TECH STACK & AI TOOLBOX (MY ARSENAL)
+         ----------------------------------------------------------- -->
     <section id="skills" aria-label="Technical Skills and Stack">
       <div class="container">
         <div class="section-header">
-          <div class="section-badge">// 04. WEAPONS_OF_CHOICE</div>
+          <div class="section-badge">// 05. WEAPONS_OF_CHOICE</div>
           <h2>My Arsenal</h2>
-          <p class="section-desc">The languages, tools, and hardware I use every day to build cool stuff.</p>
+          <p class="section-desc">The 7 core tools, models, and hardware platforms I use every day to build autonomous systems.</p>
         </div>
 
         <!-- Category Filters -->
         <div class="skills-filter-nav">
-          <button class="filter-btn active" data-filter="all">ALL</button>
-          <button class="filter-btn" data-filter="ai">AI_&amp;_BOTS</button>
-          <button class="filter-btn" data-filter="languages">LANGUAGES</button>
-          <button class="filter-btn" data-filter="edge">SERVERS_&amp;_EDGE</button>
-          <button class="filter-btn" data-filter="systems">HARDWARE</button>
+          <button class="filter-btn active" data-filter="all">ALL [7]</button>
+          <button class="filter-btn" data-filter="ai">AI_&amp;_MODELS</button>
+          <button class="filter-btn" data-filter="infra">CLOUD_&amp;_CODE</button>
+          <button class="filter-btn" data-filter="hardware">HARDWARE</button>
         </div>
 
         <div class="skills-grid">
           
-          <!-- Skill: Local AI -->
+          <!-- 1. Flagship AI models -->
           <div class="skill-card" data-cat="ai">
             <div class="skill-icon-wrap">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 12L2.5 7.5"></path><path d="M12 12v10"></path></svg>
             </div>
             <div class="skill-meta">
-              <h4>Local AI / Ollama</h4>
-              <span>Private LLMs &amp; AI Agents</span>
+              <h4>Flagship AI models</h4>
+              <span>Claude 3.5 Sonnet // GPT-4o // Gemini Pro</span>
             </div>
           </div>
 
-          <!-- Skill: n8n -->
+          <!-- 2. Self Hosted Models -->
+          <div class="skill-card" data-cat="ai">
+            <div class="skill-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+            </div>
+            <div class="skill-meta">
+              <h4>Self Hosted Models</h4>
+              <span>Ollama // DeepSeek-R1 // Llama 3 (₹0 Private)</span>
+            </div>
+          </div>
+
+          <!-- 3. Cloud VPS -->
+          <div class="skill-card" data-cat="infra">
+            <div class="skill-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
+            </div>
+            <div class="skill-meta">
+              <h4>Cloud VPS</h4>
+              <span>Linux Instances // Reverse Proxies // 24/7 Daemons</span>
+            </div>
+          </div>
+
+          <!-- 4. n8n -->
           <div class="skill-card" data-cat="ai">
             <div class="skill-icon-wrap">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
             </div>
             <div class="skill-meta">
-              <h4>n8n Automation</h4>
-              <span>Self-Running Workflows</span>
+              <h4>n8n</h4>
+              <span>Workflow &amp; Agent Pipeline Orchestration</span>
             </div>
           </div>
 
-          <!-- Skill: TypeScript -->
-          <div class="skill-card" data-cat="languages">
-            <div class="skill-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"></rect><line x1="8" y1="12" x2="16" y2="12"></line><line x1="12" y1="8" x2="12" y2="16"></line></svg>
-            </div>
-            <div class="skill-meta">
-              <h4>TypeScript</h4>
-              <span>Bulletproof Code</span>
-            </div>
-          </div>
-
-          <!-- Skill: Python -->
-          <div class="skill-card" data-cat="languages">
-            <div class="skill-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2m0-2C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm-1 6h2v8h-2zm0 10h2v2h-2z"/></svg>
-            </div>
-            <div class="skill-meta">
-              <h4>Python 3</h4>
-              <span>Fast Scripts &amp; AI Tools</span>
-            </div>
-          </div>
-
-          <!-- Skill: Cloudflare Workers -->
-          <div class="skill-card" data-cat="edge">
-            <div class="skill-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
-            </div>
-            <div class="skill-meta">
-              <h4>Cloudflare Workers</h4>
-              <span>Sub-30ms Global Servers</span>
-            </div>
-          </div>
-
-          <!-- Skill: Node.js -->
-          <div class="skill-card" data-cat="languages">
+          <!-- 5. Hermes Agent -->
+          <div class="skill-card" data-cat="ai">
             <div class="skill-icon-wrap">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon></svg>
             </div>
             <div class="skill-meta">
-              <h4>Node.js</h4>
-              <span>Fast Server Runtime</span>
+              <h4>Hermes Agent</h4>
+              <span>Autonomous Function-Calling &amp; Planning</span>
             </div>
           </div>
 
-          <!-- Skill: ESP32 -->
-          <div class="skill-card" data-cat="systems">
+          <!-- 6. Github -->
+          <div class="skill-card" data-cat="infra">
+            <div class="skill-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            </div>
+            <div class="skill-meta">
+              <h4>Github</h4>
+              <span>CI/CD Actions // Version Control // Auto-Deploy</span>
+            </div>
+          </div>
+
+          <!-- 7. Micro Controllers -->
+          <div class="skill-card" data-cat="hardware">
             <div class="skill-icon-wrap">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="M15 9h.01"></path><path d="M9 15h.01"></path><path d="M15 15h.01"></path></svg>
             </div>
             <div class="skill-meta">
-              <h4>ESP32 Microchips</h4>
-              <span>Hardware &amp; Real Sensors</span>
-            </div>
-          </div>
-
-          <!-- Skill: Docker -->
-          <div class="skill-card" data-cat="systems">
-            <div class="skill-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
-            </div>
-            <div class="skill-meta">
-              <h4>Docker &amp; Linux</h4>
-              <span>Command Line Mastery</span>
-            </div>
-          </div>
-
-          <!-- Skill: BullMQ -->
-          <div class="skill-card" data-cat="edge">
-            <div class="skill-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-            </div>
-            <div class="skill-meta">
-              <h4>BullMQ &amp; Redis</h4>
-              <span>High-Speed Task Queues</span>
-            </div>
-          </div>
-
-          <!-- Skill: Puppeteer -->
-          <div class="skill-card" data-cat="ai">
-            <div class="skill-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-            </div>
-            <div class="skill-meta">
-              <h4>Puppeteer</h4>
-              <span>Headless Web Bots</span>
-            </div>
-          </div>
-
-          <!-- Skill: FFmpeg -->
-          <div class="skill-card" data-cat="systems">
-            <div class="skill-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            </div>
-            <div class="skill-meta">
-              <h4>FFmpeg</h4>
-              <span>Fast Video &amp; Audio Processing</span>
-            </div>
-          </div>
-
-          <!-- Skill: Git -->
-          <div class="skill-card" data-cat="systems">
-            <div class="skill-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
-            </div>
-            <div class="skill-meta">
-              <h4>Git &amp; GitHub Actions</h4>
-              <span>Code Shipping &amp; Automation</span>
+              <h4>Micro Controllers</h4>
+              <span>ESP32 // Hardware Sensors // Physical IoT</span>
             </div>
           </div>
 
@@ -2446,12 +2531,71 @@
     </section>
 
     <!-- -----------------------------------------------------------
-         6. CONTACT / TRANSMISSION CONSOLE
+         6. INTERACTIVE POPULAR Q&A TERMINAL
+         ----------------------------------------------------------- -->
+    <section id="faq" aria-label="Popular Q&A and FAQ Terminal">
+      <div class="container faq-container">
+        <div class="section-header faq-header">
+          <div class="section-badge">// 06. POPULAR_QA</div>
+          <h2>Interactive Q&amp;A Terminal</h2>
+          <p class="section-desc">Click any prompt chip below or type commands to get instant answers about my work, age, stack, and availability.</p>
+        </div>
+
+        <div class="terminal-container" id="interactive-terminal">
+          <div class="terminal-topbar">
+            <div class="terminal-dots">
+              <span class="terminal-dot dot-red"></span>
+              <span class="terminal-dot dot-yellow"></span>
+              <span class="terminal-dot dot-green"></span>
+            </div>
+            <div class="terminal-title">ishaan@qa-terminal: ~ (faq-shell) — Click a question chip below!</div>
+            <div class="terminal-tab-pill">ONLINE // QA</div>
+          </div>
+
+          <div class="terminal-body" id="term-body" role="region" aria-live="polite">
+            <div class="terminal-line">
+              <span class="terminal-prompt-sym">$</span>
+              <span class="terminal-cmd">help --faq</span>
+              <div class="terminal-output highlight-ai">
+                Popular Q&amp;A Terminal initialized. Click any chip below to query:
+              </div>
+            </div>
+            <div class="terminal-line">
+              <span class="terminal-prompt-sym">$</span>
+              <span class="terminal-cmd">whoami</span>
+              <div class="terminal-output">
+                Ishaan Dalvi — 14-year-old hacker &amp; AI maker in Pune, India. I build private AI agents, microchips, and edge systems.
+              </div>
+            </div>
+            <div class="terminal-line" id="term-active-line">
+              <span class="terminal-prompt-sym">$</span>
+              <span class="terminal-cmd" id="term-typing"></span>
+              <span class="cursor-blink"></span>
+            </div>
+          </div>
+
+          <!-- Interactive Command Chips (Questions) -->
+          <div class="terminal-chips">
+            <span class="chip-label">POPULAR QUESTIONS:</span>
+            <button class="term-chip" data-cmd="who-are-you">who-are-you</button>
+            <button class="term-chip" data-cmd="how-old">how-old</button>
+            <button class="term-chip" data-cmd="do-you-freelance">freelance?</button>
+            <button class="term-chip" data-cmd="why-zero-cost">why-zero-cost?</button>
+            <button class="term-chip" data-cmd="how-learned">how-did-you-learn?</button>
+            <button class="term-chip" data-cmd="current-build">current-build</button>
+            <button class="term-chip" data-cmd="clear">clear</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- -----------------------------------------------------------
+         7. CONTACT / TRANSMISSION CONSOLE
          ----------------------------------------------------------- -->
     <section id="contact" aria-label="Contact and Transmission Channels">
       <div class="container">
         <div class="section-header">
-          <div class="section-badge">// 05. TALK_TO_ME</div>
+          <div class="section-badge">// 07. TALK_TO_ME</div>
           <h2>Let's Build Something Cool</h2>
           <p class="section-desc">Got an idea, want to talk about AI bots, hardware hacking, or ant farms? Drop me a line.</p>
         </div>
@@ -2484,24 +2628,30 @@
 
             <!-- Right Form Column -->
             <div class="contact-form-col">
-              <form id="transmission-form" action="#" method="POST">
+              <form id="transmission-form" action="https://api.web3forms.com/submit" method="POST">
+                <!-- Web3Forms Access Key: Replace with your free key from https://web3forms.com -->
+                <input type="hidden" name="access_key" id="web3forms-key" value="">
+                <input type="hidden" name="subject" value="New Portfolio Inquiry // Ishaan Dalvi">
+                <input type="hidden" name="from_name" value="Ishaan Portfolio Transmission Node">
+                <input type="checkbox" name="botcheck" style="display: none;">
+
                 <div class="form-field">
                   <label for="form-name">$ your.name</label>
-                  <input type="text" id="form-name" required placeholder="Alex / Hacker" autocomplete="name">
+                  <input type="text" id="form-name" name="name" required placeholder="Alex / Hacker" autocomplete="name">
                 </div>
 
                 <div class="form-field">
                   <label for="form-email">$ your.email</label>
-                  <input type="email" id="form-email" required placeholder="alex@domain.com" autocomplete="email">
+                  <input type="email" id="form-email" name="email" required placeholder="alex@domain.com" autocomplete="email">
                 </div>
 
                 <div class="form-field">
                   <label for="form-message">$ your.message</label>
-                  <textarea id="form-message" required placeholder="What are you building? Tell me about your project..."></textarea>
+                  <textarea id="form-message" name="message" required placeholder="What are you building? Tell me about your project..."></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
-                  <span>[ SEND MESSAGE ]</span>
+                <button type="submit" class="btn btn-primary" id="form-submit-btn" style="width: 100%;">
+                  <span>[ TRANSMIT MESSAGE ]</span>
                 </button>
               </form>
 
@@ -2603,12 +2753,43 @@
     let isTyping = false;
 
     const commandRegistry = {
+      // Popular Q&A Commands
+      'who-are-you': {
+        cmd: 'faq --who-are-you',
+        out: `Ishaan Dalvi — 14-year-old hacker &amp; autonomous system maker based in Pune, India.<br>
+I build self-hosted AI agent pipelines, write low-latency edge architectures (&lt; 28ms), and wire microchips (ESP32) for physical IoT automation.`
+      },
+      'how-old': {
+        cmd: 'faq --how-old',
+        out: `I am 14 years old. I wrote my first line of Python at age 11 and quickly moved into building production web proxies, headless browser bots, and local AI agent networks.`
+      },
+      'do-you-freelance': {
+        cmd: 'faq --freelance',
+        out: `<span class="highlight-ai">[STATUS: OPEN FOR WORK]</span><br>
+Yes! I collaborate with forward-thinking teams, startups, and founders on autonomous AI workflows, edge deployment, n8n automations, and custom backend tools. Send a transmission below!`
+      },
+      'why-zero-cost': {
+        cmd: 'faq --why-zero-cost',
+        out: `Expensive cloud bills are a rookie trap for early systems.<br>
+By running heavy AI models locally on private hardware (Ollama/vLLM) and pairing with free global edge tiers (Cloudflare Workers, Supabase free tier), I achieve &lt; 30ms latency worldwide with ₹0 recurring cloud bills.`
+      },
+      'how-learned': {
+        cmd: 'faq --how-did-you-learn',
+        out: `Curiosity and building real projects.<br>
+Instead of getting stuck in tutorial loops, I read open-source code on GitHub, explored Linux terminals, and built real things like smart automated IoT ant habitats, tax engines, and automated bots.`
+      },
+      'current-build': {
+        cmd: 'faq --current-build',
+        out: `<span class="highlight-ai">[ACTIVE SPRINT]</span><br>
+Currently refining autonomous function-calling agents with Hermes Agent &amp; n8n, plus testing custom ESP32 sensor telemetry for environmental micro-habitats.`
+      },
+      // System & Stack Aliases
       'get-stack': {
         cmd: 'ishaan --stack',
-        out: `[AI] Local models on Ollama + automated bot loops<br>
-[EDGE] Cloudflare Workers (&lt; 28ms global speed)<br>
-[HARDWARE] ESP32 microchips, real sensors, live ant farm<br>
-[BACKEND] Node.js, Python, Redis, FFmpeg video tools`
+        out: `[AI] Flagship APIs + Self-Hosted local models (Ollama) + Hermes Agent<br>
+[ORCHESTRATION] n8n self-hosted workflows + Linux VPS daemons<br>
+[EDGE & CODE] Cloudflare Workers, TypeScript, GitHub Actions<br>
+[HARDWARE] ESP32 microcontrollers, real sensors, live ant habitats`
       },
       'ls-projects': {
         cmd: 'ls -la ~/projects/',
@@ -2759,16 +2940,56 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
        ------------------------------------------------------------- */
     const transmissionForm = document.getElementById('transmission-form');
     const transmissionSuccess = document.getElementById('transmission-success');
+    const submitBtn = document.getElementById('form-submit-btn');
 
     if (transmissionForm) {
-      transmissionForm.addEventListener('submit', (e) => {
+      transmissionForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const accessKeyInput = document.getElementById('web3forms-key');
+        const accessKey = accessKeyInput ? accessKeyInput.value.trim() : '';
+        const nameVal = document.getElementById('form-name') ? document.getElementById('form-name').value : '';
+        const emailVal = document.getElementById('form-email') ? document.getElementById('form-email').value : '';
+        const msgVal = document.getElementById('form-message') ? document.getElementById('form-message').value : '';
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span>[ DISPATCHING... ]</span>';
+        }
+
+        // If Web3Forms access key is configured, post asynchronously
+        if (accessKey && accessKey !== 'YOUR_ACCESS_KEY_HERE') {
+          try {
+            const formData = new FormData(transmissionForm);
+            await fetch('https://api.web3forms.com/submit', {
+              method: 'POST',
+              body: formData
+            });
+          } catch (err) {
+            console.warn('Direct API submission deferred to fallback', err);
+          }
+        }
+
         transmissionForm.style.opacity = '0';
         transmissionForm.style.pointerEvents = 'none';
         
         setTimeout(() => {
           transmissionForm.style.display = 'none';
-          transmissionSuccess.classList.add('active');
+          if (transmissionSuccess) {
+            transmissionSuccess.innerHTML = `
+              <div class="success-status-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <h3>Transmission Dispatched!</h3>
+              <p class="code-font" style="color: var(--emerald); margin-top: 8px;">
+                Got it, ${nameVal.replace(/[<>]/g, '') || 'Friend'}. I will review your note and respond to ${emailVal.replace(/[<>]/g, '') || 'your email'}.
+              </p>
+              <div style="margin-top: 14px; padding: 10px 14px; background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.15); border-radius: var(--radius-sm);">
+                <span class="code-font" style="font-size: 0.75rem; color: var(--text-dim);">Direct inbox link:</span><br>
+                <a href="mailto:ishaan@dalvi.dev?subject=${encodeURIComponent('Inquiry from ' + nameVal)}&body=${encodeURIComponent(msgVal)}" style="color: var(--cyan); font-size: 0.84rem; text-decoration: underline; font-family: var(--font-mono);">ishaan@dalvi.dev</a>
+              </div>
+            `;
+            transmissionSuccess.classList.add('active');
+          }
         }, 300);
       });
     }
@@ -2792,79 +3013,32 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
       });
     }
 
-    /* -------------------------------------------------------------
-       8. 3D TOPOGRAPHICAL WIREFRAME MAP OF PUNE
+/* -------------------------------------------------------------
+       8. 3D REAL BOUNDARY WIREFRAME MAP OF MAHARASHTRA & PUNE
        ------------------------------------------------------------- */
-    (function initPune3DTopography() {
-      const canvas = document.getElementById('pune-topo-canvas');
-      const viewport = document.getElementById('topo-viewport');
-      const rotDisplay = document.getElementById('topo-rot-display');
-      const spinToggle = document.getElementById('topo-spin-toggle');
+    (function initMaharashtra3DMap() {
+      const canvas = document.getElementById("mh-topo-canvas");
+      const viewport = document.getElementById("topo-viewport");
+      const rotDisplay = document.getElementById("topo-rot-display");
+      const spinToggle = document.getElementById("topo-spin-toggle");
       if (!canvas || !viewport) return;
 
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
+      // Real official Maharashtra boundary data (DataMeet Open Maps)
+      const MH_DATA = {"arcs": [[[1.062, 0.16, -0.5603], [1.0683, 0.16, -0.5209], [1.0412, 0.16, -0.5036], [1.0806, 0.16, -0.5], [1.079, 0.16, -0.4222], [1.0135, 0.16, -0.3987], [1.0166, 0.16, -0.3713], [1.0458, 0.16, -0.37], [1.0593, 0.16, -0.3495], [1.0521, 0.16, -0.3118], [1.0201, 0.16, -0.3122], [1.0457, 0.16, -0.2944], [1.0169, 0.16, -0.2737], [1.0583, 0.16, -0.2806], [1.0928, 0.16, -0.2452], [1.0903, 0.16, -0.2228], [1.1382, 0.16, -0.209], [1.1563, 0.16, -0.1819], [1.1271, 0.16, -0.171], [1.1431, 0.16, -0.1526], [1.1162, 0.16, -0.1318], [1.0773, 0.16, -0.1375], [1.0654, 0.16, -0.1637], [1.0137, 0.16, -0.1184], [0.9814, 0.16, -0.048], [1.0038, 0.16, -0.0001], [0.9742, 0.16, 0.0157], [0.9755, 0.16, 0.032], [0.9363, 0.16, 0.0387], [0.8767, 0.16, -0.0041], [0.888, 0.16, -0.0575], [0.867, 0.16, -0.0611], [0.8666, 0.16, -0.0805], [0.8904, 0.16, -0.0991], [0.8987, 0.16, -0.1635], [0.8462, 0.16, -0.2173], [0.7579, 0.16, -0.1903], [0.6943, 0.16, -0.2224], [0.6758, 0.16, -0.1799], [0.6132, 0.16, -0.2053], [0.6173, 0.16, -0.2326], [0.5864, 0.16, -0.2345], [0.5823, 0.16, -0.2632]], [[0.5823, 0.16, -0.2632], [0.6101, 0.16, -0.26], [0.6128, 0.16, -0.2753], [0.6625, 0.16, -0.2927], [0.6548, 0.16, -0.3326], [0.6017, 0.16, -0.4016], [0.5427, 0.16, -0.417], [0.5258, 0.16, -0.4513], [0.5042, 0.16, -0.4515], [0.487, 0.16, -0.4759], [0.4183, 0.16, -0.4926], [0.4334, 0.16, -0.5609], [0.3853, 0.16, -0.597], [0.3851, 0.16, -0.6488], [0.3599, 0.16, -0.6802], [0.3654, 0.16, -0.7093], [0.4148, 0.16, -0.7024], [0.4693, 0.16, -0.7232], [0.4662, 0.16, -0.7504]], [[0.4662, 0.16, -0.7504], [0.6068, 0.16, -0.7465], [0.6016, 0.16, -0.7759], [0.6876, 0.16, -0.7923], [0.69, 0.16, -0.8127], [0.7629, 0.16, -0.7989], [0.7764, 0.16, -0.7626], [0.8313, 0.16, -0.7789], [0.8826, 0.16, -0.7571], [0.9791, 0.16, -0.784], [1.01, 0.16, -0.7563], [1.0186, 0.16, -0.7164], [1.0504, 0.16, -0.72], [1.095, 0.16, -0.6971], [1.0291, 0.16, -0.6446], [1.0297, 0.16, -0.601], [1.058, 0.16, -0.5922], [1.062, 0.16, -0.5603]], [[0.1414, 0.16, 0.0966], [0.1414, 0.16, 0.0966]], [[0.1393, 0.16, 0.1121], [0.0956, 0.16, 0.1864], [0.0522, 0.16, 0.1774], [0.0416, 0.16, 0.2529], [-0.0077, 0.16, 0.2577], [0.0056, 0.16, 0.2777], [-0.0218, 0.16, 0.3187], [-0.0432, 0.16, 0.294], [-0.0547, 0.16, 0.3125], [-0.0679, 0.16, 0.2965], [-0.0953, 0.16, 0.3287]], [[-0.0953, 0.16, 0.3287], [-0.1318, 0.16, 0.3055], [-0.1624, 0.16, 0.3185], [-0.1886, 0.16, 0.2916], [-0.2138, 0.16, 0.2996], [-0.2104, 0.16, 0.2775], [-0.2553, 0.16, 0.2677], [-0.257, 0.16, 0.2278], [-0.2224, 0.16, 0.2378], [-0.2111, 0.16, 0.2185], [-0.2472, 0.16, 0.1278], [-0.2916, 0.16, 0.1081], [-0.2939, 0.16, 0.135], [-0.3131, 0.16, 0.1371], [-0.3463, 0.16, 0.192], [-0.3751, 0.16, 0.1798], [-0.3818, 0.16, 0.1381], [-0.4157, 0.16, 0.1154], [-0.4076, 0.16, 0.0844]], [[-0.4076, 0.16, 0.0844], [-0.3412, 0.16, 0.0493], [-0.3397, 0.16, 0.0221], [-0.3694, 0.16, 0.0196], [-0.384, 0.16, -0.003], [-0.3886, 0.16, 0.0144], [-0.4468, 0.16, 0.0236], [-0.4526, 0.16, 0.048], [-0.5481, 0.16, -0.0428], [-0.5087, 0.16, -0.0416], [-0.5117, 0.16, -0.0867], [-0.4648, 0.16, -0.085], [-0.4755, 0.16, -0.0665], [-0.4448, 0.16, -0.0539], [-0.4333, 0.16, -0.0812], [-0.4191, 0.16, -0.0483], [-0.3999, 0.16, -0.0475], [-0.4162, 0.16, -0.0737], [-0.3935, 0.16, -0.0717], [-0.4009, 0.16, -0.0933], [-0.3806, 0.16, -0.0879], [-0.3918, 0.16, -0.0734], [-0.3592, 0.16, -0.0794], [-0.3821, 0.16, -0.1061], [-0.3439, 0.16, -0.1368], [-0.3457, 0.16, -0.1554], [-0.3995, 0.16, -0.164], [-0.3959, 0.16, -0.1906], [-0.4429, 0.16, -0.2172], [-0.5571, 0.16, -0.233], [-0.5497, 0.16, -0.2473], [-0.5712, 0.16, -0.2462], [-0.576, 0.16, -0.2694], [-0.6095, 0.16, -0.2678], [-0.6057, 0.16, -0.2883], [-0.5906, 0.16, -0.2853], [-0.5729, 0.16, -0.3837], [-0.5435, 0.16, -0.3984], [-0.515, 0.16, -0.3731], [-0.5212, 0.16, -0.3985], [-0.4969, 0.16, -0.4245], [-0.4605, 0.16, -0.4282], [-0.4652, 0.16, -0.4457], [-0.4228, 0.16, -0.4925], [-0.3941, 0.16, -0.4975], [-0.3672, 0.16, -0.4749], [-0.3082, 0.16, -0.5181], [-0.2746, 0.16, -0.4887], [-0.2522, 0.16, -0.505], [-0.2353, 0.16, -0.4844], [-0.2125, 0.16, -0.5104]], [[-0.2125, 0.16, -0.5104], [-0.2043, 0.16, -0.4858], [-0.2294, 0.16, -0.4759], [-0.2357, 0.16, -0.4163], [-0.2069, 0.16, -0.4112], [-0.1923, 0.16, -0.4325], [-0.161, 0.16, -0.4145], [-0.1883, 0.16, -0.3576], [-0.2248, 0.16, -0.3304], [-0.1875, 0.16, -0.2901], [-0.1125, 0.16, -0.3096], [-0.0256, 0.16, -0.2873], [0.0625, 0.16, -0.3354], [0.093, 0.16, -0.3116], [0.1215, 0.16, -0.328], [0.1319, 0.16, -0.3002], [0.1667, 0.16, -0.2906], [0.1723, 0.16, -0.2538], [0.2743, 0.16, -0.1965], [0.2593, 0.16, -0.1739], [0.2741, 0.16, -0.1711], [0.3185, 0.16, -0.1997], [0.342, 0.16, -0.1779], [0.3634, 0.16, -0.1812], [0.3973, 0.16, -0.2093], [0.3945, 0.16, -0.2338], [0.3053, 0.16, -0.2586], [0.3159, 0.16, -0.2962], [0.3579, 0.16, -0.3111], [0.4152, 0.16, -0.3106], [0.4157, 0.16, -0.2948], [0.4325, 0.16, -0.3061]], [[0.4325, 0.16, -0.3061], [0.428, 0.16, -0.2884], [0.4487, 0.16, -0.2693], [0.4212, 0.16, -0.2363], [0.4331, 0.16, -0.1811], [0.3967, 0.16, -0.166], [0.397, 0.16, -0.1184], [0.3599, 0.16, -0.1184], [0.3289, 0.16, -0.1465], [0.3065, 0.16, -0.1352], [0.3191, 0.16, -0.1255], [0.303, 0.16, -0.0759], [0.2781, 0.16, -0.0673], [0.2803, 0.16, -0.0455], [0.3295, 0.16, -0.0011], [0.3, 0.16, 0.0031], [0.2707, 0.16, 0.0399], [0.2717, 0.16, 0.0738], [0.2326, 0.16, 0.0759], [0.2337, 0.16, 0.0964], [0.2184, 0.16, 0.0987], [0.2293, 0.16, 0.1044], [0.2126, 0.16, 0.1095], [0.2194, 0.16, 0.1475], [0.1657, 0.16, 0.1422], [0.1801, 0.16, 0.1204], [0.1688, 0.16, 0.1039], [0.1393, 0.16, 0.1121]], [[-0.8712, 0.36, 0.2216], [-0.8884, 0.36, 0.1998], [-0.8702, 0.36, 0.1832], [-0.9091, 0.36, 0.1776], [-0.913, 0.36, 0.1494], [-0.9375, 0.36, 0.1437], [-0.9407, 0.36, 0.0901], [-0.9536, 0.36, 0.0984], [-0.9452, 0.36, 0.0887], [-0.9653, 0.36, 0.0719], [-0.9478, 0.36, 0.0356], [-0.9627, 0.36, 0.0331], [-0.9262, 0.36, -0.0409], [-0.8996, 0.36, -0.0549], [-0.9046, 0.36, -0.0999], [-0.8324, 0.36, -0.143], [-0.8367, 0.36, -0.1585]], [[-0.8367, 0.36, -0.1585], [-0.7756, 0.36, -0.1505], [-0.7659, 0.36, -0.1205], [-0.7311, 0.36, -0.1072], [-0.687, 0.36, -0.1087], [-0.7266, 0.36, -0.0605], [-0.6856, 0.36, -0.0065], [-0.6643, 0.36, -0.0029], [-0.6637, 0.36, 0.022], [-0.642, 0.16, 0.0274], [-0.6427, 0.16, 0.0501], [-0.6128, 0.16, 0.0762], [-0.6205, 0.16, 0.0899], [-0.5954, 0.16, 0.1037], [-0.5782, 0.16, 0.0884], [-0.5514, 0.16, 0.1323], [-0.4736, 0.16, 0.1119], [-0.4353, 0.16, 0.0744], [-0.4076, 0.16, 0.0844]], [[-0.0953, 0.16, 0.3287], [-0.1225, 0.16, 0.3426], [-0.1085, 0.16, 0.4217], [-0.1471, 0.16, 0.4042], [-0.1663, 0.16, 0.4259], [-0.1816, 0.16, 0.4065], [-0.235, 0.16, 0.4184], [-0.2474, 0.16, 0.3923], [-0.2712, 0.16, 0.4056], [-0.3181, 0.16, 0.3755], [-0.3341, 0.16, 0.402], [-0.3112, 0.16, 0.436], [-0.3071, 0.16, 0.5202], [-0.3348, 0.16, 0.5069], [-0.3582, 0.16, 0.5251], [-0.3651, 0.16, 0.5132], [-0.4156, 0.16, 0.5218], [-0.436, 0.16, 0.5538], [-0.4712, 0.16, 0.5236], [-0.514, 0.16, 0.5257], [-0.5181, 0.16, 0.5736], [-0.5815, 0.16, 0.5889], [-0.5837, 0.16, 0.6199], [-0.6164, 0.16, 0.6346], [-0.6436, 0.16, 0.6041], [-0.6682, 0.36, 0.6413], [-0.7001, 0.36, 0.6367], [-0.7066, 0.36, 0.6506], [-0.674, 0.36, 0.6787], [-0.6839, 0.36, 0.714], [-0.6594, 0.16, 0.7105], [-0.6336, 0.16, 0.7363], [-0.6402, 0.16, 0.7646], [-0.6743, 0.36, 0.7742], [-0.6455, 0.16, 0.7777], [-0.662, 0.16, 0.8303], [-0.6809, 0.36, 0.8304], [-0.6683, 0.36, 0.8326], [-0.6752, 0.36, 0.8524], [-0.7166, 0.36, 0.851]], [[-0.7166, 0.36, 0.851], [-0.7491, 0.36, 0.8345], [-0.7674, 0.36, 0.8556], [-0.7511, 0.36, 0.7852], [-0.7763, 0.36, 0.7649], [-0.8216, 0.36, 0.7633], [-0.7868, 0.36, 0.7335], [-0.8056, 0.36, 0.7249], [-0.8023, 0.36, 0.6977], [-0.82, 0.36, 0.7009], [-0.8068, 0.36, 0.6615], [-0.8265, 0.36, 0.637], [-0.8201, 0.36, 0.5827], [-0.8562, 0.36, 0.5572], [-0.8219, 0.36, 0.4945], [-0.8619, 0.36, 0.4694], [-0.8752, 0.36, 0.4001], [-0.8465, 0.36, 0.3539], [-0.8627, 0.36, 0.3171], [-0.897, 0.36, 0.3075], [-0.8886, 0.36, 0.2722], [-0.9059, 0.36, 0.2594], [-0.8712, 0.36, 0.2216]], [[-0.6945, 0.36, 0.837], [-0.701, 0.36, 0.8475], [-0.6945, 0.36, 0.837]], [[-0.7166, 0.36, 0.851], [-0.7433, 0.36, 0.8883], [-0.7771, 0.36, 0.8985], [-0.8134, 0.36, 0.8463], [-0.8664, 0.36, 0.8658], [-0.89, 0.36, 0.8152], [-0.9191, 0.36, 0.7966], [-0.9379, 0.36, 0.6875], [-0.9515, 0.36, 0.6856], [-0.9241, 0.36, 0.6734], [-0.9521, 0.36, 0.6793], [-0.9676, 0.36, 0.6405], [-0.966, 0.36, 0.6217], [-0.9439, 0.36, 0.6161], [-0.9648, 0.36, 0.6116], [-0.9765, 0.04, 0.5395], [-0.9622, 0.36, 0.5186], [-0.9792, 0.04, 0.5138], [-0.9681, 0.36, 0.4881], [-1.0024, 0.04, 0.4258], [-0.9867, 0.04, 0.4208], [-1.0084, 0.04, 0.3966], [-1.0191, 0.04, 0.2768], [-1.0746, 0.04, 0.1697], [-1.0661, 0.04, 0.1411], [-1.0858, 0.04, 0.101], [-1.0743, 0.04, 0.08], [-1.1151, 0.04, -0.0335], [-1.1116, 0.04, -0.1429], [-1.1463, 0.04, -0.2503], [-1.1332, 0.04, -0.2797], [-1.1522, 0.04, -0.2778], [-1.1535, 0.04, -0.3143], [-1.1374, 0.04, -0.3215], [-1.1193, 0.04, -0.3016], [-1.1384, 0.04, -0.3531], [-1.0938, 0.04, -0.3938], [-1.0669, 0.04, -0.39], [-1.0437, 0.04, -0.3494], [-1.0076, 0.04, -0.3449], [-0.9856, 0.04, -0.3653]], [[-0.9856, 0.04, -0.3653], [-0.9776, 0.04, -0.3435], [-0.9289, 0.36, -0.3254], [-0.9305, 0.36, -0.2669], [-0.8367, 0.36, -0.1585]], [[-0.9261, 0.36, 0.7792], [-0.9261, 0.36, 0.7792]], [[-1.1313, 0.04, -0.1804], [-1.1313, 0.04, -0.1804]], [[-0.9472, 0.36, 0.6171], [-0.9472, 0.36, 0.6171]], [[0.5823, 0.16, -0.2632], [0.4841, 0.16, -0.2727], [0.4325, 0.16, -0.3061]], [[-0.2125, 0.16, -0.5104], [-0.2193, 0.16, -0.5429], [-0.169, 0.16, -0.6216], [-0.1185, 0.16, -0.5963], [-0.1081, 0.16, -0.6321]], [[-0.1081, 0.16, -0.6321], [-0.0777, 0.16, -0.6652], [-0.0406, 0.16, -0.6638], [-0.0403, 0.16, -0.7036], [0.0046, 0.16, -0.7404], [0.0077, 0.16, -0.777], [0.0374, 0.16, -0.7779], [0.0854, 0.16, -0.8121], [0.1233, 0.16, -0.804], [0.1437, 0.16, -0.8229], [0.1992, 0.16, -0.8254], [0.2354, 0.16, -0.7618], [0.1829, 0.16, -0.7606], [0.2017, 0.16, -0.7156], [0.213, 0.16, -0.7277], [0.229, 0.16, -0.7119], [0.3284, 0.16, -0.7182], [0.452, 0.16, -0.7831], [0.4662, 0.16, -0.7504]], [[-0.9856, 0.04, -0.3653], [-0.9711, 0.36, -0.3884], [-0.9377, 0.36, -0.3881], [-0.9485, 0.36, -0.4396], [-0.9177, 0.36, -0.4816], [-0.9452, 0.36, -0.5103], [-0.9309, 0.36, -0.5292], [-0.8699, 0.36, -0.4877], [-0.8228, 0.36, -0.5026], [-0.8272, 0.36, -0.5245], [-0.7915, 0.36, -0.538], [-0.8035, 0.36, -0.6054], [-0.8284, 0.36, -0.6339], [-0.8929, 0.36, -0.6572], [-0.827, 0.36, -0.6583], [-0.8243, 0.36, -0.685], [-0.7916, 0.36, -0.6934], [-0.7904, 0.36, -0.7227], [-0.7635, 0.36, -0.7275], [-0.7582, 0.36, -0.745], [-0.685, 0.36, -0.7488], [-0.69, 0.36, -0.7688], [-0.8162, 0.36, -0.7489], [-0.8367, 0.36, -0.7851], [-0.8057, 0.36, -0.7969], [-0.8302, 0.36, -0.8406], [-0.7381, 0.36, -0.8769], [-0.6956, 0.36, -0.8719], [-0.6546, 0.16, -0.8985], [-0.6288, 0.16, -0.8643], [-0.6333, 0.16, -0.8129], [-0.6112, 0.16, -0.7958], [-0.5237, 0.16, -0.7863], [-0.4115, 0.16, -0.7188], [-0.1878, 0.16, -0.7145], [-0.1682, 0.16, -0.6338], [-0.1081, 0.16, -0.6321]]], "pune": [-0.8157, 0.28, 0.0839]};
+
       // Accessibility: Respect reduced motion
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       let isSpinning = !prefersReducedMotion;
       let isVisible = true;
       let animId = null;
 
-      // Grid specifications (26 x 26 vertices = 676 points)
-      const GRID_RES = 26;
-      const extent = 1.35;
-      const step = (extent * 2) / (GRID_RES - 1);
-
-      // Pune Topography Elevation Function:
-      // Pune urban basin in center (~560m)
-      // Katraj mountain ridge in south/southeast (~750m summit)
-      // Sinhagad high ridge peak in southwest (~850m)
-      // Vetal Tekdi northern hills (~650m)
-      // River channel depression (Mula-Mutha river basin)
-      function getTerrainElevation(x, z) {
-        // Southern mountain ridge (Katraj Ghat)
-        const katrajRidge = Math.exp(-Math.pow(z - 0.45 - 0.25 * x * x, 2) / 0.14) * 0.48 * (1 - 0.22 * Math.sin(x * 3.5));
-        
-        // Southwestern Sinhagad mountain ridge
-        const sinhagad = Math.exp(-Math.pow(x + 0.65, 2) / 0.16 - Math.pow(z - 0.35, 2) / 0.22) * 0.54;
-        
-        // Northern Vetal Tekdi hill ridge
-        const vetalTekdi = Math.exp(-Math.pow(x - 0.55, 2) / 0.18 - Math.pow(z + 0.5, 2) / 0.2) * 0.32;
-        
-        // River valley depression through the basin
-        const riverValley = -0.07 * Math.exp(-Math.pow(z + 0.12 + 0.28 * x, 2) / 0.05);
-
-        // Composite elevation (minimum baseline to prevent negative clipping)
-        const elevation = 0.08 + katrajRidge + sinhagad + vetalTekdi + riverValley;
-        return Math.max(0.02, elevation);
-      }
-
-      // Precalculate mesh vertices in 3D terrain space
-      const mesh = [];
-      for (let i = 0; i < GRID_RES; i++) {
-        const row = [];
-        const z = -extent + i * step;
-        for (let j = 0; j < GRID_RES; j++) {
-          const x = -extent + j * step;
-          const y = getTerrainElevation(x, z);
-          row.push({ x, y, z });
-        }
-        mesh.push(row);
-      }
-
-      // Geographical landmarks
-      const landmarks = {
-        summit: { x: 0.18, z: 0.52, label: 'KATRAJ SUMMIT (750M)', elev: 750 },
-        basin: { x: -0.05, z: -0.08, label: 'PUNE BASIN (560M)', elev: 560 }
-      };
-      landmarks.summit.y = getTerrainElevation(landmarks.summit.x, landmarks.summit.z);
-      landmarks.basin.y = getTerrainElevation(landmarks.basin.x, landmarks.basin.z);
-
-      // 3D Camera / Perspective state
-      let yaw = 0.52; // initial spin angle
-      let pitch = 0.56; // isometric tilt down
-      const camDist = 3.6;
+      // Camera parameters
+      let yaw = 0.35; // initial rotation
+      let pitch = 0.62; // isometric tilt
+      const camDist = 3.8;
 
       // Pointer drag interaction
       let isDragging = false;
@@ -2887,7 +3061,7 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
         lastPointerY = clientY;
 
         yaw += dx * 0.01;
-        pitch = Math.max(0.2, Math.min(1.15, pitch + dy * 0.008));
+        pitch = Math.max(0.2, Math.min(1.2, pitch + dy * 0.008));
 
         if (!animId && isVisible) {
           renderFrame();
@@ -2898,26 +3072,24 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
         isDragging = false;
       }
 
-      viewport.addEventListener('mousedown', onPointerDown);
-      window.addEventListener('mousemove', onPointerMove);
-      window.addEventListener('mouseup', onPointerUp);
+      viewport.addEventListener("mousedown", onPointerDown);
+      window.addEventListener("mousemove", onPointerMove);
+      window.addEventListener("mouseup", onPointerUp);
 
-      viewport.addEventListener('touchstart', onPointerDown, { passive: true });
-      window.addEventListener('touchmove', onPointerMove, { passive: true });
-      window.addEventListener('touchend', onPointerUp, { passive: true });
+      viewport.addEventListener("touchstart", onPointerDown, { passive: true });
+      window.addEventListener("touchmove", onPointerMove, { passive: true });
+      window.addEventListener("touchend", onPointerUp, { passive: true });
 
-      // Spin Toggle Button
       if (spinToggle) {
-        spinToggle.addEventListener('click', () => {
+        spinToggle.addEventListener("click", () => {
           isSpinning = !isSpinning;
-          spinToggle.innerHTML = isSpinning ? '<span>[ PAUSE SPIN ]</span>' : '<span>[ RESUME SPIN ]</span>';
+          spinToggle.innerHTML = isSpinning ? "<span>[ PAUSE SPIN ]</span>" : "<span>[ RESUME SPIN ]</span>";
           if (isSpinning && isVisible && !animId) {
             animId = requestAnimationFrame(loop);
           }
         });
       }
 
-      // Responsive Retina Canvas Sizing
       let dpr = window.devicePixelRatio || 1;
       let width = 0;
       let height = 0;
@@ -2933,29 +3105,25 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
         renderFrame();
       }
 
-      window.addEventListener('resize', () => {
+      window.addEventListener("resize", () => {
         resizeCanvas();
         if (isVisible) renderFrame();
       });
 
-      // 3D Perspective Projection Function
       function projectPoint(x, y, z, cx, cy, scale) {
-        // Rotate around Y axis (yaw)
         const cosY = Math.cos(yaw);
         const sinY = Math.sin(yaw);
         const rx = x * cosY + z * sinY;
         const rz = -x * sinY + z * cosY;
 
-        // Rotate around X axis (pitch tilt)
         const cosP = Math.cos(pitch);
         const sinP = Math.sin(pitch);
         const ry = y * cosP - rz * sinP;
         const rz2 = y * sinP + rz * cosP;
 
-        // Perspective division
         const persp = camDist / (camDist + rz2);
         const sx = cx + rx * scale * persp;
-        const sy = cy - ry * scale * persp + (scale * 0.12);
+        const sy = cy - ry * scale * persp + (scale * 0.15);
 
         return { sx, sy, depth: rz2, persp, yVal: y };
       }
@@ -2970,132 +3138,166 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
 
         const cx = width / 2;
         const cy = height * 0.48;
-        const scale = Math.min(width, height) * 0.46;
+        const scale = Math.min(width, height) * 0.38;
 
-        // Telemetry readout update
         if (rotDisplay) {
           const deg = Math.round(((yaw % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) * (180 / Math.PI));
-          rotDisplay.textContent = `ROT: ${deg}° // ELEV: 560M-750M`;
+          rotDisplay.textContent = `ROT: ${deg}° // PUNE LAT: 18.52°N`;
         }
 
-        // Project all mesh vertices
-        const projMesh = [];
-        for (let i = 0; i < GRID_RES; i++) {
-          const row = [];
-          for (let j = 0; j < GRID_RES; j++) {
-            const v = mesh[i][j];
-            row.push(projectPoint(v.x, v.y, v.z, cx, cy, scale));
+        // 1. Draw Base Cyber Pedestal (Ground at y = 0)
+        ctx.lineWidth = 1;
+        const rings = [0.4, 0.8, 1.2, 1.45];
+        rings.forEach(r => {
+          ctx.beginPath();
+          const segments = 36;
+          for (let s = 0; s <= segments; s++) {
+            const th = (s / segments) * Math.PI * 2;
+            const px = Math.cos(th) * r;
+            const pz = Math.sin(th) * r;
+            const pt = projectPoint(px, 0, pz, cx, cy, scale);
+            if (s === 0) ctx.moveTo(pt.sx, pt.sy);
+            else ctx.lineTo(pt.sx, pt.sy);
           }
-          projMesh.push(row);
-        }
+          ctx.strokeStyle = "rgba(0, 229, 255, 0.08)";
+          ctx.stroke();
+        });
 
-        // 1. Draw Latitudinal Lines (East-West Contours)
-        for (let i = 0; i < GRID_RES; i++) {
-          for (let j = 0; j < GRID_RES - 1; j++) {
-            const p1 = projMesh[i][j];
-            const p2 = projMesh[i][j + 1];
-            
-            const avgY = (p1.yVal + p2.yVal) * 0.5;
+        // Pedestal crosshair axes
+        const axisPts = [
+          [-1.4, 0, 1.4, 0],
+          [0, -1.4, 0, 1.4]
+        ];
+        axisPts.forEach(([x1, z1, x2, z2]) => {
+          const p1 = projectPoint(x1, 0, z1, cx, cy, scale);
+          const p2 = projectPoint(x2, 0, z2, cx, cy, scale);
+          ctx.beginPath();
+          ctx.moveTo(p1.sx, p1.sy);
+          ctx.lineTo(p2.sx, p2.sy);
+          ctx.strokeStyle = "rgba(0, 229, 255, 0.06)";
+          ctx.stroke();
+        });
+
+        // 2. Draw Drop Lines from boundary points to ground (Topographical Wireframe Effect)
+        ctx.lineWidth = 0.8;
+        ctx.setLineDash([2, 3]);
+        MH_DATA.arcs.forEach(arc => {
+          for (let i = 0; i < arc.length; i += 3) {
+            const v = arc[i];
+            if (v[1] > 0.08) {
+              const pTop = projectPoint(v[0], v[1], v[2], cx, cy, scale);
+              const pBot = projectPoint(v[0], 0, v[2], cx, cy, scale);
+              ctx.beginPath();
+              ctx.moveTo(pTop.sx, pTop.sy);
+              ctx.lineTo(pBot.sx, pBot.sy);
+              ctx.strokeStyle = "rgba(0, 229, 255, 0.14)";
+              ctx.stroke();
+            }
+          }
+        });
+        ctx.setLineDash([]);
+
+        // 3. Draw Ground Footprint Shadow (Subtle dark emerald/cyan boundary)
+        MH_DATA.arcs.forEach(arc => {
+          ctx.beginPath();
+          arc.forEach((v, idx) => {
+            const pt = projectPoint(v[0], 0, v[2], cx, cy, scale);
+            if (idx === 0) ctx.moveTo(pt.sx, pt.sy);
+            else ctx.lineTo(pt.sx, pt.sy);
+          });
+          ctx.strokeStyle = "rgba(0, 245, 160, 0.12)";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        });
+
+        // 4. Draw Official 3D Boundary Arcs
+        MH_DATA.arcs.forEach(arc => {
+          for (let i = 0; i < arc.length - 1; i++) {
+            const v1 = arc[i];
+            const v2 = arc[i + 1];
+            const p1 = projectPoint(v1[0], v1[1], v1[2], cx, cy, scale);
+            const p2 = projectPoint(v2[0], v2[1], v2[2], cx, cy, scale);
+
+            const avgY = (v1[1] + v2[1]) * 0.5;
             const avgDepth = (p1.depth + p2.depth) * 0.5;
-            const depthFactor = Math.max(0.15, Math.min(1.0, 1.25 - (avgDepth + 1.2) * 0.35));
+            const depthFactor = Math.max(0.2, Math.min(1.0, 1.25 - (avgDepth + 1.2) * 0.35));
 
             ctx.beginPath();
             ctx.moveTo(p1.sx, p1.sy);
             ctx.lineTo(p2.sx, p2.sy);
 
-            if (avgY > 0.32) {
-              // High mountain ridge (Katraj / Sinhagad) - radiant neon cyan
-              ctx.strokeStyle = `rgba(0, 229, 255, ${(depthFactor * 0.9).toFixed(2)})`;
-              ctx.lineWidth = 1.35;
-            } else if (avgY > 0.16) {
-              // Mountain slopes - electric cyan
-              ctx.strokeStyle = `rgba(0, 200, 240, ${(depthFactor * 0.65).toFixed(2)})`;
-              ctx.lineWidth = 1.1;
+            if (avgY >= 0.30) {
+              // Western Ghats mountain ridge - radiant glowing cyan
+              ctx.strokeStyle = `rgba(0, 229, 255, ${ (depthFactor * 0.95).toFixed(2) })`;
+              ctx.lineWidth = 1.8;
+            } else if (avgY < 0.10) {
+              // Konkan Coastline - matrix emerald
+              ctx.strokeStyle = `rgba(0, 245, 160, ${ (depthFactor * 0.75).toFixed(2) })`;
+              ctx.lineWidth = 1.4;
             } else {
-              // Valley basin floor - matrix emerald
-              ctx.strokeStyle = `rgba(0, 245, 160, ${(depthFactor * 0.45).toFixed(2)})`;
-              ctx.lineWidth = 0.95;
+              // Deccan Plateau - electric sky blue
+              ctx.strokeStyle = `rgba(56, 189, 248, ${ (depthFactor * 0.7).toFixed(2) })`;
+              ctx.lineWidth = 1.25;
             }
             ctx.stroke();
           }
-        }
+        });
 
-        // 2. Draw Longitudinal Lines (North-South Contours)
-        for (let j = 0; j < GRID_RES; j++) {
-          for (let i = 0; i < GRID_RES - 1; i++) {
-            const p1 = projMesh[i][j];
-            const p2 = projMesh[i + 1][j];
-            
-            const avgY = (p1.yVal + p2.yVal) * 0.5;
-            const avgDepth = (p1.depth + p2.depth) * 0.5;
-            const depthFactor = Math.max(0.12, Math.min(1.0, 1.25 - (avgDepth + 1.2) * 0.35));
+        // 5. Render Pune Landmark Beacon
+        const pune = MH_DATA.pune;
+        const puneP = projectPoint(pune[0], pune[1], pune[2], cx, cy, scale);
+        const puneGroundP = projectPoint(pune[0], 0, pune[2], cx, cy, scale);
 
-            ctx.beginPath();
-            ctx.moveTo(p1.sx, p1.sy);
-            ctx.lineTo(p2.sx, p2.sy);
-
-            if (avgY > 0.32) {
-              ctx.strokeStyle = `rgba(0, 229, 255, ${(depthFactor * 0.75).toFixed(2)})`;
-              ctx.lineWidth = 1.2;
-            } else if (avgY > 0.16) {
-              ctx.strokeStyle = `rgba(0, 200, 240, ${(depthFactor * 0.5).toFixed(2)})`;
-              ctx.lineWidth = 1.0;
-            } else {
-              ctx.strokeStyle = `rgba(0, 245, 160, ${(depthFactor * 0.35).toFixed(2)})`;
-              ctx.lineWidth = 0.85;
-            }
-            ctx.stroke();
-          }
-        }
-
-        // 3. Render Landmark Telemetry Reticles
-        const summitP = projectPoint(landmarks.summit.x, landmarks.summit.y, landmarks.summit.z, cx, cy, scale);
-        const basinP = projectPoint(landmarks.basin.x, landmarks.basin.y, landmarks.basin.z, cx, cy, scale);
-
-        // Summit Altitude Beacon Pole
+        // Ground target circle at Pune
         ctx.beginPath();
-        ctx.moveTo(summitP.sx, summitP.sy);
-        ctx.lineTo(summitP.sx, summitP.sy - 30);
-        ctx.strokeStyle = 'rgba(0, 229, 255, 0.85)';
+        ctx.arc(puneGroundP.sx, puneGroundP.sy, 5, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(0, 229, 255, 0.4)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Vertical laser mast up to floating beacon
+        const beaconTopY = puneP.sy - 34;
+        ctx.beginPath();
+        ctx.moveTo(puneGroundP.sx, puneGroundP.sy);
+        ctx.lineTo(puneP.sx, puneP.sy);
+        ctx.lineTo(puneP.sx, beaconTopY);
+        ctx.strokeStyle = "rgba(0, 229, 255, 0.85)";
         ctx.lineWidth = 1.5;
         ctx.setLineDash([2, 2]);
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Pulsing summit beacon
-        const timeNow = performance.now() * 0.003;
-        const pulseR = 4.5 + Math.sin(timeNow) * 2;
+        // Pulsing radar rings
+        const timeNow = performance.now() * 0.0035;
+        const pulseR = 5 + Math.sin(timeNow) * 2.5;
         ctx.beginPath();
-        ctx.arc(summitP.sx, summitP.sy - 30, pulseR, 0, Math.PI * 2);
-        ctx.strokeStyle = '#00E5FF';
-        ctx.lineWidth = 1.8;
+        ctx.arc(puneP.sx, beaconTopY, pulseR, 0, Math.PI * 2);
+        ctx.strokeStyle = "#00E5FF";
+        ctx.lineWidth = 1.6;
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.arc(summitP.sx, summitP.sy - 30, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#FFFFFF';
+        ctx.arc(puneP.sx, beaconTopY, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#FFFFFF";
         ctx.fill();
 
-        // Pune Basin Center Crosshair
-        ctx.beginPath();
-        ctx.arc(basinP.sx, basinP.sy, 4, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(0, 245, 160, 0.9)';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        // Floating Pune HUD Badge / Label
+        const labelText = "PUNE [HOME BASE]";
+        ctx.font = "600 10px JetBrains Mono, monospace";
+        const textWidth = ctx.measureText(labelText).width;
+        const tagX = puneP.sx + 10;
+        const tagY = beaconTopY - 7;
 
-        ctx.beginPath();
-        ctx.arc(basinP.sx, basinP.sy, 2, 0, Math.PI * 2);
-        ctx.fillStyle = '#00F5A0';
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.moveTo(basinP.sx - 8, basinP.sy);
-        ctx.lineTo(basinP.sx + 8, basinP.sy);
-        ctx.moveTo(basinP.sx, basinP.sy - 8);
-        ctx.lineTo(basinP.sx, basinP.sy + 8);
-        ctx.strokeStyle = 'rgba(0, 245, 160, 0.55)';
+        ctx.fillStyle = "rgba(8, 12, 16, 0.88)";
+        ctx.strokeStyle = "rgba(0, 229, 255, 0.5)";
         ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(tagX - 4, tagY - 10, textWidth + 8, 16, 3);
+        ctx.fill();
         ctx.stroke();
+
+        ctx.fillStyle = "#00E5FF";
+        ctx.fillText(labelText, tagX, tagY + 2);
       }
 
       function loop() {
@@ -3105,14 +3307,13 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
         }
 
         if (isSpinning && !isDragging) {
-          yaw += 0.0065; // continuous smooth spin
+          yaw += 0.0055;
         }
 
         renderFrame();
         animId = requestAnimationFrame(loop);
       }
 
-      // IntersectionObserver for 0% background CPU usage
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           isVisible = entry.isIntersecting;
@@ -3130,13 +3331,17 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
 
       observer.observe(viewport);
 
-      // Initial layout setup & immediate start
       resizeCanvas();
       renderFrame();
-      if (isSpinning) {
-        animId = requestAnimationFrame(loop);
-      }
     })();
+
+    // Direct hash target scroll on load for seamless navigation
+    if (window.location.hash) {
+      const targetEl = document.querySelector(window.location.hash);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
+    }
   </script>
 </body>
 </html>
