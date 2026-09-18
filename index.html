@@ -554,11 +554,12 @@
        4. HERO SECTION WITH INTERACTIVE TERMINAL
        ------------------------------------------------------------- */
     #hero {
-      padding-top: clamp(8rem, 14vw, 11rem);
-      padding-bottom: clamp(5rem, 9vw, 8rem);
-      min-height: 92vh;
+      padding-top: clamp(7.5rem, 12vw, 10rem);
+      padding-bottom: clamp(4rem, 7vw, 6rem);
+      min-height: 90vh;
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .hero-grid {
@@ -566,6 +567,21 @@
       grid-template-columns: 1.15fr 0.85fr;
       gap: 50px;
       align-items: center;
+      width: 100%;
+    }
+
+    .hero-portrait-col {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hero-terminal-row {
+      margin-top: 48px;
+      width: 100%;
+      max-width: 960px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .hero-tag-badge {
@@ -911,6 +927,169 @@
       align-items: center;
       gap: 6px;
       font-weight: 600;
+    }
+
+    /* 3D Topographical Map HUD Card Architecture */
+    .topo-card-wrapper {
+      position: relative;
+      perspective: 1000px;
+      width: 100%;
+    }
+
+    .topo-map-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border-active);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--glow-card), 0 0 30px rgba(0, 229, 255, 0.12);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      max-width: 420px;
+      margin: 0 auto;
+      overflow: hidden;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .topo-map-card:hover {
+      box-shadow: var(--glow-card), 0 0 42px rgba(0, 229, 255, 0.25);
+      border-color: var(--cyan);
+    }
+
+    .topo-top-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .topo-canvas-viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1.08;
+      overflow: hidden;
+      border-radius: 8px;
+      background: radial-gradient(circle at 50% 45%, #0e1726 0%, #05080c 100%);
+      border: 1px solid var(--border-subtle);
+      touch-action: none;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .topo-canvas-viewport:active {
+      cursor: grabbing;
+    }
+
+    .topo-canvas-viewport canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Overlay HUD markers */
+    .topo-overlay-badge {
+      position: absolute;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      pointer-events: none;
+      background: rgba(8, 12, 16, 0.88);
+      border: 1px solid var(--border-subtle);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 5;
+    }
+    .topo-badge-summit {
+      top: 12px;
+      left: 12px;
+      color: var(--cyan);
+      border-color: rgba(0, 229, 255, 0.35);
+    }
+    .topo-badge-pune {
+      bottom: 42px;
+      right: 12px;
+      color: var(--emerald);
+      border-color: rgba(0, 245, 160, 0.35);
+    }
+
+    .topo-pin-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+      animation: pulseGlow 1.8s infinite;
+    }
+    .topo-pin-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+    }
+
+    .topo-hint {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      background: rgba(8, 12, 16, 0.75);
+      padding: 3px 8px;
+      border-radius: 4px;
+      pointer-events: none;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .topo-bottom-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-subtle);
+      color: var(--text-dim);
+    }
+    .topo-status-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .topo-toggle-btn {
+      background: rgba(0, 229, 255, 0.08);
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .topo-toggle-btn:hover {
+      background: rgba(0, 229, 255, 0.2);
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
     }
 
     /* About Content & Stats */
@@ -1571,102 +1750,154 @@
           <div class="hero-content">
             <div class="hero-tag-badge">
               <span class="pulse-dot"></span>
-              14YO BUILDER // PUNE, INDIA // SHIPPING REAL CODE
+              14-YEAR-OLD MAKER // PUNE, INDIA // BUILDING REAL STUFF
             </div>
 
             <h1 class="hero-title">
               Hi, I'm <span class="gradient-text-cyan">Ishaan Dalvi</span>.<br>
-              I build <span class="gradient-text-emerald">AI agents</span> &amp; cool hardware.
+              I build <span class="gradient-text-emerald">smart AI bots</span> &amp; cool hardware.
             </h1>
 
             <p class="hero-desc">
-              14-year-old hacker from Pune, India. I run private AI models on my own machine, code automated bots that do real work, wire up microchips for live ant colonies, and deploy lightning-fast websites — all on a ₹0 budget.
+              I'm a 14-year-old developer from Pune. I love building things with technology — from smart AI assistants that run privately on my own computer, to electronic chips that monitor real ant colonies, to lightning-fast websites that cost ₹0 to run.
             </p>
 
             <div class="hero-cta-group">
               <a href="#projects" class="btn btn-primary">
                 <span>[ &gt; See What I Built ]</span>
               </a>
-              <a href="#contact" class="btn btn-outline">
-                <span>[ $ Ping Me ]</span>
+              <a href="#about" class="btn btn-outline">
+                <span>[ $ Explore 3D Pune Map ]</span>
               </a>
             </div>
 
             <div class="hero-quick-meta">
               <div class="hero-meta-item">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span>Speed: <strong>&lt; 30ms Worldwide</strong></span>
+                <span>Page Load Speed: <strong>Instant (&lt; 30ms)</strong></span>
               </div>
               <div class="hero-meta-item">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                <span>Server Cost: <strong>₹0 / mo</strong></span>
+                <span>Monthly Hosting Cost: <strong>₹0 / month</strong></span>
               </div>
             </div>
           </div>
 
-          <!-- Right Column: Interactive CLI / AI Terminal -->
-          <div class="hero-terminal-col">
-            <div class="terminal-container" id="interactive-terminal">
-              <div class="terminal-topbar">
-                <div class="terminal-dots">
-                  <span class="terminal-dot dot-red"></span>
-                  <span class="terminal-dot dot-yellow"></span>
-                  <span class="terminal-dot dot-green"></span>
-                </div>
-                <div class="terminal-title">ishaan@pune-box: ~ (zsh)</div>
-                <div class="terminal-tab-pill">ONLINE</div>
-              </div>
+          <!-- Right Column: Ishaan's Cyber HUD Portrait Card -->
+          <div class="hero-portrait-col">
+            <div class="hud-card-wrapper">
+              <div class="hud-portrait-card">
+                <!-- Corner Targeting Reticles [ + ] -->
+                <div class="hud-corner hud-corner-tl"></div>
+                <div class="hud-corner hud-corner-tr"></div>
+                <div class="hud-corner hud-corner-bl"></div>
+                <div class="hud-corner hud-corner-br"></div>
 
-              <div class="terminal-body" id="term-body" role="region" aria-live="polite">
-                <div class="terminal-line">
-                  <span class="terminal-prompt-sym">$</span>
-                  <span class="terminal-cmd">whoami</span>
-                  <div class="terminal-output highlight-ai">
-                    Ishaan Dalvi — 14yo hacker &amp; AI builder in Pune, India.
-                  </div>
+                <!-- Top Telemetry Header -->
+                <div class="hud-top-meta">
+                  <span class="hud-id-tag">OPERATOR // ISHAAN DALVI</span>
+                  <span class="code-font">18.5204° N, 73.8567° E</span>
                 </div>
-                <div class="terminal-line">
-                  <span class="terminal-prompt-sym">$</span>
-                  <span class="terminal-cmd">cat rules.txt</span>
-                  <div class="terminal-output">
-                    1. Build cool stuff that actually works.<br>
-                    2. Spend ₹0 on cloud servers. Run everything on local hardware &amp; free edge tiers.<br>
-                    3. Ship code, not talk.
-                  </div>
-                </div>
-                <div class="terminal-line" id="term-active-line">
-                  <span class="terminal-prompt-sym">$</span>
-                  <span class="terminal-cmd" id="term-typing"></span>
-                  <span class="cursor-blink"></span>
-                </div>
-              </div>
 
-              <!-- Interactive Command Chips -->
-              <div class="terminal-chips">
-                <span class="chip-label">CLICK TO RUN:</span>
-                <button class="term-chip" data-cmd="get-stack">--stack</button>
-                <button class="term-chip" data-cmd="ls-projects">projects/</button>
-                <button class="term-chip" data-cmd="run-bot">run-bot</button>
-                <button class="term-chip" data-cmd="ping">ping</button>
-                <button class="term-chip" data-cmd="clear">clear</button>
+                <!-- Precision 4:5 Framed Portrait Viewport -->
+                <div class="hud-image-viewport">
+                  <picture>
+                    <source srcset="portrait-card.webp" type="image/webp">
+                    <img 
+                      src="portrait-card.jpg" 
+                      alt="Ishaan Dalvi standing on mountain summit overlooking Pune skyline with victory gesture" 
+                      width="360" 
+                      height="467" 
+                      fetchpriority="high">
+                  </picture>
+                  <div class="hud-scanlines"></div>
+                  
+                  <!-- Crosshair targeting vector -->
+                  <svg class="hud-crosshair" viewBox="0 0 40 40" fill="none" stroke="var(--cyan)" stroke-width="1.5">
+                    <circle cx="20" cy="20" r="14" stroke-dasharray="3 3"/>
+                    <line x1="20" y1="2" x2="20" y2="10"/>
+                    <line x1="20" y1="30" x2="20" y2="38"/>
+                    <line x1="2" y1="20" x2="10" y2="20"/>
+                    <line x1="30" y1="20" x2="38" y2="20"/>
+                  </svg>
+                </div>
+
+                <!-- Bottom Telemetry Footer -->
+                <div class="hud-bottom-meta">
+                  <span class="hud-status-badge">
+                    <span class="pulse-dot"></span>
+                    ONLINE // BUILDING
+                  </span>
+                  <span class="code-font">ELEV: 750M // PUNE SUMMIT</span>
+                </div>
               </div>
             </div>
           </div>
 
         </div>
+
+        <!-- Interactive Terminal Console Below Hero Grid -->
+        <div class="hero-terminal-row">
+          <div class="terminal-container" id="interactive-terminal">
+            <div class="terminal-topbar">
+              <div class="terminal-dots">
+                <span class="terminal-dot dot-red"></span>
+                <span class="terminal-dot dot-yellow"></span>
+                <span class="terminal-dot dot-green"></span>
+              </div>
+              <div class="terminal-title">ishaan@pune-box: ~ (zsh) — Click any command below to test live!</div>
+              <div class="terminal-tab-pill">ONLINE</div>
+            </div>
+
+            <div class="terminal-body" id="term-body" role="region" aria-live="polite">
+              <div class="terminal-line">
+                <span class="terminal-prompt-sym">$</span>
+                <span class="terminal-cmd">whoami</span>
+                <div class="terminal-output highlight-ai">
+                  Ishaan Dalvi — 14-year-old hacker &amp; AI maker in Pune, India.
+                </div>
+              </div>
+              <div class="terminal-line">
+                <span class="terminal-prompt-sym">$</span>
+                <span class="terminal-cmd">cat rules.txt</span>
+                <div class="terminal-output">
+                  1. Build cool technology that actually works in real life.<br>
+                  2. Spend ₹0 on expensive cloud servers. Run private AI on local hardware &amp; free global edge tiers.<br>
+                  3. Ship code, not talk.
+                </div>
+              </div>
+              <div class="terminal-line" id="term-active-line">
+                <span class="terminal-prompt-sym">$</span>
+                <span class="terminal-cmd" id="term-typing"></span>
+                <span class="cursor-blink"></span>
+              </div>
+            </div>
+
+            <!-- Interactive Command Chips -->
+            <div class="terminal-chips">
+              <span class="chip-label">CLICK TO RUN:</span>
+              <button class="term-chip" data-cmd="get-stack">--stack</button>
+              <button class="term-chip" data-cmd="ls-projects">projects/</button>
+              <button class="term-chip" data-cmd="run-bot">run-bot</button>
+              <button class="term-chip" data-cmd="ping">ping</button>
+              <button class="term-chip" data-cmd="clear">clear</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
 
     <!-- -----------------------------------------------------------
-         2. ABOUT SECTION & PRECISION CYBER HUD PORTRAIT CARD
+         2. ABOUT SECTION & 3D TOPOGRAPHICAL WIREFRAME MAP OF PUNE
          ----------------------------------------------------------- -->
     <section id="about" aria-label="About Ishaan Dalvi">
       <div class="container">
         <div class="about-grid">
           
-          <!-- Left Column: Precision HUD Portrait Card -->
-          <div class="hud-card-wrapper">
-            <div class="hud-portrait-card">
+          <!-- Left Column: 3D Topographical Wireframe Map of Pune -->
+          <div class="topo-card-wrapper">
+            <div class="topo-map-card">
               <!-- Corner Targeting Reticles [ + ] -->
               <div class="hud-corner hud-corner-tl"></div>
               <div class="hud-corner hud-corner-tr"></div>
@@ -1674,41 +1905,45 @@
               <div class="hud-corner hud-corner-br"></div>
 
               <!-- Top Telemetry Header -->
-              <div class="hud-top-meta">
-                <span class="hud-id-tag">OPERATOR // ISHAAN DALVI</span>
-                <span class="code-font">18.5204° N, 73.8567° E</span>
+              <div class="topo-top-meta">
+                <span class="hud-id-tag">3D TERRAIN SCAN // PUNE BASIN</span>
+                <span class="code-font" id="topo-coords">18.5204° N, 73.8567° E</span>
               </div>
 
-              <!-- Precision 4:5 Framed Portrait Viewport -->
-              <div class="hud-image-viewport">
-                <picture>
-                  <source srcset="portrait-card.webp" type="image/webp">
-                  <img 
-                    src="portrait-card.jpg" 
-                    alt="Ishaan Dalvi standing on mountain summit overlooking Pune skyline with victory gesture" 
-                    width="360" 
-                    height="467" 
-                    loading="lazy">
-                </picture>
+              <!-- 3D Canvas Viewport -->
+              <div class="topo-canvas-viewport" id="topo-viewport">
+                <canvas id="pune-topo-canvas" width="700" height="750" aria-label="Interactive 3D spinning wireframe topographical map of Pune basin and Katraj mountain ridges"></canvas>
                 <div class="hud-scanlines"></div>
                 
-                <!-- Crosshair targeting vector -->
-                <svg class="hud-crosshair" viewBox="0 0 40 40" fill="none" stroke="var(--cyan)" stroke-width="1.5">
-                  <circle cx="20" cy="20" r="14" stroke-dasharray="3 3"/>
-                  <line x1="20" y1="2" x2="20" y2="10"/>
-                  <line x1="20" y1="30" x2="20" y2="38"/>
-                  <line x1="2" y1="20" x2="10" y2="20"/>
-                  <line x1="30" y1="20" x2="38" y2="20"/>
-                </svg>
+                <!-- Overlay HUD markers -->
+                <div class="topo-overlay-badge topo-badge-summit">
+                  <span class="topo-pin-pulse"></span>
+                  <span>KATRAJ SUMMIT (750M)</span>
+                </div>
+                <div class="topo-overlay-badge topo-badge-pune">
+                  <span class="topo-pin-dot"></span>
+                  <span>PUNE URBAN BASIN (560M)</span>
+                </div>
+                
+                <!-- Interactive Hint -->
+                <div class="topo-hint">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                  <span>SPINNING // DRAG TO ROTATE 3D</span>
+                </div>
               </div>
 
               <!-- Bottom Telemetry Footer -->
-              <div class="hud-bottom-meta">
-                <span class="hud-status-badge">
-                  <span class="pulse-dot"></span>
-                  ONLINE
-                </span>
-                <span class="code-font">ELEV: 750M // PUNE SUMMIT</span>
+              <div class="topo-bottom-meta">
+                <div class="topo-status-col">
+                  <span class="hud-status-badge">
+                    <span class="pulse-dot"></span>
+                    TOPOGRAPHY 3D LIVE
+                  </span>
+                  <span class="code-font" id="topo-rot-display">ROT: 0° // ELEV: 560M-750M</span>
+                </div>
+                <button class="topo-toggle-btn" id="topo-spin-toggle" type="button" aria-label="Toggle auto spin">
+                  <span>[ PAUSE SPIN ]</span>
+                </button>
               </div>
             </div>
           </div>
@@ -1716,39 +1951,39 @@
           <!-- Right Column: Story & Metrics -->
           <div class="about-content">
             <div class="section-badge">// 01. WHOAMI</div>
-            <h2>Hacking The Future From My Bedroom in Pune</h2>
-            <div class="about-subtitle">Rogue builder. AI operator. Hardware hacker.</div>
+            <h2>A 14-Year-Old Building Real Tech in Pune</h2>
+            <div class="about-subtitle">Curious Tinkerer. AI Builder. Hardware Maker.</div>
             
             <p>
-              I'm 14, based in Pune, and I don't wait for permission to build. I taught myself to write code, deploy web servers, and bend tech to do whatever I want.
+              I'm 14, living in Pune, India. Instead of just playing video games, I love figuring out how technology works under the hood and building things that solve real problems.
             </p>
             <p>
-              Right now, I run autonomous AI bots 24/7 on my own setup, launch edge servers that respond in under 30 milliseconds anywhere on earth, and solder sensors onto ESP32 microchips to run automated smart habitats for live ant colonies.
+              Right now, I run private AI models on my own machine that write code and automate daily tasks, launch global edge networks that load web pages in under 30 milliseconds, and wire real sensors to microchips (ESP32) to take care of living ant colonies 24/7.
             </p>
             <p>
-              I don't burn money on expensive cloud bills. Every project I run uses clever edge tricks, local-first models, and clean code that never crashes.
+              I don't waste money on expensive cloud bills. Every project I run uses smart free-tier edge tricks, local-first computing, and clean code that never crashes.
             </p>
             <p>
-              When I'm not coding, I'm out riding dirt bikes, hiking mountain summits, or collecting cool crystals.
+              When I'm away from my keyboard, you'll find me hiking mountain peaks around Pune, riding dirt bikes, or collecting cool rocks and crystals.
             </p>
 
             <!-- Real-Time Stats Grid -->
             <div class="about-telemetry-grid">
               <div class="telemetry-card">
                 <span class="telemetry-val">14</span>
-                <span class="telemetry-label">Years Old (Solo Builder)</span>
+                <span class="telemetry-label">Years Old (Solo Creator)</span>
               </div>
               <div class="telemetry-card">
                 <span class="telemetry-val" data-target="15">0<span>+</span></span>
-                <span class="telemetry-label">Shipped Projects</span>
+                <span class="telemetry-label">Projects Built &amp; Shipped</span>
               </div>
               <div class="telemetry-card">
                 <span class="telemetry-val" data-target="1200">0<span>+</span></span>
-                <span class="telemetry-label">Code Commits</span>
+                <span class="telemetry-label">Code Updates Shipped</span>
               </div>
               <div class="telemetry-card">
                 <span class="telemetry-val">₹0</span>
-                <span class="telemetry-label">Monthly Cloud Bills</span>
+                <span class="telemetry-label">Monthly Server Cost</span>
               </div>
             </div>
           </div>
@@ -2556,6 +2791,352 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
         hudCard.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)';
       });
     }
+
+    /* -------------------------------------------------------------
+       8. 3D TOPOGRAPHICAL WIREFRAME MAP OF PUNE
+       ------------------------------------------------------------- */
+    (function initPune3DTopography() {
+      const canvas = document.getElementById('pune-topo-canvas');
+      const viewport = document.getElementById('topo-viewport');
+      const rotDisplay = document.getElementById('topo-rot-display');
+      const spinToggle = document.getElementById('topo-spin-toggle');
+      if (!canvas || !viewport) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Accessibility: Respect reduced motion
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let isSpinning = !prefersReducedMotion;
+      let isVisible = true;
+      let animId = null;
+
+      // Grid specifications (26 x 26 vertices = 676 points)
+      const GRID_RES = 26;
+      const extent = 1.35;
+      const step = (extent * 2) / (GRID_RES - 1);
+
+      // Pune Topography Elevation Function:
+      // Pune urban basin in center (~560m)
+      // Katraj mountain ridge in south/southeast (~750m summit)
+      // Sinhagad high ridge peak in southwest (~850m)
+      // Vetal Tekdi northern hills (~650m)
+      // River channel depression (Mula-Mutha river basin)
+      function getTerrainElevation(x, z) {
+        // Southern mountain ridge (Katraj Ghat)
+        const katrajRidge = Math.exp(-Math.pow(z - 0.45 - 0.25 * x * x, 2) / 0.14) * 0.48 * (1 - 0.22 * Math.sin(x * 3.5));
+        
+        // Southwestern Sinhagad mountain ridge
+        const sinhagad = Math.exp(-Math.pow(x + 0.65, 2) / 0.16 - Math.pow(z - 0.35, 2) / 0.22) * 0.54;
+        
+        // Northern Vetal Tekdi hill ridge
+        const vetalTekdi = Math.exp(-Math.pow(x - 0.55, 2) / 0.18 - Math.pow(z + 0.5, 2) / 0.2) * 0.32;
+        
+        // River valley depression through the basin
+        const riverValley = -0.07 * Math.exp(-Math.pow(z + 0.12 + 0.28 * x, 2) / 0.05);
+
+        // Composite elevation (minimum baseline to prevent negative clipping)
+        const elevation = 0.08 + katrajRidge + sinhagad + vetalTekdi + riverValley;
+        return Math.max(0.02, elevation);
+      }
+
+      // Precalculate mesh vertices in 3D terrain space
+      const mesh = [];
+      for (let i = 0; i < GRID_RES; i++) {
+        const row = [];
+        const z = -extent + i * step;
+        for (let j = 0; j < GRID_RES; j++) {
+          const x = -extent + j * step;
+          const y = getTerrainElevation(x, z);
+          row.push({ x, y, z });
+        }
+        mesh.push(row);
+      }
+
+      // Geographical landmarks
+      const landmarks = {
+        summit: { x: 0.18, z: 0.52, label: 'KATRAJ SUMMIT (750M)', elev: 750 },
+        basin: { x: -0.05, z: -0.08, label: 'PUNE BASIN (560M)', elev: 560 }
+      };
+      landmarks.summit.y = getTerrainElevation(landmarks.summit.x, landmarks.summit.z);
+      landmarks.basin.y = getTerrainElevation(landmarks.basin.x, landmarks.basin.z);
+
+      // 3D Camera / Perspective state
+      let yaw = 0.52; // initial spin angle
+      let pitch = 0.56; // isometric tilt down
+      const camDist = 3.6;
+
+      // Pointer drag interaction
+      let isDragging = false;
+      let lastPointerX = 0;
+      let lastPointerY = 0;
+
+      function onPointerDown(e) {
+        isDragging = true;
+        lastPointerX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+        lastPointerY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      }
+
+      function onPointerMove(e) {
+        if (!isDragging) return;
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+        const dx = clientX - lastPointerX;
+        const dy = clientY - lastPointerY;
+        lastPointerX = clientX;
+        lastPointerY = clientY;
+
+        yaw += dx * 0.01;
+        pitch = Math.max(0.2, Math.min(1.15, pitch + dy * 0.008));
+
+        if (!animId && isVisible) {
+          renderFrame();
+        }
+      }
+
+      function onPointerUp() {
+        isDragging = false;
+      }
+
+      viewport.addEventListener('mousedown', onPointerDown);
+      window.addEventListener('mousemove', onPointerMove);
+      window.addEventListener('mouseup', onPointerUp);
+
+      viewport.addEventListener('touchstart', onPointerDown, { passive: true });
+      window.addEventListener('touchmove', onPointerMove, { passive: true });
+      window.addEventListener('touchend', onPointerUp, { passive: true });
+
+      // Spin Toggle Button
+      if (spinToggle) {
+        spinToggle.addEventListener('click', () => {
+          isSpinning = !isSpinning;
+          spinToggle.innerHTML = isSpinning ? '<span>[ PAUSE SPIN ]</span>' : '<span>[ RESUME SPIN ]</span>';
+          if (isSpinning && isVisible && !animId) {
+            animId = requestAnimationFrame(loop);
+          }
+        });
+      }
+
+      // Responsive Retina Canvas Sizing
+      let dpr = window.devicePixelRatio || 1;
+      let width = 0;
+      let height = 0;
+
+      function resizeCanvas() {
+        const rect = viewport.getBoundingClientRect();
+        width = rect.width || viewport.clientWidth || 380;
+        height = rect.height || viewport.clientHeight || 410;
+        dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        renderFrame();
+      }
+
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+        if (isVisible) renderFrame();
+      });
+
+      // 3D Perspective Projection Function
+      function projectPoint(x, y, z, cx, cy, scale) {
+        // Rotate around Y axis (yaw)
+        const cosY = Math.cos(yaw);
+        const sinY = Math.sin(yaw);
+        const rx = x * cosY + z * sinY;
+        const rz = -x * sinY + z * cosY;
+
+        // Rotate around X axis (pitch tilt)
+        const cosP = Math.cos(pitch);
+        const sinP = Math.sin(pitch);
+        const ry = y * cosP - rz * sinP;
+        const rz2 = y * sinP + rz * cosP;
+
+        // Perspective division
+        const persp = camDist / (camDist + rz2);
+        const sx = cx + rx * scale * persp;
+        const sy = cy - ry * scale * persp + (scale * 0.12);
+
+        return { sx, sy, depth: rz2, persp, yVal: y };
+      }
+
+      function renderFrame() {
+        if (!width || !height) {
+          resizeCanvas();
+          if (!width) return;
+        }
+
+        ctx.clearRect(0, 0, width, height);
+
+        const cx = width / 2;
+        const cy = height * 0.48;
+        const scale = Math.min(width, height) * 0.46;
+
+        // Telemetry readout update
+        if (rotDisplay) {
+          const deg = Math.round(((yaw % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) * (180 / Math.PI));
+          rotDisplay.textContent = `ROT: ${deg}° // ELEV: 560M-750M`;
+        }
+
+        // Project all mesh vertices
+        const projMesh = [];
+        for (let i = 0; i < GRID_RES; i++) {
+          const row = [];
+          for (let j = 0; j < GRID_RES; j++) {
+            const v = mesh[i][j];
+            row.push(projectPoint(v.x, v.y, v.z, cx, cy, scale));
+          }
+          projMesh.push(row);
+        }
+
+        // 1. Draw Latitudinal Lines (East-West Contours)
+        for (let i = 0; i < GRID_RES; i++) {
+          for (let j = 0; j < GRID_RES - 1; j++) {
+            const p1 = projMesh[i][j];
+            const p2 = projMesh[i][j + 1];
+            
+            const avgY = (p1.yVal + p2.yVal) * 0.5;
+            const avgDepth = (p1.depth + p2.depth) * 0.5;
+            const depthFactor = Math.max(0.15, Math.min(1.0, 1.25 - (avgDepth + 1.2) * 0.35));
+
+            ctx.beginPath();
+            ctx.moveTo(p1.sx, p1.sy);
+            ctx.lineTo(p2.sx, p2.sy);
+
+            if (avgY > 0.32) {
+              // High mountain ridge (Katraj / Sinhagad) - radiant neon cyan
+              ctx.strokeStyle = `rgba(0, 229, 255, ${(depthFactor * 0.9).toFixed(2)})`;
+              ctx.lineWidth = 1.35;
+            } else if (avgY > 0.16) {
+              // Mountain slopes - electric cyan
+              ctx.strokeStyle = `rgba(0, 200, 240, ${(depthFactor * 0.65).toFixed(2)})`;
+              ctx.lineWidth = 1.1;
+            } else {
+              // Valley basin floor - matrix emerald
+              ctx.strokeStyle = `rgba(0, 245, 160, ${(depthFactor * 0.45).toFixed(2)})`;
+              ctx.lineWidth = 0.95;
+            }
+            ctx.stroke();
+          }
+        }
+
+        // 2. Draw Longitudinal Lines (North-South Contours)
+        for (let j = 0; j < GRID_RES; j++) {
+          for (let i = 0; i < GRID_RES - 1; i++) {
+            const p1 = projMesh[i][j];
+            const p2 = projMesh[i + 1][j];
+            
+            const avgY = (p1.yVal + p2.yVal) * 0.5;
+            const avgDepth = (p1.depth + p2.depth) * 0.5;
+            const depthFactor = Math.max(0.12, Math.min(1.0, 1.25 - (avgDepth + 1.2) * 0.35));
+
+            ctx.beginPath();
+            ctx.moveTo(p1.sx, p1.sy);
+            ctx.lineTo(p2.sx, p2.sy);
+
+            if (avgY > 0.32) {
+              ctx.strokeStyle = `rgba(0, 229, 255, ${(depthFactor * 0.75).toFixed(2)})`;
+              ctx.lineWidth = 1.2;
+            } else if (avgY > 0.16) {
+              ctx.strokeStyle = `rgba(0, 200, 240, ${(depthFactor * 0.5).toFixed(2)})`;
+              ctx.lineWidth = 1.0;
+            } else {
+              ctx.strokeStyle = `rgba(0, 245, 160, ${(depthFactor * 0.35).toFixed(2)})`;
+              ctx.lineWidth = 0.85;
+            }
+            ctx.stroke();
+          }
+        }
+
+        // 3. Render Landmark Telemetry Reticles
+        const summitP = projectPoint(landmarks.summit.x, landmarks.summit.y, landmarks.summit.z, cx, cy, scale);
+        const basinP = projectPoint(landmarks.basin.x, landmarks.basin.y, landmarks.basin.z, cx, cy, scale);
+
+        // Summit Altitude Beacon Pole
+        ctx.beginPath();
+        ctx.moveTo(summitP.sx, summitP.sy);
+        ctx.lineTo(summitP.sx, summitP.sy - 30);
+        ctx.strokeStyle = 'rgba(0, 229, 255, 0.85)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([2, 2]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Pulsing summit beacon
+        const timeNow = performance.now() * 0.003;
+        const pulseR = 4.5 + Math.sin(timeNow) * 2;
+        ctx.beginPath();
+        ctx.arc(summitP.sx, summitP.sy - 30, pulseR, 0, Math.PI * 2);
+        ctx.strokeStyle = '#00E5FF';
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(summitP.sx, summitP.sy - 30, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fill();
+
+        // Pune Basin Center Crosshair
+        ctx.beginPath();
+        ctx.arc(basinP.sx, basinP.sy, 4, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0, 245, 160, 0.9)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(basinP.sx, basinP.sy, 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#00F5A0';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(basinP.sx - 8, basinP.sy);
+        ctx.lineTo(basinP.sx + 8, basinP.sy);
+        ctx.moveTo(basinP.sx, basinP.sy - 8);
+        ctx.lineTo(basinP.sx, basinP.sy + 8);
+        ctx.strokeStyle = 'rgba(0, 245, 160, 0.55)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      function loop() {
+        if (!isVisible) {
+          animId = null;
+          return;
+        }
+
+        if (isSpinning && !isDragging) {
+          yaw += 0.0065; // continuous smooth spin
+        }
+
+        renderFrame();
+        animId = requestAnimationFrame(loop);
+      }
+
+      // IntersectionObserver for 0% background CPU usage
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          isVisible = entry.isIntersecting;
+          if (isVisible) {
+            resizeCanvas();
+            if (!animId) animId = requestAnimationFrame(loop);
+          } else {
+            if (animId) {
+              cancelAnimationFrame(animId);
+              animId = null;
+            }
+          }
+        });
+      }, { threshold: 0.1 });
+
+      observer.observe(viewport);
+
+      // Initial layout setup & immediate start
+      resizeCanvas();
+      renderFrame();
+      if (isSpinning) {
+        animId = requestAnimationFrame(loop);
+      }
+    })();
   </script>
 </body>
 </html>
