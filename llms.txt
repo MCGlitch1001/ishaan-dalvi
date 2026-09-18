@@ -1,0 +1,16 @@
+# Ishaan Dalvi
+
+> 14-year-old systems builder and AI developer in Pune, Maharashtra, India. Engineering autonomous AI agents, sub-30ms edge infrastructure, and IoT microcontrollers on a ₹0 recurring cloud budget.
+
+## Core Projects
+- [Smart IoT Ant Habitat](https://github.com/ishaandalvi): Microcontroller (ESP32) environment tracking microclimates and regulating automated hydration for ant colonies.
+- [India Road Tax Engine](https://github.com/ishaandalvi): Zero-lag client-side tax computation engine tested with security audits.
+- [Autonomous Media Agent](https://github.com/ishaandalvi): Headless browser automation that formats, schedules, and dispatches media pipelines hands-free.
+- [SkillClaw Fast Proxy](https://github.com/ishaandalvi): Cloudflare Workers edge network proxy delivering sub-28ms responses worldwide.
+- [Heavy Video Processing Engine](https://github.com/ishaandalvi): Distributed FFmpeg worker queue with Redis BullMQ and cloud object storage.
+- [Cyber Portfolio](https://ishaan-dalvi.pages.dev/): Handcrafted pure HTML/CSS/JS with zero runtime bloat and 100% Lighthouse compliance.
+
+## Links & Social
+- [Portfolio Home](https://ishaan-dalvi.pages.dev/): Official digital workspace and systems dashboard.
+- [GitHub Profile](https://github.com/ishaandalvi): Source code repositories, open-source tools, and projects.
+- [X Profile](https://x.com/ishaandalvi): Real-time development logs and engineering updates.
