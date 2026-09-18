@@ -1173,177 +1173,130 @@
     }
 
     /* -------------------------------------------------------------
-       COMPANIES & CLIENTS WORK EXPERIENCE SECTION
+       COMPANIES & CLIENTS WORK EXPERIENCE SECTION (CAROUSEL)
        ------------------------------------------------------------- */
     #experience {
-      padding: clamp(3.5rem, 6vw, 5rem) 0;
+      padding: clamp(3.2rem, 5vw, 4.5rem) 0;
       border-top: 1px solid var(--border-subtle);
       border-bottom: 1px solid var(--border-subtle);
       background: rgba(13, 19, 27, 0.4);
-    }
-    .experience-header {
-      margin-bottom: 32px;
-    }
-    .companies-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-    }
-    .company-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: 22px 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 175px;
-      text-decoration: none;
-      color: inherit;
-      transition: all var(--transition-fast);
-      position: relative;
       overflow: hidden;
     }
-    .company-card:focus-visible {
+    .experience-header {
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .companies-carousel-viewport {
+      width: 100vw;
+      position: relative;
+      left: 50%;
+      right: 50%;
+      margin-left: -50vw;
+      margin-right: -50vw;
+      overflow: hidden;
+      padding: 16px 0;
+      mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+    }
+    @keyframes carouselSpin {
+      0% {
+        transform: translate3d(0, 0, 0);
+      }
+      100% {
+        transform: translate3d(-50%, 0, 0);
+      }
+    }
+    .companies-carousel-track {
+      display: flex;
+      align-items: center;
+      gap: clamp(40px, 5vw, 68px);
+      width: max-content;
+      animation: carouselSpin 32s linear infinite;
+      will-change: transform;
+    }
+    .companies-carousel-viewport:hover .companies-carousel-track,
+    .companies-carousel-viewport:focus-within .companies-carousel-track {
+      animation-play-state: paused;
+    }
+    .carousel-brand-item {
+      display: inline-flex;
+      align-items: center;
+      gap: clamp(14px, 2vw, 22px);
+      text-decoration: none;
+      color: inherit;
+      white-space: nowrap;
+      transition: transform var(--transition-fast), filter var(--transition-fast);
+      cursor: pointer;
+    }
+    .carousel-brand-item:hover {
+      transform: scale(1.04);
+    }
+    .carousel-brand-item:focus-visible {
       outline: 2px solid var(--cyan);
-      outline-offset: 2px;
+      outline-offset: 6px;
+      border-radius: var(--radius-sm);
     }
-    .company-card::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      opacity: 0;
-      transition: opacity var(--transition-fast);
-    }
-    .company-card:hover::after {
-      opacity: 1;
-    }
-
-    /* Brand-Specific Themes */
-    .brand-dalvi::after {
-      background: linear-gradient(90deg, transparent, #38BDF8, transparent);
-    }
-    .brand-dalvi:hover {
-      border-color: rgba(56, 189, 248, 0.45);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 22px rgba(14, 165, 233, 0.25);
-      transform: translateY(-3px);
-    }
-    .dalvi-color {
-      color: #38BDF8;
-      text-shadow: 0 0 24px rgba(56, 189, 248, 0.35);
-    }
-
-    .brand-dirtshack::after {
-      background: linear-gradient(90deg, transparent, #BFFF4D, transparent);
-    }
-    .brand-dirtshack:hover {
-      border-color: rgba(191, 255, 77, 0.45);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 22px rgba(191, 255, 77, 0.25);
-      transform: translateY(-3px);
-    }
-    .dirtshack-color {
-      color: #BFFF4D;
-      text-shadow: 0 0 24px rgba(191, 255, 77, 0.35);
-    }
-
-    .brand-youralai::after {
-      background: linear-gradient(90deg, transparent, #FFDE00, transparent);
-    }
-    .brand-youralai:hover {
-      border-color: rgba(255, 222, 0, 0.45);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 22px rgba(255, 222, 0, 0.25);
-      transform: translateY(-3px);
-    }
-    .youralai-color {
-      color: #FFDE00;
-      text-shadow: 0 0 24px rgba(255, 222, 0, 0.35);
-    }
-
-    .brand-forge::after {
-      background: linear-gradient(90deg, transparent, #FF6B00, transparent);
-    }
-    .brand-forge:hover {
-      border-color: rgba(255, 107, 0, 0.45);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 22px rgba(255, 107, 0, 0.25);
-      transform: translateY(-3px);
-    }
-    .forge-color {
-      color: #FF6B00;
-      text-shadow: 0 0 24px rgba(255, 107, 0, 0.35);
-    }
-
-    .company-card-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    .company-badge-tag {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      color: var(--cyan);
-      font-weight: 600;
-      letter-spacing: 0.05em;
-    }
-    .company-link-arrow {
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      transition: color var(--transition-fast), transform var(--transition-fast);
-    }
-    .company-card:hover .company-link-arrow {
-      color: var(--text-primary);
-      transform: translate(2px, -2px);
-    }
-
-    /* Horizontal Brand Row: Logo + Big Name */
-    .company-brand-row {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin: 10px 0 12px;
-    }
-    .company-brand-logo {
-      width: 44px;
-      height: 44px;
+    .carousel-brand-logo {
       object-fit: contain;
       flex-shrink: 0;
-      border-radius: 8px;
       transition: transform var(--transition-fast);
     }
-    .dirtshack-brand-logo {
-      width: auto;
-      height: 40px;
-      max-width: 46px;
+    .dalvi-logo {
+      width: clamp(44px, 5vw, 58px);
+      height: clamp(44px, 5vw, 58px);
+      border-radius: 12px;
+      filter: drop-shadow(0 0 16px rgba(14, 165, 233, 0.45));
     }
-    .company-card:hover .company-brand-logo {
-      transform: scale(1.08);
+    .dirtshack-logo {
+      height: clamp(42px, 5vw, 54px);
+      width: auto;
+      filter: drop-shadow(0 0 20px rgba(191, 255, 77, 0.35));
+    }
+    .youralai-logo {
+      height: clamp(44px, 5vw, 58px);
+      width: auto;
+      filter: drop-shadow(0 0 16px rgba(255, 222, 0, 0.35));
     }
     .forge-logo-icon {
+      width: clamp(44px, 5vw, 56px);
+      height: clamp(44px, 5vw, 56px);
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 107, 0, 0.08);
-      border: 1px solid rgba(255, 107, 0, 0.35);
-      border-radius: 8px;
-      width: 44px;
-      height: 44px;
+      background: rgba(255, 107, 0, 0.1);
+      border: 1px solid rgba(255, 107, 0, 0.4);
+      border-radius: 14px;
+      filter: drop-shadow(0 0 16px rgba(255, 107, 0, 0.35));
     }
-    .company-brand-name {
+    .carousel-brand-name {
       font-family: var(--font-heading);
-      font-size: 1.32rem;
+      font-size: clamp(2.2rem, 4.5vw, 3.4rem);
       font-weight: 800;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
+      letter-spacing: -0.025em;
+      line-height: 1;
     }
-    .company-subtext {
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-      font-family: var(--font-body);
-      line-height: 1.4;
+    .dalvi-color {
+      color: #38BDF8;
+      text-shadow: 0 0 32px rgba(56, 189, 248, 0.45);
+    }
+    .dirtshack-color {
+      color: #BFFF4D;
+      text-shadow: 0 0 32px rgba(191, 255, 77, 0.45);
+    }
+    .youralai-color {
+      color: #FFDE00;
+      text-shadow: 0 0 32px rgba(255, 222, 0, 0.45);
+    }
+    .forge-color {
+      color: #FF6B00;
+      text-shadow: 0 0 32px rgba(255, 107, 0, 0.45);
+    }
+    .carousel-separator {
+      color: rgba(0, 229, 255, 0.35);
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
     }
 
     /* -------------------------------------------------------------
@@ -1898,10 +1851,6 @@
         grid-template-columns: 1fr;
         gap: 40px;
       }
-      .companies-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-      }
       .about-grid {
         grid-template-columns: 1fr;
         gap: 48px;
@@ -1920,9 +1869,6 @@
     }
 
     @media (max-width: 768px) {
-      .companies-grid {
-        grid-template-columns: 1fr;
-      }
       .nav-links {
         display: none;
         position: absolute;
@@ -2145,65 +2091,125 @@
         <div class="section-header experience-header">
           <div class="section-badge">// 01. TRACK_RECORD</div>
           <h2>Companies I've Worked With</h2>
-          <p class="section-desc">Building autonomous agents, edge infrastructure, and systems for real-world companies.</p>
         </div>
+      </div>
 
-        <div class="companies-grid">
-          <!-- Company 1: Dalvi Consultancy -->
-          <a href="https://consult.dalvigroup.co.in" target="_blank" rel="noopener noreferrer" class="company-card brand-dalvi" aria-label="Dalvi Consultancy - Software Development Agency">
-            <div class="company-card-top">
-              <span class="company-badge-tag">// AGENCY_01</span>
-              <span class="company-link-arrow">↗</span>
-            </div>
-            <div class="company-brand-row">
-              <img src="assets/logos/dalvi-consultancy.svg" alt="Dalvi Consultancy Logo" class="company-brand-logo" width="44" height="44" loading="lazy" decoding="async" />
-              <div class="company-brand-name dalvi-color">Dalvi Consultancy</div>
-            </div>
-            <div class="company-subtext">AI workflows, web apps &amp; scalable systems.</div>
+      <div class="companies-carousel-viewport" role="region" aria-label="Partner and client companies carousel">
+        <div class="companies-carousel-track">
+          <!-- GROUP 1 (First Half - Primary Interactive Items) -->
+          <!-- 01: Dalvi Consultancy -->
+          <a href="https://consult.dalvigroup.co.in" target="_blank" rel="noopener noreferrer" class="carousel-brand-item" aria-label="Dalvi Consultancy - Software Development Agency">
+            <img src="assets/logos/dalvi-consultancy.svg" alt="Dalvi Consultancy Logo" class="carousel-brand-logo dalvi-logo" width="58" height="58" loading="lazy" decoding="async" />
+            <span class="carousel-brand-name dalvi-color">Dalvi Consultancy</span>
           </a>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
 
-          <!-- Company 2: DirtShack -->
-          <a href="https://dirtshack.in" target="_blank" rel="noopener noreferrer" class="company-card brand-dirtshack" aria-label="DirtShack - India's Home for Dirt Biking">
-            <div class="company-card-top">
-              <span class="company-badge-tag">// SPORTS_02</span>
-              <span class="company-link-arrow">↗</span>
-            </div>
-            <div class="company-brand-row">
-              <img src="assets/logos/dirtshack_emblem.png" alt="DirtShack Logo" class="company-brand-logo dirtshack-brand-logo" width="44" height="44" loading="lazy" decoding="async" />
-              <div class="company-brand-name dirtshack-color">DirtShack</div>
-            </div>
-            <div class="company-subtext">India's dirt biking home: tracks, riding &amp; motocross.</div>
+          <!-- 02: DirtShack -->
+          <a href="https://dirtshack.in" target="_blank" rel="noopener noreferrer" class="carousel-brand-item" aria-label="DirtShack - India's Home for Dirt Biking">
+            <img src="assets/logos/dirtshack.png" alt="DirtShack Logo" class="carousel-brand-logo dirtshack-logo" width="360" height="53" loading="lazy" decoding="async" />
           </a>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
 
-          <!-- Company 3: YourAlai -->
-          <a href="https://youralai.com" target="_blank" rel="noopener noreferrer" class="company-card brand-youralai" aria-label="YourAlai - Automotive AI Platform">
-            <div class="company-card-top">
-              <span class="company-badge-tag">// AUTO_AI_03</span>
-              <span class="company-link-arrow">↗</span>
-            </div>
-            <div class="company-brand-row">
-              <img src="assets/logos/youralai.png" alt="YourAlai Logo" class="company-brand-logo" width="44" height="44" loading="lazy" decoding="async" />
-              <div class="company-brand-name youralai-color">YourAlai</div>
-            </div>
-            <div class="company-subtext">Automotive AI: 6 smart agents for car diagnostics.</div>
+          <!-- 03: YourAlai -->
+          <a href="https://youralai.com" target="_blank" rel="noopener noreferrer" class="carousel-brand-item" aria-label="YourAlai - Automotive AI Platform">
+            <img src="assets/logos/youralai.png" alt="YourAlai Logo" class="carousel-brand-logo youralai-logo" width="52" height="58" loading="lazy" decoding="async" />
+            <span class="carousel-brand-name youralai-color">YourAlai</span>
           </a>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
 
-          <!-- Company 4: Forge Sites -->
-          <div class="company-card brand-forge" style="cursor: default;" aria-label="Forge Sites - Fast Web Architecture">
-            <div class="company-card-top">
-              <span class="company-badge-tag">// EDGE_04</span>
-              <span class="company-link-arrow" style="opacity: 0.5;">⚡</span>
+          <!-- 04: Forge Sites -->
+          <div class="carousel-brand-item" style="cursor: default;" aria-label="Forge Sites - Fast Web Architecture">
+            <div class="carousel-brand-logo forge-logo-icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
             </div>
-            <div class="company-brand-row">
-              <div class="company-brand-logo forge-logo-icon" aria-hidden="true">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                </svg>
-              </div>
-              <div class="company-brand-name forge-color">Forge Sites</div>
-            </div>
-            <div class="company-subtext">Fast web architecture &amp; edge deployments.</div>
+            <span class="carousel-brand-name forge-color">Forge Sites</span>
           </div>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
+
+          <!-- Repeat 1 in First Half for Ultra-Wide Displays -->
+          <a href="https://consult.dalvigroup.co.in" target="_blank" rel="noopener noreferrer" class="carousel-brand-item" aria-label="Dalvi Consultancy - Software Development Agency">
+            <img src="assets/logos/dalvi-consultancy.svg" alt="Dalvi Consultancy Logo" class="carousel-brand-logo dalvi-logo" width="58" height="58" loading="lazy" decoding="async" />
+            <span class="carousel-brand-name dalvi-color">Dalvi Consultancy</span>
+          </a>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
+
+          <a href="https://dirtshack.in" target="_blank" rel="noopener noreferrer" class="carousel-brand-item" aria-label="DirtShack - India's Home for Dirt Biking">
+            <img src="assets/logos/dirtshack.png" alt="DirtShack Logo" class="carousel-brand-logo dirtshack-logo" width="360" height="53" loading="lazy" decoding="async" />
+          </a>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
+
+          <a href="https://youralai.com" target="_blank" rel="noopener noreferrer" class="carousel-brand-item" aria-label="YourAlai - Automotive AI Platform">
+            <img src="assets/logos/youralai.png" alt="YourAlai Logo" class="carousel-brand-logo youralai-logo" width="52" height="58" loading="lazy" decoding="async" />
+            <span class="carousel-brand-name youralai-color">YourAlai</span>
+          </a>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
+
+          <div class="carousel-brand-item" style="cursor: default;" aria-label="Forge Sites - Fast Web Architecture">
+            <div class="carousel-brand-logo forge-logo-icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </div>
+            <span class="carousel-brand-name forge-color">Forge Sites</span>
+          </div>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
+
+          <!-- GROUP 2 (Second Half - Exact Duplicate for Seamless Infinite Spin) -->
+          <a href="https://consult.dalvigroup.co.in" target="_blank" rel="noopener noreferrer" class="carousel-brand-item" aria-hidden="true" tabindex="-1">
+            <img src="assets/logos/dalvi-consultancy.svg" alt="" class="carousel-brand-logo dalvi-logo" width="58" height="58" loading="lazy" decoding="async" />
+            <span class="carousel-brand-name dalvi-color">Dalvi Consultancy</span>
+          </a>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
+
+          <a href="https://dirtshack.in" target="_blank" rel="noopener noreferrer" class="carousel-brand-item" aria-hidden="true" tabindex="-1">
+            <img src="assets/logos/dirtshack.png" alt="" class="carousel-brand-logo dirtshack-logo" width="360" height="53" loading="lazy" decoding="async" />
+          </a>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
+
+          <a href="https://youralai.com" target="_blank" rel="noopener noreferrer" class="carousel-brand-item" aria-hidden="true" tabindex="-1">
+            <img src="assets/logos/youralai.png" alt="" class="carousel-brand-logo youralai-logo" width="52" height="58" loading="lazy" decoding="async" />
+            <span class="carousel-brand-name youralai-color">YourAlai</span>
+          </a>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
+
+          <div class="carousel-brand-item" style="cursor: default;" aria-hidden="true">
+            <div class="carousel-brand-logo forge-logo-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </div>
+            <span class="carousel-brand-name forge-color">Forge Sites</span>
+          </div>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
+
+          <a href="https://consult.dalvigroup.co.in" target="_blank" rel="noopener noreferrer" class="carousel-brand-item" aria-hidden="true" tabindex="-1">
+            <img src="assets/logos/dalvi-consultancy.svg" alt="" class="carousel-brand-logo dalvi-logo" width="58" height="58" loading="lazy" decoding="async" />
+            <span class="carousel-brand-name dalvi-color">Dalvi Consultancy</span>
+          </a>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
+
+          <a href="https://dirtshack.in" target="_blank" rel="noopener noreferrer" class="carousel-brand-item" aria-hidden="true" tabindex="-1">
+            <img src="assets/logos/dirtshack.png" alt="" class="carousel-brand-logo dirtshack-logo" width="360" height="53" loading="lazy" decoding="async" />
+          </a>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
+
+          <a href="https://youralai.com" target="_blank" rel="noopener noreferrer" class="carousel-brand-item" aria-hidden="true" tabindex="-1">
+            <img src="assets/logos/youralai.png" alt="" class="carousel-brand-logo youralai-logo" width="52" height="58" loading="lazy" decoding="async" />
+            <span class="carousel-brand-name youralai-color">YourAlai</span>
+          </a>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
+
+          <div class="carousel-brand-item" style="cursor: default;" aria-hidden="true">
+            <div class="carousel-brand-logo forge-logo-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </div>
+            <span class="carousel-brand-name forge-color">Forge Sites</span>
+          </div>
+          <span class="carousel-separator" aria-hidden="true">✦</span>
         </div>
       </div>
     </section>
