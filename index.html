@@ -1186,28 +1186,23 @@
     }
     .companies-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 16px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
     }
     .company-card {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
-      padding: 22px 18px;
+      padding: 22px 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 185px;
+      min-height: 175px;
       text-decoration: none;
       color: inherit;
       transition: all var(--transition-fast);
       position: relative;
       overflow: hidden;
-    }
-    .company-card:hover {
-      border-color: var(--border-active);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 18px rgba(0, 229, 255, 0.15);
-      transform: translateY(-3px);
     }
     .company-card:focus-visible {
       outline: 2px solid var(--cyan);
@@ -1220,18 +1215,71 @@
       left: 0;
       right: 0;
       height: 2px;
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
       opacity: 0;
       transition: opacity var(--transition-fast);
     }
     .company-card:hover::after {
       opacity: 1;
     }
+
+    /* Brand-Specific Themes */
+    .brand-dalvi::after {
+      background: linear-gradient(90deg, transparent, #38BDF8, transparent);
+    }
+    .brand-dalvi:hover {
+      border-color: rgba(56, 189, 248, 0.45);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 22px rgba(14, 165, 233, 0.25);
+      transform: translateY(-3px);
+    }
+    .dalvi-color {
+      color: #38BDF8;
+      text-shadow: 0 0 24px rgba(56, 189, 248, 0.35);
+    }
+
+    .brand-dirtshack::after {
+      background: linear-gradient(90deg, transparent, #BFFF4D, transparent);
+    }
+    .brand-dirtshack:hover {
+      border-color: rgba(191, 255, 77, 0.45);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 22px rgba(191, 255, 77, 0.25);
+      transform: translateY(-3px);
+    }
+    .dirtshack-color {
+      color: #BFFF4D;
+      text-shadow: 0 0 24px rgba(191, 255, 77, 0.35);
+    }
+
+    .brand-youralai::after {
+      background: linear-gradient(90deg, transparent, #FFDE00, transparent);
+    }
+    .brand-youralai:hover {
+      border-color: rgba(255, 222, 0, 0.45);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 22px rgba(255, 222, 0, 0.25);
+      transform: translateY(-3px);
+    }
+    .youralai-color {
+      color: #FFDE00;
+      text-shadow: 0 0 24px rgba(255, 222, 0, 0.35);
+    }
+
+    .brand-forge::after {
+      background: linear-gradient(90deg, transparent, #FF6B00, transparent);
+    }
+    .brand-forge:hover {
+      border-color: rgba(255, 107, 0, 0.45);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 22px rgba(255, 107, 0, 0.25);
+      transform: translateY(-3px);
+    }
+    .forge-color {
+      color: #FF6B00;
+      text-shadow: 0 0 24px rgba(255, 107, 0, 0.35);
+    }
+
     .company-card-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
     .company-badge-tag {
       font-family: var(--font-mono);
@@ -1242,61 +1290,54 @@
     }
     .company-link-arrow {
       font-family: var(--font-mono);
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
       transition: color var(--transition-fast), transform var(--transition-fast);
     }
     .company-card:hover .company-link-arrow {
-      color: var(--cyan);
+      color: var(--text-primary);
       transform: translate(2px, -2px);
     }
-    .company-logo-slot {
+
+    /* Horizontal Brand Row: Logo + Big Name */
+    .company-brand-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 10px 0 12px;
+    }
+    .company-brand-logo {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      flex-shrink: 0;
+      border-radius: 8px;
+      transition: transform var(--transition-fast);
+    }
+    .dirtshack-brand-logo {
+      width: auto;
+      height: 40px;
+      max-width: 46px;
+    }
+    .company-card:hover .company-brand-logo {
+      transform: scale(1.08);
+    }
+    .forge-logo-icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 52px;
-      margin-bottom: 14px;
+      background: rgba(255, 107, 0, 0.08);
+      border: 1px solid rgba(255, 107, 0, 0.35);
+      border-radius: 8px;
+      width: 44px;
+      height: 44px;
     }
-    .company-logo-img {
-      max-height: 42px;
-      max-width: 135px;
-      width: auto;
-      height: auto;
-      object-fit: contain;
-      transition: transform var(--transition-fast);
-    }
-    .company-logo-img.dirtshack-logo {
-      max-height: 30px;
-      max-width: 155px;
-    }
-    .company-logo-img.youralai-logo {
-      max-height: 44px;
-      max-width: 44px;
-    }
-    .company-card:hover .company-logo-img {
-      transform: scale(1.05);
-    }
-    .company-code-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 8px 12px;
-      border: 1px dashed rgba(0, 229, 255, 0.35);
-      border-radius: var(--radius-sm);
-      background: rgba(0, 229, 255, 0.03);
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      color: var(--cyan);
-    }
-    .company-name {
+    .company-brand-name {
       font-family: var(--font-heading);
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 4px;
-      letter-spacing: -0.01em;
+      font-size: 1.32rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
     }
     .company-subtext {
       font-size: 0.78rem;
@@ -1852,11 +1893,6 @@
     /* -------------------------------------------------------------
        11. RESPONSIVE BREAKPOINTS
        ------------------------------------------------------------- */
-    @media (max-width: 1100px) {
-      .companies-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
     @media (max-width: 1024px) {
       .hero-grid {
         grid-template-columns: 1fr;
@@ -1864,6 +1900,7 @@
       }
       .companies-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
       }
       .about-grid {
         grid-template-columns: 1fr;
@@ -2113,80 +2150,59 @@
 
         <div class="companies-grid">
           <!-- Company 1: Dalvi Consultancy -->
-          <a href="https://consult.dalvigroup.co.in" target="_blank" rel="noopener noreferrer" class="company-card" aria-label="Dalvi Consultancy - Software Development Agency">
+          <a href="https://consult.dalvigroup.co.in" target="_blank" rel="noopener noreferrer" class="company-card brand-dalvi" aria-label="Dalvi Consultancy - Software Development Agency">
             <div class="company-card-top">
               <span class="company-badge-tag">// AGENCY_01</span>
               <span class="company-link-arrow">↗</span>
             </div>
-            <div class="company-logo-slot">
-              <img src="assets/logos/dalvi-consultancy.svg" alt="Dalvi Consultancy Logo" class="company-logo-img" width="120" height="36" loading="lazy" decoding="async" />
+            <div class="company-brand-row">
+              <img src="assets/logos/dalvi-consultancy.svg" alt="Dalvi Consultancy Logo" class="company-brand-logo" width="44" height="44" loading="lazy" decoding="async" />
+              <div class="company-brand-name dalvi-color">Dalvi Consultancy</div>
             </div>
-            <div class="company-details">
-              <div class="company-name">Dalvi Consultancy</div>
-              <div class="company-subtext">Software agency: AI workflows, web apps &amp; systems.</div>
-            </div>
+            <div class="company-subtext">AI workflows, web apps &amp; scalable systems.</div>
           </a>
 
-          <!-- Company 2: RTO Calculator -->
-          <a href="https://rtocalc.dalvigroup.co.in" target="_blank" rel="noopener noreferrer" class="company-card" aria-label="RTO Calculator - Maharashtra Vehicle Tax Engine">
+          <!-- Company 2: DirtShack -->
+          <a href="https://dirtshack.in" target="_blank" rel="noopener noreferrer" class="company-card brand-dirtshack" aria-label="DirtShack - India's Home for Dirt Biking">
             <div class="company-card-top">
-              <span class="company-badge-tag">// ENGINE_02</span>
+              <span class="company-badge-tag">// SPORTS_02</span>
               <span class="company-link-arrow">↗</span>
             </div>
-            <div class="company-logo-slot">
-              <img src="assets/logos/rtocalc.svg" alt="RTO Calculator Logo" class="company-logo-img" width="120" height="36" loading="lazy" decoding="async" />
+            <div class="company-brand-row">
+              <img src="assets/logos/dirtshack_emblem.png" alt="DirtShack Logo" class="company-brand-logo dirtshack-brand-logo" width="44" height="44" loading="lazy" decoding="async" />
+              <div class="company-brand-name dirtshack-color">DirtShack</div>
             </div>
-            <div class="company-details">
-              <div class="company-name">RTO Calculator</div>
-              <div class="company-subtext">Maharashtra vehicle tax &amp; registration calculator.</div>
-            </div>
+            <div class="company-subtext">India's dirt biking home: tracks, riding &amp; motocross.</div>
           </a>
 
-          <!-- Company 3: DirtShack -->
-          <a href="https://dirtshack.in" target="_blank" rel="noopener noreferrer" class="company-card" aria-label="DirtShack - India's Home for Dirt Biking">
+          <!-- Company 3: YourAlai -->
+          <a href="https://youralai.com" target="_blank" rel="noopener noreferrer" class="company-card brand-youralai" aria-label="YourAlai - Automotive AI Platform">
             <div class="company-card-top">
-              <span class="company-badge-tag">// SPORTS_03</span>
+              <span class="company-badge-tag">// AUTO_AI_03</span>
               <span class="company-link-arrow">↗</span>
             </div>
-            <div class="company-logo-slot">
-              <img src="assets/logos/dirtshack.png" alt="DirtShack Logo" class="company-logo-img dirtshack-logo" width="155" height="30" loading="lazy" decoding="async" />
+            <div class="company-brand-row">
+              <img src="assets/logos/youralai.png" alt="YourAlai Logo" class="company-brand-logo" width="44" height="44" loading="lazy" decoding="async" />
+              <div class="company-brand-name youralai-color">YourAlai</div>
             </div>
-            <div class="company-details">
-              <div class="company-name">DirtShack</div>
-              <div class="company-subtext">India's dirt biking home: tracks, riding &amp; motocross.</div>
-            </div>
+            <div class="company-subtext">Automotive AI: 6 smart agents for car diagnostics.</div>
           </a>
 
-          <!-- Company 4: YourAlai -->
-          <a href="https://youralai.com" target="_blank" rel="noopener noreferrer" class="company-card" aria-label="YourAlai - Automotive AI Platform">
+          <!-- Company 4: Forge Sites -->
+          <div class="company-card brand-forge" style="cursor: default;" aria-label="Forge Sites - Fast Web Architecture">
             <div class="company-card-top">
-              <span class="company-badge-tag">// AUTO_AI_04</span>
-              <span class="company-link-arrow">↗</span>
+              <span class="company-badge-tag">// EDGE_04</span>
+              <span class="company-link-arrow" style="opacity: 0.5;">⚡</span>
             </div>
-            <div class="company-logo-slot">
-              <img src="assets/logos/youralai.png" alt="YourAlai Logo" class="company-logo-img youralai-logo" width="44" height="44" loading="lazy" decoding="async" />
-            </div>
-            <div class="company-details">
-              <div class="company-name">YourAlai</div>
-              <div class="company-subtext">Automotive AI: 6 smart agents for car diagnostics.</div>
-            </div>
-          </a>
-
-          <!-- Company 5: Forge Sites -->
-          <div class="company-card" style="cursor: default;" aria-label="Forge Sites - Fast Web Architecture">
-            <div class="company-card-top">
-              <span class="company-badge-tag">// EDGE_05</span>
-              <span class="company-link-arrow" style="opacity: 0.4;">⚡</span>
-            </div>
-            <div class="company-logo-slot">
-              <div class="company-code-badge">
-                <span>[ FORGE SITES ]</span>
+            <div class="company-brand-row">
+              <div class="company-brand-logo forge-logo-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
               </div>
+              <div class="company-brand-name forge-color">Forge Sites</div>
             </div>
-            <div class="company-details">
-              <div class="company-name">Forge Sites</div>
-              <div class="company-subtext">Fast web architecture &amp; edge deployments.</div>
-            </div>
+            <div class="company-subtext">Fast web architecture &amp; edge deployments.</div>
           </div>
         </div>
       </div>
