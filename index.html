@@ -1163,6 +1163,8 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .topo-toggle-btn:hover {
       background: rgba(0, 229, 255, 0.2);
@@ -1184,18 +1186,20 @@
     }
     .companies-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
     }
     .company-card {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
-      padding: 24px 20px;
+      padding: 22px 18px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 140px;
+      min-height: 185px;
+      text-decoration: none;
+      color: inherit;
       transition: all var(--transition-fast);
       position: relative;
       overflow: hidden;
@@ -1204,6 +1208,10 @@
       border-color: var(--border-active);
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 18px rgba(0, 229, 255, 0.15);
       transform: translateY(-3px);
+    }
+    .company-card:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
     }
     .company-card::after {
       content: '';
@@ -1219,13 +1227,28 @@
     .company-card:hover::after {
       opacity: 1;
     }
+    .company-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
     .company-badge-tag {
       font-family: var(--font-mono);
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       color: var(--cyan);
       font-weight: 600;
       letter-spacing: 0.05em;
-      margin-bottom: 12px;
+    }
+    .company-link-arrow {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      transition: color var(--transition-fast), transform var(--transition-fast);
+    }
+    .company-card:hover .company-link-arrow {
+      color: var(--cyan);
+      transform: translate(2px, -2px);
     }
     .company-logo-slot {
       display: flex;
@@ -1234,32 +1257,49 @@
       min-height: 52px;
       margin-bottom: 14px;
     }
-    .logo-placeholder {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      padding: 12px;
-      border: 1px dashed rgba(0, 229, 255, 0.25);
-      border-radius: var(--radius-sm);
-      width: 100%;
-      background: rgba(0, 229, 255, 0.02);
+    .company-logo-img {
+      max-height: 42px;
+      max-width: 135px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      transition: transform var(--transition-fast);
     }
-    .logo-symbol {
+    .company-logo-img.dirtshack-logo {
+      max-height: 30px;
+      max-width: 155px;
+    }
+    .company-logo-img.youralai-logo {
+      max-height: 44px;
+      max-width: 44px;
+    }
+    .company-card:hover .company-logo-img {
+      transform: scale(1.05);
+    }
+    .company-code-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      border: 1px dashed rgba(0, 229, 255, 0.35);
+      border-radius: var(--radius-sm);
+      background: rgba(0, 229, 255, 0.03);
       font-family: var(--font-mono);
-      font-size: 0.88rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--cyan);
+    }
+    .company-name {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
       font-weight: 700;
       color: var(--text-primary);
-      letter-spacing: 0.08em;
-    }
-    .logo-meta {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      color: var(--emerald);
+      margin-bottom: 4px;
+      letter-spacing: -0.01em;
     }
     .company-subtext {
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       color: var(--text-secondary);
       font-family: var(--font-body);
       line-height: 1.4;
@@ -1812,6 +1852,11 @@
     /* -------------------------------------------------------------
        11. RESPONSIVE BREAKPOINTS
        ------------------------------------------------------------- */
+    @media (max-width: 1100px) {
+      .companies-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
     @media (max-width: 1024px) {
       .hero-grid {
         grid-template-columns: 1fr;
@@ -1868,6 +1913,20 @@
       }
       .projects-grid {
         grid-template-columns: 1fr;
+      }
+    }
+
+    .hud-id-short { display: none; }
+
+    @media (max-width: 480px) {
+      .hud-id-full { display: none; }
+      .hud-id-short { display: inline; }
+      .topo-top-meta {
+        font-size: 0.65rem;
+      }
+      .topo-toggle-btn {
+        font-size: 0.65rem;
+        padding: 4px 8px;
       }
     }
 
@@ -2053,52 +2112,81 @@
         </div>
 
         <div class="companies-grid">
-          <!-- Company 1 -->
-          <div class="company-card">
-            <div class="company-badge-tag">// CLIENT_01</div>
-            <div class="company-logo-slot">
-              <div class="logo-placeholder">
-                <span class="logo-symbol">[ COMPANY LOGO 01 ]</span>
-                <span class="logo-meta">HORIZONTAL LOGO // READY</span>
-              </div>
+          <!-- Company 1: Dalvi Consultancy -->
+          <a href="https://consult.dalvigroup.co.in" target="_blank" rel="noopener noreferrer" class="company-card" aria-label="Dalvi Consultancy - Software Development Agency">
+            <div class="company-card-top">
+              <span class="company-badge-tag">// AGENCY_01</span>
+              <span class="company-link-arrow">↗</span>
             </div>
-            <div class="company-subtext">AI Workflows &amp; Autonomous Bots</div>
-          </div>
+            <div class="company-logo-slot">
+              <img src="assets/logos/dalvi-consultancy.svg" alt="Dalvi Consultancy Logo" class="company-logo-img" width="120" height="36" loading="lazy" decoding="async" />
+            </div>
+            <div class="company-details">
+              <div class="company-name">Dalvi Consultancy</div>
+              <div class="company-subtext">Software agency: AI workflows, web apps &amp; systems.</div>
+            </div>
+          </a>
 
-          <!-- Company 2 -->
-          <div class="company-card">
-            <div class="company-badge-tag">// CLIENT_02</div>
-            <div class="company-logo-slot">
-              <div class="logo-placeholder">
-                <span class="logo-symbol">[ COMPANY LOGO 02 ]</span>
-                <span class="logo-meta">HORIZONTAL LOGO // READY</span>
-              </div>
+          <!-- Company 2: RTO Calculator -->
+          <a href="https://rtocalc.dalvigroup.co.in" target="_blank" rel="noopener noreferrer" class="company-card" aria-label="RTO Calculator - Maharashtra Vehicle Tax Engine">
+            <div class="company-card-top">
+              <span class="company-badge-tag">// ENGINE_02</span>
+              <span class="company-link-arrow">↗</span>
             </div>
-            <div class="company-subtext">Full-Stack &amp; Edge Systems</div>
-          </div>
+            <div class="company-logo-slot">
+              <img src="assets/logos/rtocalc.svg" alt="RTO Calculator Logo" class="company-logo-img" width="120" height="36" loading="lazy" decoding="async" />
+            </div>
+            <div class="company-details">
+              <div class="company-name">RTO Calculator</div>
+              <div class="company-subtext">Maharashtra vehicle tax &amp; registration calculator.</div>
+            </div>
+          </a>
 
-          <!-- Company 3 -->
-          <div class="company-card">
-            <div class="company-badge-tag">// CLIENT_03</div>
-            <div class="company-logo-slot">
-              <div class="logo-placeholder">
-                <span class="logo-symbol">[ COMPANY LOGO 03 ]</span>
-                <span class="logo-meta">HORIZONTAL LOGO // READY</span>
-              </div>
+          <!-- Company 3: DirtShack -->
+          <a href="https://dirtshack.in" target="_blank" rel="noopener noreferrer" class="company-card" aria-label="DirtShack - India's Home for Dirt Biking">
+            <div class="company-card-top">
+              <span class="company-badge-tag">// SPORTS_03</span>
+              <span class="company-link-arrow">↗</span>
             </div>
-            <div class="company-subtext">Backend Infrastructure &amp; APIs</div>
-          </div>
+            <div class="company-logo-slot">
+              <img src="assets/logos/dirtshack.png" alt="DirtShack Logo" class="company-logo-img dirtshack-logo" width="155" height="30" loading="lazy" decoding="async" />
+            </div>
+            <div class="company-details">
+              <div class="company-name">DirtShack</div>
+              <div class="company-subtext">India's dirt biking home: tracks, riding &amp; motocross.</div>
+            </div>
+          </a>
 
-          <!-- Company 4 -->
-          <div class="company-card">
-            <div class="company-badge-tag">// CLIENT_04</div>
+          <!-- Company 4: YourAlai -->
+          <a href="https://youralai.com" target="_blank" rel="noopener noreferrer" class="company-card" aria-label="YourAlai - Automotive AI Platform">
+            <div class="company-card-top">
+              <span class="company-badge-tag">// AUTO_AI_04</span>
+              <span class="company-link-arrow">↗</span>
+            </div>
             <div class="company-logo-slot">
-              <div class="logo-placeholder">
-                <span class="logo-symbol">[ COMPANY LOGO 04 ]</span>
-                <span class="logo-meta">HORIZONTAL LOGO // READY</span>
+              <img src="assets/logos/youralai.png" alt="YourAlai Logo" class="company-logo-img youralai-logo" width="44" height="44" loading="lazy" decoding="async" />
+            </div>
+            <div class="company-details">
+              <div class="company-name">YourAlai</div>
+              <div class="company-subtext">Automotive AI: 6 smart agents for car diagnostics.</div>
+            </div>
+          </a>
+
+          <!-- Company 5: Forge Sites -->
+          <div class="company-card" style="cursor: default;" aria-label="Forge Sites - Fast Web Architecture">
+            <div class="company-card-top">
+              <span class="company-badge-tag">// EDGE_05</span>
+              <span class="company-link-arrow" style="opacity: 0.4;">⚡</span>
+            </div>
+            <div class="company-logo-slot">
+              <div class="company-code-badge">
+                <span>[ FORGE SITES ]</span>
               </div>
             </div>
-            <div class="company-subtext">Automation &amp; Data Pipelines</div>
+            <div class="company-details">
+              <div class="company-name">Forge Sites</div>
+              <div class="company-subtext">Fast web architecture &amp; edge deployments.</div>
+            </div>
           </div>
         </div>
       </div>
@@ -2122,29 +2210,25 @@
 
               <!-- Top Telemetry Header -->
               <div class="topo-top-meta">
-                <span class="hud-id-tag">● TACTICAL RADAR // MAHARASHTRA &amp; PUNE</span>
-                <span class="code-font" id="topo-coords">18.5204° N, 73.8567° E</span>
+                <span class="hud-id-tag"><span class="hud-id-full">● 2D WIREFRAME // MAHARASHTRA</span><span class="hud-id-short">● 2D WIREFRAME // MH</span></span>
+                <span class="code-font" id="topo-coords" style="white-space: nowrap; font-size: 0.68rem;">18.5204° N, 73.8567° E</span>
               </div>
 
-              <!-- 2D Radar Canvas Viewport -->
+              <!-- 2D Wireframe Canvas Viewport -->
               <div class="topo-canvas-viewport" id="topo-viewport">
-                <canvas id="mh-radar-canvas" width="700" height="750" aria-label="Interactive 2D tactical vector radar map of Maharashtra and Pune with distance scanner"></canvas>
+                <canvas id="mh-radar-canvas" width="700" height="650" aria-label="Interactive 2D wireframe map of Maharashtra with red bleeping beacon at Pune"></canvas>
                 <div class="hud-scanlines"></div>
                 
                 <!-- Overlay HUD markers -->
                 <div class="topo-overlay-badge topo-badge-summit" id="radar-hover-meta" style="display: none;">
                   <span class="topo-pin-pulse"></span>
-                  <span id="radar-cursor-coords">TARGET DIST TO PUNE: 0 KM</span>
-                </div>
-                <div class="topo-overlay-badge topo-badge-pune">
-                  <span class="topo-pin-dot"></span>
-                  <span>SAHYADRI RIDGE // 18.52°N</span>
+                  <span id="radar-cursor-coords">DIST TO PUNE: 0 KM</span>
                 </div>
                 
                 <!-- Interactive Hint -->
                 <div class="topo-hint">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/><line x1="12" y1="12" x2="19" y2="12"/></svg>
-                  <span>INTERACTIVE // HOVER TO MEASURE DISTANCE TO PUNE</span>
+                  <span>HOVER DISTRICTS TO MEASURE DISTANCE // RED BEACON AT PUNE</span>
                 </div>
               </div>
 
@@ -2152,13 +2236,13 @@
               <div class="topo-bottom-meta">
                 <div class="topo-status-col">
                   <span class="hud-status-badge">
-                    <span class="pulse-dot"></span>
-                    RADAR SCANNER LIVE
+                    <span class="pulse-dot" style="background:#ef4444; box-shadow:0 0 8px #ef4444;"></span>
+                    PUNE BEACON TRANSMITTING
                   </span>
-                  <span class="code-font" id="topo-rot-display">AZIMUTH: 0° // RANGE: 300KM</span>
+                  <span class="code-font" id="topo-rot-display">NODE: PUNE HQ // 1.2 HZ</span>
                 </div>
-                <button class="topo-toggle-btn" id="topo-spin-toggle" type="button" aria-label="[ PAUSE RADAR ] Toggle radar scan">
-                  <span>[ PAUSE RADAR ]</span>
+                <button class="topo-toggle-btn" id="topo-spin-toggle" type="button" aria-label="[ PAUSE BEACON ] Toggle Pune beacon pulse">
+                  <span>[ PAUSE BEACON ]</span>
                 </button>
               </div>
             </div>
@@ -3073,9 +3157,9 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
     }
 
 /* -------------------------------------------------------------
-       8. 2D TACTICAL VECTOR RADAR MAP OF MAHARASHTRA & PUNE
+       8. 2D TACTICAL WIREFRAME MAP OF MAHARASHTRA & PUNE BEACON
        ------------------------------------------------------------- */
-    (function initMaharashtraRadarMap() {
+    (function initMaharashtraWireframeMap() {
       const canvas = document.getElementById("mh-radar-canvas");
       const viewport = document.getElementById("topo-viewport");
       const rotDisplay = document.getElementById("topo-rot-display");
@@ -3087,14 +3171,31 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const MH_DATA = {"arcs": [[[1.062, 0.16, -0.5603], [1.0683, 0.16, -0.5209], [1.0412, 0.16, -0.5036], [1.0806, 0.16, -0.5], [1.079, 0.16, -0.4222], [1.0135, 0.16, -0.3987], [1.0166, 0.16, -0.3713], [1.0458, 0.16, -0.37], [1.0593, 0.16, -0.3495], [1.0521, 0.16, -0.3118], [1.0201, 0.16, -0.3122], [1.0457, 0.16, -0.2944], [1.0169, 0.16, -0.2737], [1.0583, 0.16, -0.2806], [1.0928, 0.16, -0.2452], [1.0903, 0.16, -0.2228], [1.1382, 0.16, -0.209], [1.1563, 0.16, -0.1819], [1.1271, 0.16, -0.171], [1.1431, 0.16, -0.1526], [1.1162, 0.16, -0.1318], [1.0773, 0.16, -0.1375], [1.0654, 0.16, -0.1637], [1.0137, 0.16, -0.1184], [0.9814, 0.16, -0.048], [1.0038, 0.16, -0.0001], [0.9742, 0.16, 0.0157], [0.9755, 0.16, 0.032], [0.9363, 0.16, 0.0387], [0.8767, 0.16, -0.0041], [0.888, 0.16, -0.0575], [0.867, 0.16, -0.0611], [0.8666, 0.16, -0.0805], [0.8904, 0.16, -0.0991], [0.8987, 0.16, -0.1635], [0.8462, 0.16, -0.2173], [0.7579, 0.16, -0.1903], [0.6943, 0.16, -0.2224], [0.6758, 0.16, -0.1799], [0.6132, 0.16, -0.2053], [0.6173, 0.16, -0.2326], [0.5864, 0.16, -0.2345], [0.5823, 0.16, -0.2632]], [[0.5823, 0.16, -0.2632], [0.6101, 0.16, -0.26], [0.6128, 0.16, -0.2753], [0.6625, 0.16, -0.2927], [0.6548, 0.16, -0.3326], [0.6017, 0.16, -0.4016], [0.5427, 0.16, -0.417], [0.5258, 0.16, -0.4513], [0.5042, 0.16, -0.4515], [0.487, 0.16, -0.4759], [0.4183, 0.16, -0.4926], [0.4334, 0.16, -0.5609], [0.3853, 0.16, -0.597], [0.3851, 0.16, -0.6488], [0.3599, 0.16, -0.6802], [0.3654, 0.16, -0.7093], [0.4148, 0.16, -0.7024], [0.4693, 0.16, -0.7232], [0.4662, 0.16, -0.7504]], [[0.4662, 0.16, -0.7504], [0.6068, 0.16, -0.7465], [0.6016, 0.16, -0.7759], [0.6876, 0.16, -0.7923], [0.69, 0.16, -0.8127], [0.7629, 0.16, -0.7989], [0.7764, 0.16, -0.7626], [0.8313, 0.16, -0.7789], [0.8826, 0.16, -0.7571], [0.9791, 0.16, -0.784], [1.01, 0.16, -0.7563], [1.0186, 0.16, -0.7164], [1.0504, 0.16, -0.72], [1.095, 0.16, -0.6971], [1.0291, 0.16, -0.6446], [1.0297, 0.16, -0.601], [1.058, 0.16, -0.5922], [1.062, 0.16, -0.5603]], [[0.1414, 0.16, 0.0966], [0.1414, 0.16, 0.0966]], [[0.1393, 0.16, 0.1121], [0.0956, 0.16, 0.1864], [0.0522, 0.16, 0.1774], [0.0416, 0.16, 0.2529], [-0.0077, 0.16, 0.2577], [0.0056, 0.16, 0.2777], [-0.0218, 0.16, 0.3187], [-0.0432, 0.16, 0.294], [-0.0547, 0.16, 0.3125], [-0.0679, 0.16, 0.2965], [-0.0953, 0.16, 0.3287]], [[-0.0953, 0.16, 0.3287], [-0.1318, 0.16, 0.3055], [-0.1624, 0.16, 0.3185], [-0.1886, 0.16, 0.2916], [-0.2138, 0.16, 0.2996], [-0.2104, 0.16, 0.2775], [-0.2553, 0.16, 0.2677], [-0.257, 0.16, 0.2278], [-0.2224, 0.16, 0.2378], [-0.2111, 0.16, 0.2185], [-0.2472, 0.16, 0.1278], [-0.2916, 0.16, 0.1081], [-0.2939, 0.16, 0.135], [-0.3131, 0.16, 0.1371], [-0.3463, 0.16, 0.192], [-0.3751, 0.16, 0.1798], [-0.3818, 0.16, 0.1381], [-0.4157, 0.16, 0.1154], [-0.4076, 0.16, 0.0844]], [[-0.4076, 0.16, 0.0844], [-0.3412, 0.16, 0.0493], [-0.3397, 0.16, 0.0221], [-0.3694, 0.16, 0.0196], [-0.384, 0.16, -0.003], [-0.3886, 0.16, 0.0144], [-0.4468, 0.16, 0.0236], [-0.4526, 0.16, 0.048], [-0.5481, 0.16, -0.0428], [-0.5087, 0.16, -0.0416], [-0.5117, 0.16, -0.0867], [-0.4648, 0.16, -0.085], [-0.4755, 0.16, -0.0665], [-0.4448, 0.16, -0.0539], [-0.4333, 0.16, -0.0812], [-0.4191, 0.16, -0.0483], [-0.3999, 0.16, -0.0475], [-0.4162, 0.16, -0.0737], [-0.3935, 0.16, -0.0717], [-0.4009, 0.16, -0.0933], [-0.3806, 0.16, -0.0879], [-0.3918, 0.16, -0.0734], [-0.3592, 0.16, -0.0794], [-0.3821, 0.16, -0.1061], [-0.3439, 0.16, -0.1368], [-0.3457, 0.16, -0.1554], [-0.3995, 0.16, -0.164], [-0.3959, 0.16, -0.1906], [-0.4429, 0.16, -0.2172], [-0.5571, 0.16, -0.233], [-0.5497, 0.16, -0.2473], [-0.5712, 0.16, -0.2462], [-0.576, 0.16, -0.2694], [-0.6095, 0.16, -0.2678], [-0.6057, 0.16, -0.2883], [-0.5906, 0.16, -0.2853], [-0.5729, 0.16, -0.3837], [-0.5435, 0.16, -0.3984], [-0.515, 0.16, -0.3731], [-0.5212, 0.16, -0.3985], [-0.4969, 0.16, -0.4245], [-0.4605, 0.16, -0.4282], [-0.4652, 0.16, -0.4457], [-0.4228, 0.16, -0.4925], [-0.3941, 0.16, -0.4975], [-0.3672, 0.16, -0.4749], [-0.3082, 0.16, -0.5181], [-0.2746, 0.16, -0.4887], [-0.2522, 0.16, -0.505], [-0.2353, 0.16, -0.4844], [-0.2125, 0.16, -0.5104]], [[-0.2125, 0.16, -0.5104], [-0.2043, 0.16, -0.4858], [-0.2294, 0.16, -0.4759], [-0.2357, 0.16, -0.4163], [-0.2069, 0.16, -0.4112], [-0.1923, 0.16, -0.4325], [-0.161, 0.16, -0.4145], [-0.1883, 0.16, -0.3576], [-0.2248, 0.16, -0.3304], [-0.1875, 0.16, -0.2901], [-0.1125, 0.16, -0.3096], [-0.0256, 0.16, -0.2873], [0.0625, 0.16, -0.3354], [0.093, 0.16, -0.3116], [0.1215, 0.16, -0.328], [0.1319, 0.16, -0.3002], [0.1667, 0.16, -0.2906], [0.1723, 0.16, -0.2538], [0.2743, 0.16, -0.1965], [0.2593, 0.16, -0.1739], [0.2741, 0.16, -0.1711], [0.3185, 0.16, -0.1997], [0.342, 0.16, -0.1779], [0.3634, 0.16, -0.1812], [0.3973, 0.16, -0.2093], [0.3945, 0.16, -0.2338], [0.3053, 0.16, -0.2586], [0.3159, 0.16, -0.2962], [0.3579, 0.16, -0.3111], [0.4152, 0.16, -0.3106], [0.4157, 0.16, -0.2948], [0.4325, 0.16, -0.3061]], [[0.4325, 0.16, -0.3061], [0.428, 0.16, -0.2884], [0.4487, 0.16, -0.2693], [0.4212, 0.16, -0.2363], [0.4331, 0.16, -0.1811], [0.3967, 0.16, -0.166], [0.397, 0.16, -0.1184], [0.3599, 0.16, -0.1184], [0.3289, 0.16, -0.1465], [0.3065, 0.16, -0.1352], [0.3191, 0.16, -0.1255], [0.303, 0.16, -0.0759], [0.2781, 0.16, -0.0673], [0.2803, 0.16, -0.0455], [0.3295, 0.16, -0.0011], [0.3, 0.16, 0.0031], [0.2707, 0.16, 0.0399], [0.2717, 0.16, 0.0738], [0.2326, 0.16, 0.0759], [0.2337, 0.16, 0.0964], [0.2184, 0.16, 0.0987], [0.2293, 0.16, 0.1044], [0.2126, 0.16, 0.1095], [0.2194, 0.16, 0.1475], [0.1657, 0.16, 0.1422], [0.1801, 0.16, 0.1204], [0.1688, 0.16, 0.1039], [0.1393, 0.16, 0.1121]], [[-0.8712, 0.36, 0.2216], [-0.8884, 0.36, 0.1998], [-0.8702, 0.36, 0.1832], [-0.9091, 0.36, 0.1776], [-0.913, 0.36, 0.1494], [-0.9375, 0.36, 0.1437], [-0.9407, 0.36, 0.0901], [-0.9536, 0.36, 0.0984], [-0.9452, 0.36, 0.0887], [-0.9653, 0.36, 0.0719], [-0.9478, 0.36, 0.0356], [-0.9627, 0.36, 0.0331], [-0.9262, 0.36, -0.0409], [-0.8996, 0.36, -0.0549], [-0.9046, 0.36, -0.0999], [-0.8324, 0.36, -0.143], [-0.8367, 0.36, -0.1585]], [[-0.8367, 0.36, -0.1585], [-0.7756, 0.36, -0.1505], [-0.7659, 0.36, -0.1205], [-0.7311, 0.36, -0.1072], [-0.687, 0.36, -0.1087], [-0.7266, 0.36, -0.0605], [-0.6856, 0.36, -0.0065], [-0.6643, 0.36, -0.0029], [-0.6637, 0.36, 0.022], [-0.642, 0.16, 0.0274], [-0.6427, 0.16, 0.0501], [-0.6128, 0.16, 0.0762], [-0.6205, 0.16, 0.0899], [-0.5954, 0.16, 0.1037], [-0.5782, 0.16, 0.0884], [-0.5514, 0.16, 0.1323], [-0.4736, 0.16, 0.1119], [-0.4353, 0.16, 0.0744], [-0.4076, 0.16, 0.0844]], [[-0.0953, 0.16, 0.3287], [-0.1225, 0.16, 0.3426], [-0.1085, 0.16, 0.4217], [-0.1471, 0.16, 0.4042], [-0.1663, 0.16, 0.4259], [-0.1816, 0.16, 0.4065], [-0.235, 0.16, 0.4184], [-0.2474, 0.16, 0.3923], [-0.2712, 0.16, 0.4056], [-0.3181, 0.16, 0.3755], [-0.3341, 0.16, 0.402], [-0.3112, 0.16, 0.436], [-0.3071, 0.16, 0.5202], [-0.3348, 0.16, 0.5069], [-0.3582, 0.16, 0.5251], [-0.3651, 0.16, 0.5132], [-0.4156, 0.16, 0.5218], [-0.436, 0.16, 0.5538], [-0.4712, 0.16, 0.5236], [-0.514, 0.16, 0.5257], [-0.5181, 0.16, 0.5736], [-0.5815, 0.16, 0.5889], [-0.5837, 0.16, 0.6199], [-0.6164, 0.16, 0.6346], [-0.6436, 0.16, 0.6041], [-0.6682, 0.36, 0.6413], [-0.7001, 0.36, 0.6367], [-0.7066, 0.36, 0.6506], [-0.674, 0.36, 0.6787], [-0.6839, 0.36, 0.714], [-0.6594, 0.16, 0.7105], [-0.6336, 0.16, 0.7363], [-0.6402, 0.16, 0.7646], [-0.6743, 0.36, 0.7742], [-0.6455, 0.16, 0.7777], [-0.662, 0.16, 0.8303], [-0.6809, 0.36, 0.8304], [-0.6683, 0.36, 0.8326], [-0.6752, 0.36, 0.8524], [-0.7166, 0.36, 0.851]], [[-0.7166, 0.36, 0.851], [-0.7491, 0.36, 0.8345], [-0.7674, 0.36, 0.8556], [-0.7511, 0.36, 0.7852], [-0.7763, 0.36, 0.7649], [-0.8216, 0.36, 0.7633], [-0.7868, 0.36, 0.7335], [-0.8056, 0.36, 0.7249], [-0.8023, 0.36, 0.6977], [-0.82, 0.36, 0.7009], [-0.8068, 0.36, 0.6615], [-0.8265, 0.36, 0.637], [-0.8201, 0.36, 0.5827], [-0.8562, 0.36, 0.5572], [-0.8219, 0.36, 0.4945], [-0.8619, 0.36, 0.4694], [-0.8752, 0.36, 0.4001], [-0.8465, 0.36, 0.3539], [-0.8627, 0.36, 0.3171], [-0.897, 0.36, 0.3075], [-0.8886, 0.36, 0.2722], [-0.9059, 0.36, 0.2594], [-0.8712, 0.36, 0.2216]], [[-0.6945, 0.36, 0.837], [-0.701, 0.36, 0.8475], [-0.6945, 0.36, 0.837]], [[-0.7166, 0.36, 0.851], [-0.7433, 0.36, 0.8883], [-0.7771, 0.36, 0.8985], [-0.8134, 0.36, 0.8463], [-0.8664, 0.36, 0.8658], [-0.89, 0.36, 0.8152], [-0.9191, 0.36, 0.7966], [-0.9379, 0.36, 0.6875], [-0.9515, 0.36, 0.6856], [-0.9241, 0.36, 0.6734], [-0.9521, 0.36, 0.6793], [-0.9676, 0.36, 0.6405], [-0.966, 0.36, 0.6217], [-0.9439, 0.36, 0.6161], [-0.9648, 0.36, 0.6116], [-0.9765, 0.04, 0.5395], [-0.9622, 0.36, 0.5186], [-0.9792, 0.04, 0.5138], [-0.9681, 0.36, 0.4881], [-1.0024, 0.04, 0.4258], [-0.9867, 0.04, 0.4208], [-1.0084, 0.04, 0.3966], [-1.0191, 0.04, 0.2768], [-1.0746, 0.04, 0.1697], [-1.0661, 0.04, 0.1411], [-1.0858, 0.04, 0.101], [-1.0743, 0.04, 0.08], [-1.1151, 0.04, -0.0335], [-1.1116, 0.04, -0.1429], [-1.1463, 0.04, -0.2503], [-1.1332, 0.04, -0.2797], [-1.1522, 0.04, -0.2778], [-1.1535, 0.04, -0.3143], [-1.1374, 0.04, -0.3215], [-1.1193, 0.04, -0.3016], [-1.1384, 0.04, -0.3531], [-1.0938, 0.04, -0.3938], [-1.0669, 0.04, -0.39], [-1.0437, 0.04, -0.3494], [-1.0076, 0.04, -0.3449], [-0.9856, 0.04, -0.3653]], [[-0.9856, 0.04, -0.3653], [-0.9776, 0.04, -0.3435], [-0.9289, 0.36, -0.3254], [-0.9305, 0.36, -0.2669], [-0.8367, 0.36, -0.1585]], [[-0.9261, 0.36, 0.7792], [-0.9261, 0.36, 0.7792]], [[-1.1313, 0.04, -0.1804], [-1.1313, 0.04, -0.1804]], [[-0.9472, 0.36, 0.6171], [-0.9472, 0.36, 0.6171]], [[0.5823, 0.16, -0.2632], [0.4841, 0.16, -0.2727], [0.4325, 0.16, -0.3061]], [[-0.2125, 0.16, -0.5104], [-0.2193, 0.16, -0.5429], [-0.169, 0.16, -0.6216], [-0.1185, 0.16, -0.5963], [-0.1081, 0.16, -0.6321]], [[-0.1081, 0.16, -0.6321], [-0.0777, 0.16, -0.6652], [-0.0406, 0.16, -0.6638], [-0.0403, 0.16, -0.7036], [0.0046, 0.16, -0.7404], [0.0077, 0.16, -0.777], [0.0374, 0.16, -0.7779], [0.0854, 0.16, -0.8121], [0.1233, 0.16, -0.804], [0.1437, 0.16, -0.8229], [0.1992, 0.16, -0.8254], [0.2354, 0.16, -0.7618], [0.1829, 0.16, -0.7606], [0.2017, 0.16, -0.7156], [0.213, 0.16, -0.7277], [0.229, 0.16, -0.7119], [0.3284, 0.16, -0.7182], [0.452, 0.16, -0.7831], [0.4662, 0.16, -0.7504]], [[-0.9856, 0.04, -0.3653], [-0.9711, 0.36, -0.3884], [-0.9377, 0.36, -0.3881], [-0.9485, 0.36, -0.4396], [-0.9177, 0.36, -0.4816], [-0.9452, 0.36, -0.5103], [-0.9309, 0.36, -0.5292], [-0.8699, 0.36, -0.4877], [-0.8228, 0.36, -0.5026], [-0.8272, 0.36, -0.5245], [-0.7915, 0.36, -0.538], [-0.8035, 0.36, -0.6054], [-0.8284, 0.36, -0.6339], [-0.8929, 0.36, -0.6572], [-0.827, 0.36, -0.6583], [-0.8243, 0.36, -0.685], [-0.7916, 0.36, -0.6934], [-0.7904, 0.36, -0.7227], [-0.7635, 0.36, -0.7275], [-0.7582, 0.36, -0.745], [-0.685, 0.36, -0.7488], [-0.69, 0.36, -0.7688], [-0.8162, 0.36, -0.7489], [-0.8367, 0.36, -0.7851], [-0.8057, 0.36, -0.7969], [-0.8302, 0.36, -0.8406], [-0.7381, 0.36, -0.8769], [-0.6956, 0.36, -0.8719], [-0.6546, 0.16, -0.8985], [-0.6288, 0.16, -0.8643], [-0.6333, 0.16, -0.8129], [-0.6112, 0.16, -0.7958], [-0.5237, 0.16, -0.7863], [-0.4115, 0.16, -0.7188], [-0.1878, 0.16, -0.7145], [-0.1682, 0.16, -0.6338], [-0.1081, 0.16, -0.6321]]], "pune": [-0.8157, 0.28, 0.0839]};
+      let MH_DISTRICTS = null;
+      let isLoadingDistricts = false;
+
+      function loadDistricts(cb) {
+        if (MH_DISTRICTS) { if (cb) cb(); return; }
+        if (isLoadingDistricts) return;
+        isLoadingDistricts = true;
+        fetch('assets/maharashtra_districts.json')
+          .then(r => r.json())
+          .then(d => {
+            MH_DISTRICTS = d;
+            isLoadingDistricts = false;
+            renderFrame();
+            if (cb) cb();
+          })
+          .catch(e => {
+            isLoadingDistricts = false;
+          });
+      }
 
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      let isScanning = !prefersReducedMotion;
+      let isBeaconActive = !prefersReducedMotion;
       let isVisible = false;
       let animId = null;
 
-      let sweepAngle = 0;
       let dpr = window.devicePixelRatio || 1;
       let width = 0;
       let height = 0;
@@ -3103,14 +3204,70 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
       let mouseX = -100;
       let mouseY = -100;
       let isHovering = false;
+      let hoveredDistrict = null;
 
-      // Geographic tactical nodes
+      // Geographic tactical nodes (Major cities)
       const nodes = [
-        { name: "MUMBAI", x: -1.08, z: 0.14, type: "port" },
-        { name: "NASHIK", x: -0.78, z: 0.38, type: "hub" },
-        { name: "NAGPUR", x: 0.85, z: 0.42, type: "hub" },
-        { name: "KOLHAPUR", x: -0.72, z: -0.48, type: "sub" }
+        { name: "MUMBAI", lon: 72.85, lat: 19.04 },
+        { name: "NASHIK", lon: 73.79, lat: 19.99 },
+        { name: "NAGPUR", lon: 79.08, lat: 21.14 },
+        { name: "AURANGABAD", lon: 75.34, lat: 19.87 },
+        { name: "KOLHAPUR", lon: 74.24, lat: 16.70 }
       ];
+
+      // Western Ghats / Sahyadri Mountain Ridge corridor
+      const ridgeCoords = [
+        [73.7, 20.4],
+        [73.5, 19.5],
+        [73.4, 18.8],
+        [73.7, 17.8],
+        [73.9, 16.2]
+      ];
+
+      // Pune Coordinates (HQ)
+      const PUNE_LON = 73.8567;
+      const PUNE_LAT = 18.5204;
+
+      // Geographic Bounding Box for Maharashtra
+      const minLon = 72.6, maxLon = 80.95;
+      const minLat = 15.6, maxLat = 22.1;
+      const meanLat = 18.8 * Math.PI / 180;
+      const lonSpan = (maxLon - minLon) * Math.cos(meanLat);
+      const latSpan = (maxLat - minLat);
+
+      let scale = 1;
+      let ox = 0;
+      let oy = 0;
+
+      function updateProjection() {
+        const padX = Math.max(22, width * 0.05);
+        const padY = Math.max(26, height * 0.06);
+        const availW = width - 2 * padX;
+        const availH = height - 2 * padY;
+
+        scale = Math.min(availW / lonSpan, availH / latSpan);
+        ox = padX + (availW - lonSpan * scale) / 2;
+        oy = padY + (availH - latSpan * scale) / 2;
+      }
+
+      function toScreen(lon, lat) {
+        return {
+          x: ox + (lon - minLon) * Math.cos(meanLat) * scale,
+          y: oy + (maxLat - lat) * scale
+        };
+      }
+
+      function isPointInPoly(pt, ring) {
+        let inside = false;
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+          const xi = ring[i].x, yi = ring[i].y;
+          const xj = ring[j].x, yj = ring[j].y;
+          const intersect = ((yi > pt.y) !== (yj > pt.y)) &&
+              (pt.x < (xj - xi) * (pt.y - yi) / (yj - yi) + xi);
+          if (intersect) inside = !inside;
+        }
+        return inside;
+      }
 
       function resizeCanvas() {
         const rect = viewport.getBoundingClientRect();
@@ -3120,6 +3277,7 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
         canvas.width = Math.round(width * dpr);
         canvas.height = Math.round(height * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        updateProjection();
         renderFrame();
       }
 
@@ -3139,28 +3297,25 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
 
       viewport.addEventListener("mouseleave", () => {
         isHovering = false;
+        hoveredDistrict = null;
         if (hoverMeta) hoverMeta.style.display = "none";
         if (!animId && isVisible) renderFrame();
       });
 
       if (spinToggle) {
         spinToggle.addEventListener("click", () => {
-          isScanning = !isScanning;
-          spinToggle.innerHTML = isScanning ? "<span>[ PAUSE RADAR ]</span>" : "<span>[ RESUME RADAR ]</span>";
-          if (isScanning && isVisible && !animId) {
+          isBeaconActive = !isBeaconActive;
+          spinToggle.innerHTML = isBeaconActive ? "<span>[ PAUSE BEACON ]</span>" : "<span>[ RESUME BEACON ]</span>";
+          spinToggle.setAttribute("aria-label", isBeaconActive ? "[ PAUSE BEACON ] Pause Pune beacon pulse" : "[ RESUME BEACON ] Resume Pune beacon pulse");
+          if (rotDisplay) {
+            rotDisplay.textContent = isBeaconActive ? "NODE: PUNE HQ // 1.2 HZ" : "BEACON PAUSED // STANDBY";
+          }
+          if (isBeaconActive && isVisible && !animId) {
             animId = requestAnimationFrame(loop);
+          } else if (!isBeaconActive) {
+            renderFrame();
           }
         });
-      }
-
-      // 2D Tactical Screen Projection
-      // Center of Maharashtra is around (0, 0)
-      function toScreen(x, z, cx, cy, scale) {
-        // x is East-West (+x is East)
-        // z is North-South (+z is North, so screen Y is -z)
-        const sx = cx + x * scale;
-        const sy = cy - z * scale;
-        return { sx, sy };
       }
 
       function renderFrame() {
@@ -3171,257 +3326,229 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
 
         ctx.clearRect(0, 0, width, height);
 
-        // Center map slightly offset to balance Maharashtra east wing
-        const cx = width * 0.44;
-        const cy = height * 0.52;
-        const scale = Math.min(width * 0.38, height * 0.48);
+        // Calculate Pune coordinates on canvas
+        const pune = toScreen(PUNE_LON, PUNE_LAT);
 
-        // Calculate Pune position on canvas
-        const pune = MH_DATA.pune;
-        const punePos = toScreen(pune[0], pune[2], cx, cy, scale);
-
-        // 1. Draw Tactical Grid Background
+        // 1. Subtle Geographic Coordinate Grid
         ctx.strokeStyle = "rgba(0, 229, 255, 0.035)";
         ctx.lineWidth = 1;
-        const gridStep = 32;
-        ctx.beginPath();
-        for (let x = 0; x < width; x += gridStep) {
-          ctx.moveTo(x, 0);
-          ctx.lineTo(x, height);
-        }
-        for (let y = 0; y < height; y += gridStep) {
-          ctx.moveTo(0, y);
-          ctx.lineTo(width, y);
-        }
-        ctx.stroke();
+        ctx.font = "500 8.5px JetBrains Mono, monospace";
+        ctx.fillStyle = "rgba(0, 229, 255, 0.35)";
 
-        // 2. Draw Radar Range Rings (Centered on Pune)
-        const radarRings = [
-          { r: 50 * (scale / 180), label: "50 KM" },
-          { r: 105 * (scale / 180), label: "100 KM" },
-          { r: 190 * (scale / 180), label: "200 KM" },
-          { r: 280 * (scale / 180), label: "300 KM" }
-        ];
-
-        radarRings.forEach(ring => {
+        // Meridians (Longitude)
+        [74, 76, 78, 80].forEach(lon => {
+          const p1 = toScreen(lon, minLat);
+          const p2 = toScreen(lon, maxLat);
           ctx.beginPath();
-          ctx.arc(punePos.sx, punePos.sy, ring.r, 0, Math.PI * 2);
-          ctx.strokeStyle = "rgba(0, 229, 255, 0.11)";
-          ctx.lineWidth = 1;
-          ctx.setLineDash([3, 4]);
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
           ctx.stroke();
-          ctx.setLineDash([]);
-
-          // Range ring distance tag
-          ctx.font = "500 8px JetBrains Mono, monospace";
-          ctx.fillStyle = "rgba(0, 229, 255, 0.45)";
-          ctx.fillText(ring.label, punePos.sx + 6, punePos.sy - ring.r + 10);
+          ctx.fillText(lon + "°E", p1.x - 10, height - 8);
         });
 
-        // Crosshairs through Pune
-        ctx.beginPath();
-        ctx.moveTo(0, punePos.sy);
-        ctx.lineTo(width, punePos.sy);
-        ctx.moveTo(punePos.sx, 0);
-        ctx.lineTo(punePos.sx, height);
-        ctx.strokeStyle = "rgba(0, 229, 255, 0.08)";
-        ctx.lineWidth = 1;
-        ctx.setLineDash([2, 4]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // 3. Draw Sweeping Radar Beam (Phosphor gradient cone)
-        if (isScanning) {
-          const maxRadarRadius = Math.max(width, height) * 0.75;
-          ctx.save();
+        // Parallels (Latitude)
+        [16, 18, 20, 22].forEach(lat => {
+          const p1 = toScreen(minLon, lat);
+          const p2 = toScreen(maxLon, lat);
           ctx.beginPath();
-          ctx.moveTo(punePos.sx, punePos.sy);
-          ctx.arc(punePos.sx, punePos.sy, maxRadarRadius, sweepAngle - 0.45, sweepAngle);
-          ctx.closePath();
-
-          const sweepGrad = ctx.createRadialGradient(
-            punePos.sx, punePos.sy, 0,
-            punePos.sx, punePos.sy, maxRadarRadius
-          );
-          sweepGrad.addColorStop(0, "rgba(0, 245, 160, 0.28)");
-          sweepGrad.addColorStop(0.5, "rgba(0, 229, 255, 0.08)");
-          sweepGrad.addColorStop(1, "rgba(0, 229, 255, 0)");
-          ctx.fillStyle = sweepGrad;
-          ctx.fill();
-
-          // Leading sharp sweep line
-          const leadX = punePos.sx + Math.cos(sweepAngle) * maxRadarRadius;
-          const leadY = punePos.sy + Math.sin(sweepAngle) * maxRadarRadius;
-          ctx.beginPath();
-          ctx.moveTo(punePos.sx, punePos.sy);
-          ctx.lineTo(leadX, leadY);
-          ctx.strokeStyle = "rgba(0, 255, 200, 0.65)";
-          ctx.lineWidth = 1.4;
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
           ctx.stroke();
-          ctx.restore();
-        }
+          ctx.fillText(lat + "°N", 6, p1.y + 3);
+        });
 
-        // 4. Draw Official Maharashtra Boundaries
-        // A. Subtle landmass fill
+        // 2. Sahyadri Mountain Ridge Corridor (Western Ghats)
         ctx.save();
-        MH_DATA.arcs.forEach(arc => {
-          ctx.beginPath();
-          arc.forEach((v, idx) => {
-            const pt = toScreen(v[0], v[2], cx, cy, scale);
-            if (idx === 0) ctx.moveTo(pt.sx, pt.sy);
-            else ctx.lineTo(pt.sx, pt.sy);
-          });
-          ctx.fillStyle = "rgba(0, 229, 255, 0.035)";
-          ctx.fill();
+        ctx.setLineDash([3, 4]);
+        ctx.strokeStyle = "rgba(129, 140, 248, 0.45)";
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ridgeCoords.forEach((coord, idx) => {
+          const sp = toScreen(coord[0], coord[1]);
+          if (idx === 0) ctx.moveTo(sp.x, sp.y);
+          else ctx.lineTo(sp.x, sp.y);
         });
+        ctx.stroke();
         ctx.restore();
 
-        // B. Vector boundary borders with depth-coding
-        MH_DATA.arcs.forEach(arc => {
-          for (let i = 0; i < arc.length - 1; i++) {
-            const v1 = arc[i];
-            const v2 = arc[i + 1];
-            const p1 = toScreen(v1[0], v1[2], cx, cy, scale);
-            const p2 = toScreen(v2[0], v2[2], cx, cy, scale);
+        // 3. Draw All 35 Maharashtra District Wireframes
+        hoveredDistrict = null;
+        const mousePt = { x: mouseX, y: mouseY };
 
-            const avgElev = (v1[1] + v2[1]) * 0.5;
+        if (MH_DISTRICTS) MH_DISTRICTS.forEach(dist => {
+          const isPune = dist.name.toLowerCase() === "pune";
+          let isDistrictHovered = false;
+
+          // Convert rings to screen coordinates
+          const screenRings = dist.rings.map(ring => {
+            return ring.map(p => toScreen(p[0], p[1]));
+          });
+
+          // Test hover
+          if (isHovering && mouseX > 0 && mouseY > 0) {
+            for (const sRing of screenRings) {
+              if (isPointInPoly(mousePt, sRing)) {
+                isDistrictHovered = true;
+                hoveredDistrict = dist.name;
+                break;
+              }
+            }
+          }
+
+          // Draw each ring of district
+          screenRings.forEach(sRing => {
+            if (sRing.length < 3) return;
 
             ctx.beginPath();
-            ctx.moveTo(p1.sx, p1.sy);
-            ctx.lineTo(p2.sx, p2.sy);
-
-            if (avgElev >= 0.30) {
-              // Sahyadri / Western Ghats mountain ridge - radiant cyan
-              ctx.strokeStyle = "rgba(0, 229, 255, 0.95)";
-              ctx.lineWidth = 2.0;
-            } else if (avgElev < 0.10) {
-              // Konkan Coastline - matrix emerald
-              ctx.strokeStyle = "rgba(0, 245, 160, 0.85)";
-              ctx.lineWidth = 1.8;
-            } else {
-              // Deccan Plateau - electric cyan
-              ctx.strokeStyle = "rgba(56, 189, 248, 0.6)";
-              ctx.lineWidth = 1.3;
+            ctx.moveTo(sRing[0].x, sRing[0].y);
+            for (let i = 1; i < sRing.length; i++) {
+              ctx.lineTo(sRing[i].x, sRing[i].y);
             }
-            ctx.stroke();
-          }
+            ctx.closePath();
+
+            if (isDistrictHovered) {
+              ctx.fillStyle = "rgba(0, 245, 160, 0.15)";
+              ctx.fill();
+              ctx.strokeStyle = "rgba(0, 245, 160, 0.9)";
+              ctx.lineWidth = 1.6;
+              ctx.stroke();
+            } else if (isPune) {
+              ctx.fillStyle = "rgba(0, 245, 160, 0.05)";
+              ctx.fill();
+              ctx.strokeStyle = "rgba(0, 245, 160, 0.4)";
+              ctx.lineWidth = 1.2;
+              ctx.stroke();
+            } else {
+              ctx.fillStyle = "rgba(0, 229, 255, 0.015)";
+              ctx.fill();
+              ctx.strokeStyle = "rgba(0, 229, 255, 0.22)";
+              ctx.lineWidth = 1.0;
+              ctx.stroke();
+            }
+          });
         });
 
-        // 5. Draw Sahyadri / Western Ghats Tactical Mountain Hatch
-        ctx.save();
-        ctx.setLineDash([4, 6]);
-        ctx.strokeStyle = "rgba(129, 140, 248, 0.5)";
-        ctx.lineWidth = 1.2;
-        // Sahyadri ridge corridor points
-        const ridgePts = [
-          [-0.88, 0.22], [-0.92, 0.15], [-0.95, 0.04], [-0.98, -0.15], [-0.92, -0.32]
-        ];
-        ctx.beginPath();
-        ridgePts.forEach((pt, idx) => {
-          const sp = toScreen(pt[0], pt[1], cx, cy, scale);
-          if (idx === 0) ctx.moveTo(sp.sx, sp.sy);
-          else ctx.lineTo(sp.sx, sp.sy);
-        });
-        ctx.stroke();
-        ctx.restore();
-
-        // 6. Secondary City Tactical Nodes
+        // 4. Secondary Tactical City Nodes
         nodes.forEach(node => {
-          const sp = toScreen(node.x, node.z, cx, cy, scale);
+          const sp = toScreen(node.lon, node.lat);
           ctx.beginPath();
-          ctx.arc(sp.sx, sp.sy, 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(0, 229, 255, 0.8)";
+          ctx.arc(sp.x, sp.y, 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(0, 229, 255, 0.75)";
           ctx.fill();
 
           ctx.font = "600 8.5px JetBrains Mono, monospace";
-          ctx.fillStyle = "rgba(148, 163, 184, 0.85)";
-          ctx.fillText(node.name, sp.sx + 5, sp.sy + 3);
+          ctx.fillStyle = "rgba(148, 163, 184, 0.8)";
+          ctx.fillText(node.name, sp.x + 5, sp.y + 3);
         });
 
-        // 7. PUNE Primary Tactical HQ Node
-        const timeNow = performance.now() * 0.0035;
-        const pulseR1 = 6 + Math.sin(timeNow) * 3;
-        const pulseR2 = 12 + Math.sin(timeNow + 1) * 4;
+        // 5. PUNE RED BLEEPING BEACON (Primary HQ)
+        const t = performance.now() * 0.001;
 
-        // Outer pulsing radar ping
+        if (isBeaconActive) {
+          // Sonar expanding bleep waves
+          const cycle = 2.4;
+          [0, 0.8, 1.6].forEach(delay => {
+            const progress = ((t + delay) % cycle) / cycle;
+            const r = 5 + progress * 42;
+            const alpha = (1 - progress) * 0.85;
+
+            ctx.beginPath();
+            ctx.arc(pune.x, pune.y, r, 0, Math.PI * 2);
+            ctx.strokeStyle = "rgba(239, 68, 68, " + alpha.toFixed(3) + ")";
+            ctx.lineWidth = 1.2 + (1 - progress) * 0.6;
+            ctx.stroke();
+          });
+        }
+
+        // Concentric static subtle reference ring
         ctx.beginPath();
-        ctx.arc(punePos.sx, punePos.sy, pulseR2, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(0, 229, 255, 0.25)";
-        ctx.lineWidth = 1.2;
+        ctx.arc(pune.x, pune.y, 14, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.3)";
+        ctx.lineWidth = 1;
         ctx.stroke();
 
+        // Crosshairs in crimson
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.75)";
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(punePos.sx, punePos.sy, pulseR1, 0, Math.PI * 2);
-        ctx.strokeStyle = "#00E5FF";
-        ctx.lineWidth = 1.8;
+        ctx.moveTo(pune.x - 11, pune.y); ctx.lineTo(pune.x - 4, pune.y);
+        ctx.moveTo(pune.x + 4, pune.y);  ctx.lineTo(pune.x + 11, pune.y);
+        ctx.moveTo(pune.x, pune.y - 11); ctx.lineTo(pune.x, pune.y - 4);
+        ctx.moveTo(pune.x, pune.y + 4);  ctx.lineTo(pune.x, pune.y + 11);
         ctx.stroke();
 
-        // White core dot
+        // Pulsing glowing red core halo
+        const haloR = isBeaconActive ? 10 + Math.sin(t * 5) * 2 : 10;
+        const grad = ctx.createRadialGradient(pune.x, pune.y, 1, pune.x, pune.y, haloR);
+        grad.addColorStop(0, "rgba(255, 30, 66, 0.65)");
+        grad.addColorStop(1, "rgba(239, 68, 68, 0)");
+        ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.arc(punePos.sx, punePos.sy, 3, 0, Math.PI * 2);
+        ctx.arc(pune.x, pune.y, haloR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Solid red dot
+        const coreR = isBeaconActive ? 4.5 + Math.sin(t * 5) * 0.8 : 4.5;
+        ctx.beginPath();
+        ctx.arc(pune.x, pune.y, coreR, 0, Math.PI * 2);
+        ctx.fillStyle = "#FF1E42";
+        ctx.fill();
+
+        // Crisp white center pinpoint
+        ctx.beginPath();
+        ctx.arc(pune.x, pune.y, 1.8, 0, Math.PI * 2);
         ctx.fillStyle = "#FFFFFF";
         ctx.fill();
 
-        // Pune Target Reticle Crosshairs
-        ctx.beginPath();
-        ctx.moveTo(punePos.sx - 8, punePos.sy);
-        ctx.lineTo(punePos.sx + 8, punePos.sy);
-        ctx.moveTo(punePos.sx, punePos.sy - 8);
-        ctx.lineTo(punePos.sx, punePos.sy + 8);
-        ctx.strokeStyle = "rgba(0, 245, 160, 0.8)";
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // Floating Tactical HUD Pill for Pune
-        const puneTag = "PUNE [HQ // 18.52°N]";
-        ctx.font = "700 9.5px JetBrains Mono, monospace";
+        // Floating Crimson HUD Tag for Pune
+        const puneTag = "● PUNE [HQ] // 18.52°N, 73.86°E";
+        ctx.font = "700 9px JetBrains Mono, monospace";
         const tagWidth = ctx.measureText(puneTag).width;
-        const tagX = punePos.sx + 12;
-        const tagY = punePos.sy - 8;
+        const tagX = pune.x + 14;
+        const tagY = pune.y - 9;
 
-        ctx.fillStyle = "rgba(8, 12, 16, 0.92)";
-        ctx.strokeStyle = "rgba(0, 229, 255, 0.65)";
+        ctx.fillStyle = "rgba(18, 10, 14, 0.94)";
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.85)";
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.roundRect(tagX - 4, tagY - 9, tagWidth + 8, 16, 3);
+        ctx.roundRect(tagX - 4, tagY - 9, tagWidth + 10, 16, 3);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = "#00E5FF";
-        ctx.fillText(puneTag, tagX, tagY + 3);
+        ctx.fillStyle = "#FF4D6D";
+        ctx.fillText(puneTag, tagX + 1, tagY + 3);
 
-        // 8. Interactive Mouse Distance Reticle
+        // 6. Interactive Mouse Hover Reticle & Distance Measurement
         if (isHovering && mouseX > 0 && mouseY > 0) {
-          // Draw reticle at mouse position
+          // Reticle at cursor
           ctx.beginPath();
-          ctx.arc(mouseX, mouseY, 6, 0, Math.PI * 2);
-          ctx.strokeStyle = "rgba(0, 245, 160, 0.9)";
+          ctx.arc(mouseX, mouseY, 5, 0, Math.PI * 2);
+          ctx.strokeStyle = "#00F5A0";
           ctx.lineWidth = 1.2;
           ctx.stroke();
 
-          // Vector line connecting cursor to Pune
+          // Measurement line connecting cursor to Pune
           ctx.beginPath();
-          ctx.moveTo(punePos.sx, punePos.sy);
+          ctx.moveTo(pune.x, pune.y);
           ctx.lineTo(mouseX, mouseY);
           ctx.strokeStyle = "rgba(0, 245, 160, 0.45)";
           ctx.lineWidth = 1;
-          ctx.setLineDash([2, 2]);
+          ctx.setLineDash([3, 3]);
           ctx.stroke();
           ctx.setLineDash([]);
 
-          // Compute distance in KM
-          const pixelDist = Math.hypot(mouseX - punePos.sx, mouseY - punePos.sy);
-          const kmDist = Math.round(pixelDist * (180 / scale) * 1.1);
+          // Compute geographic distance in KM
+          const curLon = minLon + (mouseX - ox) / (scale * Math.cos(meanLat));
+          const curLat = maxLat - (mouseY - oy) / scale;
+          const dLonKm = (curLon - PUNE_LON) * 105;
+          const dLatKm = (curLat - PUNE_LAT) * 111;
+          const kmDist = Math.max(0, Math.round(Math.hypot(dLonKm, dLatKm)));
 
           if (cursorCoords) {
-            cursorCoords.textContent = `TARGET DIST TO PUNE: ${kmDist} KM`;
+            cursorCoords.textContent = hoveredDistrict 
+              ? hoveredDistrict.toUpperCase() + " // DIST TO PUNE: " + kmDist + " KM"
+              : "TARGET DIST TO PUNE: " + kmDist + " KM";
           }
-        }
-
-        // Telemetry readout
-        if (rotDisplay) {
-          const deg = Math.round((sweepAngle * 180 / Math.PI) % 360);
-          rotDisplay.textContent = `AZIMUTH: ${deg}° // RANGE: 300KM`;
         }
       }
 
@@ -3434,14 +3561,14 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
 
         if (!lastFrameTime || now - lastFrameTime >= 32) {
           lastFrameTime = now;
-          if (isScanning) {
-            sweepAngle += 0.038;
-            if (sweepAngle > Math.PI * 2) sweepAngle -= Math.PI * 2;
-          }
           renderFrame();
         }
 
-        animId = requestAnimationFrame(loop);
+        if (isBeaconActive) {
+          animId = requestAnimationFrame(loop);
+        } else {
+          animId = null;
+        }
       }
 
       const observer = new IntersectionObserver((entries) => {
@@ -3449,7 +3576,9 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
           isVisible = entry.isIntersecting;
           if (isVisible) {
             resizeCanvas();
-            if (isScanning && !animId) animId = requestAnimationFrame(loop);
+            loadDistricts(() => {
+              if (isBeaconActive && !animId) animId = requestAnimationFrame(loop);
+            });
           } else {
             if (animId) {
               cancelAnimationFrame(animId);
@@ -3471,12 +3600,11 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
         } else {
           isVisible = true;
           resizeCanvas();
-          if (isScanning && !animId) {
-            animId = requestAnimationFrame(loop);
-          }
+          loadDistricts(() => {
+            if (isBeaconActive && !animId) animId = requestAnimationFrame(loop);
+          });
         }
       });
-
       // Canvas rendering is completely deferred until section enters viewport
     })();
 
