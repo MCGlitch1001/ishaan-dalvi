@@ -2178,6 +2178,7 @@
               <!-- Top Telemetry Header -->
               <div class="topo-top-meta">
                 <span class="hud-id-tag">Base of Operations</span>
+                <span class="code-font" style="font-size: 0.72rem; color: var(--cyan); letter-spacing: 0.5px;">18.5204° N, 73.8567° E</span>
               </div>
 
               <!-- 2D Wireframe Canvas Viewport -->
@@ -2325,12 +2326,10 @@
     <!-- -----------------------------------------------------------
          6. INTERACTIVE POPULAR Q&A TERMINAL
          ----------------------------------------------------------- -->
-    <section id="faq" aria-label="Popular Q&A and FAQ Terminal">
+    <section id="faq" aria-label="Q&A Terminal">
       <div class="container faq-container">
         <div class="section-header faq-header">
-          <div class="section-badge">// 04. POPULAR_QA</div>
-          <h2>Interactive Q&amp;A Terminal</h2>
-          <p class="section-desc">Click any prompt chip below or type commands to get instant answers about my work, age, stack, and availability.</p>
+          <h2>Q&amp;A</h2>
         </div>
 
         <div class="terminal-container" id="interactive-terminal">
@@ -2340,7 +2339,7 @@
               <span class="terminal-dot dot-yellow"></span>
               <span class="terminal-dot dot-green"></span>
             </div>
-            <div class="terminal-title">ishaan@qa-terminal: ~ (faq-shell) — Click a question chip below!</div>
+            <div class="terminal-title">ishaan@terminal: ~ (qa)</div>
             <div class="terminal-tab-pill">ONLINE // QA</div>
           </div>
 
@@ -2349,7 +2348,7 @@
               <span class="terminal-prompt-sym">$</span>
               <span class="terminal-cmd">help --faq</span>
               <div class="terminal-output highlight-ai">
-                Popular Q&amp;A Terminal initialized. Click any chip below to query:
+                Click any question below to ask:
               </div>
             </div>
             <div class="terminal-line">
@@ -2368,7 +2367,6 @@
 
           <!-- Interactive Command Chips (Questions) -->
           <div class="terminal-chips">
-            <span class="chip-label">POPULAR QUESTIONS:</span>
             <button class="term-chip" data-cmd="who-are-you">who-are-you</button>
             <button class="term-chip" data-cmd="how-old">how-old</button>
             <button class="term-chip" data-cmd="do-you-freelance">freelance?</button>
@@ -2542,40 +2540,38 @@
       // Popular Q&A Commands
       'who-are-you': {
         cmd: 'faq --who-are-you',
-        out: `Ishaan Dalvi — 14-year-old hacker &amp; autonomous system maker based in Pune, India.<br>
-I build self-hosted AI agent pipelines, write low-latency edge architectures (&lt; 28ms), and wire microchips (ESP32) for physical IoT automation.`
+        out: `Ishaan Dalvi — 14-year-old developer &amp; AI builder in Pune, India.<br>
+I build private AI agent workflows, fast edge websites, and self-hosted systems on Linux VPS.`
       },
       'how-old': {
         cmd: 'faq --how-old',
-        out: `I am 14 years old. I wrote my first line of Python at age 11 and quickly moved into building production web proxies, headless browser bots, and local AI agent networks.`
+        out: `I am 14 years old. I started writing code at age 11, moving straight into building real-world bots, automation pipelines, and web tools.`
       },
       'do-you-freelance': {
         cmd: 'faq --freelance',
         out: `<span class="highlight-ai">[STATUS: OPEN FOR WORK]</span><br>
-Yes! I collaborate with forward-thinking teams, startups, and founders on autonomous AI workflows, edge deployment, n8n automations, and custom backend tools. Send a transmission below!`
+Yes! I collaborate on AI agent setups, n8n automations, and high-performance web systems. Drop me a note below.`
       },
       'why-zero-cost': {
         cmd: 'faq --why-zero-cost',
-        out: `Expensive cloud bills are a rookie trap for early systems.<br>
-By running heavy AI models locally on private hardware (Ollama/vLLM) and pairing with free global edge tiers (Cloudflare Workers, Supabase free tier), I achieve &lt; 30ms latency worldwide with ₹0 recurring cloud bills.`
+        out: `By combining self-hosted AI models on Linux VPS with free global edge tiers (Cloudflare), I deliver fast sub-30ms performance with ₹0 runaway cloud bills.`
       },
       'how-learned': {
         cmd: 'faq --how-did-you-learn',
-        out: `Curiosity and building real projects.<br>
-Instead of getting stuck in tutorial loops, I read open-source code on GitHub, explored Linux terminals, and built real things like smart automated IoT ant habitats, tax engines, and automated bots.`
+        out: `Curiosity and building real projects. Instead of getting stuck in tutorial loops, I read open-source code on GitHub and built working apps from day one.`
       },
       'current-build': {
         cmd: 'faq --current-build',
         out: `<span class="highlight-ai">[ACTIVE SPRINT]</span><br>
-Currently refining autonomous function-calling agents with Hermes Agent &amp; n8n, plus testing custom ESP32 sensor telemetry for environmental micro-habitats.`
+Refining autonomous AI workflows with Hermes Agent &amp; n8n, running self-hosted models, with a Blue Pill STM32 sitting in the corner.`
       },
       // System & Stack Aliases
       'get-stack': {
         cmd: 'ishaan --stack',
-        out: `[AI] Flagship APIs + Self-Hosted local models (Ollama) + Hermes Agent<br>
-[ORCHESTRATION] n8n self-hosted workflows + Linux VPS daemons<br>
-[EDGE & CODE] Cloudflare Workers, TypeScript, GitHub Actions<br>
-[HARDWARE] ESP32 microcontrollers, real sensors, live ant habitats`
+        out: `[AI] Flagship AI Models + Self-Hosted Models + Hermes Agent<br>
+[AUTOMATION] n8n workflows + Cloud VPS (Linux)<br>
+[CODE & EDGE] Cloudflare, GitHub Actions, Modern Web<br>
+[HARDWARE] Blue Pill STM32 (sitting in the corner)`
       },
       'ls-projects': {
         cmd: 'ls -la ~/projects/',
@@ -2770,10 +2766,7 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
       });
     }
 
-/* -------------------------------------------------------------
-       8. 2D TACTICAL WIREFRAME MAP OF MAHARASHTRA & PUNE BEACON
-       ------------------------------------------------------------- */
-    (function initMaharashtraWireframeMap() {
+    function initMaharashtraWireframeMap() {
       const canvas = document.getElementById("mh-radar-canvas");
       const viewport = document.getElementById("topo-viewport");
       if (!canvas || !viewport) return;
@@ -2793,6 +2786,7 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
           .then(d => {
             MH_DISTRICTS = d;
             isLoadingDistricts = false;
+            staticDirty = true;
             renderFrame();
             if (cb) cb();
           })
@@ -2885,6 +2879,7 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
         canvas.height = Math.round(height * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         updateProjection();
+        staticDirty = true;
         renderFrame();
       }
 
@@ -2906,106 +2901,113 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
         if (!animId && isVisible) renderFrame();
       });
 
-      function renderFrame() {
-        if (!width || !height) {
-          resizeCanvas();
-          if (!width) return;
-        }
+      const staticCanvas = document.createElement("canvas");
+      const staticCtx = staticCanvas.getContext("2d");
+      let staticDirty = true;
 
-        ctx.clearRect(0, 0, width, height);
+      function renderStaticLayer() {
+        if (!width || !height) return;
+        staticCanvas.width = canvas.width;
+        staticCanvas.height = canvas.height;
+        staticCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        staticCtx.clearRect(0, 0, width, height);
 
-        // Calculate Pune coordinates on canvas
-        const pune = toScreen(PUNE_LON, PUNE_LAT);
+        // 1. Geographic Coordinate Grid & Screen-Edge Coordinates
+        staticCtx.strokeStyle = "rgba(0, 229, 255, 0.04)";
+        staticCtx.lineWidth = 1;
+        staticCtx.font = "500 8.5px JetBrains Mono, monospace";
+        staticCtx.fillStyle = "rgba(0, 229, 255, 0.4)";
 
-        // 1. Subtle Geographic Coordinate Grid (clean lines without coordinate numbers)
-        ctx.strokeStyle = "rgba(0, 229, 255, 0.03)";
-        ctx.lineWidth = 1;
-
-        // Meridians (Longitude)
+        // Meridians (Longitude) with edge ticks & labels
         [74, 76, 78, 80].forEach(lon => {
           const p1 = toScreen(lon, minLat);
           const p2 = toScreen(lon, maxLat);
-          ctx.beginPath();
-          ctx.moveTo(p1.x, p1.y);
-          ctx.lineTo(p2.x, p2.y);
-          ctx.stroke();
+          staticCtx.beginPath();
+          staticCtx.moveTo(p1.x, p1.y);
+          staticCtx.lineTo(p2.x, p2.y);
+          staticCtx.stroke();
+
+          // Border ticks at screen edges
+          staticCtx.beginPath();
+          staticCtx.moveTo(p1.x, height - 5);
+          staticCtx.lineTo(p1.x, height);
+          staticCtx.moveTo(p1.x, 0);
+          staticCtx.lineTo(p1.x, 5);
+          staticCtx.stroke();
+
+          // Edge coordinate label at bottom edge of screen
+          staticCtx.fillText(lon + "°E", p1.x - 10, height - 8);
         });
 
-        // Parallels (Latitude)
+        // Parallels (Latitude) with edge ticks & labels
         [16, 18, 20, 22].forEach(lat => {
           const p1 = toScreen(minLon, lat);
           const p2 = toScreen(maxLon, lat);
-          ctx.beginPath();
-          ctx.moveTo(p1.x, p1.y);
-          ctx.lineTo(p2.x, p2.y);
-          ctx.stroke();
+          staticCtx.beginPath();
+          staticCtx.moveTo(p1.x, p1.y);
+          staticCtx.lineTo(p2.x, p2.y);
+          staticCtx.stroke();
+
+          // Border ticks at screen edges
+          staticCtx.beginPath();
+          staticCtx.moveTo(0, p1.y);
+          staticCtx.lineTo(5, p1.y);
+          staticCtx.moveTo(width - 5, p1.y);
+          staticCtx.lineTo(width, p1.y);
+          staticCtx.stroke();
+
+          // Edge coordinate label at left edge of screen
+          staticCtx.fillText(lat + "°N", 8, p1.y + 3);
         });
+
+        // Corner Coordinates at the perimeter edges of the screen
+        staticCtx.font = "600 8px JetBrains Mono, monospace";
+        staticCtx.fillStyle = "rgba(0, 229, 255, 0.35)";
+        staticCtx.fillText("22.1°N 72.6°E", 8, 14);
+        staticCtx.fillText("22.1°N 80.9°E", width - 76, 14);
+        staticCtx.fillText("15.6°N 72.6°E", 8, height - 22);
+        staticCtx.fillText("15.6°N 80.9°E", width - 76, height - 22);
 
         // 2. Sahyadri Mountain Ridge Corridor (Western Ghats)
-        ctx.save();
-        ctx.setLineDash([3, 4]);
-        ctx.strokeStyle = "rgba(129, 140, 248, 0.35)";
-        ctx.lineWidth = 1.3;
-        ctx.beginPath();
+        staticCtx.save();
+        staticCtx.setLineDash([3, 4]);
+        staticCtx.strokeStyle = "rgba(129, 140, 248, 0.35)";
+        staticCtx.lineWidth = 1.3;
+        staticCtx.beginPath();
         ridgeCoords.forEach((coord, idx) => {
           const sp = toScreen(coord[0], coord[1]);
-          if (idx === 0) ctx.moveTo(sp.x, sp.y);
-          else ctx.lineTo(sp.x, sp.y);
+          if (idx === 0) staticCtx.moveTo(sp.x, sp.y);
+          else staticCtx.lineTo(sp.x, sp.y);
         });
-        ctx.stroke();
-        ctx.restore();
+        staticCtx.stroke();
+        staticCtx.restore();
 
         // 3. Draw All 35 Maharashtra District Wireframes
-        const mousePt = { x: mouseX, y: mouseY };
-
         if (MH_DISTRICTS) MH_DISTRICTS.forEach(dist => {
           const isPune = dist.name.toLowerCase() === "pune";
-          let isDistrictHovered = false;
-
-          // Convert rings to screen coordinates
-          const screenRings = dist.rings.map(ring => {
-            return ring.map(p => toScreen(p[0], p[1]));
-          });
-
-          // Test hover for subtle visual feedback
-          if (isHovering && mouseX > 0 && mouseY > 0) {
-            for (const sRing of screenRings) {
-              if (isPointInPoly(mousePt, sRing)) {
-                isDistrictHovered = true;
-                break;
-              }
+          dist.rings.forEach(ring => {
+            if (ring.length < 3) return;
+            staticCtx.beginPath();
+            const p0 = toScreen(ring[0][0], ring[0][1]);
+            staticCtx.moveTo(p0.x, p0.y);
+            for (let i = 1; i < ring.length; i++) {
+              const pi = toScreen(ring[i][0], ring[i][1]);
+              staticCtx.lineTo(pi.x, pi.y);
             }
-          }
+            staticCtx.closePath();
 
-          // Draw each ring of district
-          screenRings.forEach(sRing => {
-            if (sRing.length < 3) return;
-
-            ctx.beginPath();
-            ctx.moveTo(sRing[0].x, sRing[0].y);
-            for (let i = 1; i < sRing.length; i++) {
-              ctx.lineTo(sRing[i].x, sRing[i].y);
-            }
-            ctx.closePath();
-
-            if (isDistrictHovered) {
-              ctx.fillStyle = "rgba(0, 245, 160, 0.12)";
-              ctx.fill();
-              ctx.strokeStyle = "rgba(0, 245, 160, 0.75)";
-              ctx.lineWidth = 1.4;
-              ctx.stroke();
-            } else if (isPune) {
-              ctx.fillStyle = "rgba(239, 68, 68, 0.04)";
-              ctx.fill();
-              ctx.strokeStyle = "rgba(239, 68, 68, 0.3)";
-              ctx.lineWidth = 1.2;
-              ctx.stroke();
+            if (isPune) {
+              staticCtx.fillStyle = "rgba(239, 68, 68, 0.04)";
+              staticCtx.fill();
+              staticCtx.strokeStyle = "rgba(239, 68, 68, 0.3)";
+              staticCtx.lineWidth = 1.2;
+              staticCtx.stroke();
             } else {
-              ctx.fillStyle = "rgba(0, 229, 255, 0.015)";
-              ctx.fill();
-              ctx.strokeStyle = "rgba(0, 229, 255, 0.22)";
-              ctx.lineWidth = 1.0;
-              ctx.stroke();
+              staticCtx.fillStyle = "rgba(0, 229, 255, 0.015)";
+              staticCtx.fill();
+              staticCtx.strokeStyle = "rgba(0, 229, 255, 0.22)";
+              staticCtx.lineWidth = 1.0;
+              staticCtx.stroke();
             }
           });
         });
@@ -3014,22 +3016,66 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
         nodes.forEach(node => {
           const sp = toScreen(node.lon, node.lat);
           // City marker dot
-          ctx.beginPath();
-          ctx.arc(sp.x, sp.y, 3.5, 0, Math.PI * 2);
-          ctx.fillStyle = "#00E5FF";
-          ctx.shadowColor = "rgba(0, 229, 255, 0.8)";
-          ctx.shadowBlur = 8;
-          ctx.fill();
-          ctx.shadowBlur = 0;
+          staticCtx.beginPath();
+          staticCtx.arc(sp.x, sp.y, 3.5, 0, Math.PI * 2);
+          staticCtx.fillStyle = "#00E5FF";
+          staticCtx.shadowColor = "rgba(0, 229, 255, 0.8)";
+          staticCtx.shadowBlur = 8;
+          staticCtx.fill();
+          staticCtx.shadowBlur = 0;
 
           // Bigger, clear city label
-          ctx.font = "700 12px JetBrains Mono, monospace";
-          ctx.fillStyle = "#F1F5F9";
-          ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-          ctx.shadowBlur = 4;
-          ctx.fillText(node.name, sp.x + 8, sp.y + 4);
-          ctx.shadowBlur = 0;
+          staticCtx.font = "700 12px JetBrains Mono, monospace";
+          staticCtx.fillStyle = "#F1F5F9";
+          staticCtx.shadowColor = "rgba(0, 0, 0, 0.9)";
+          staticCtx.shadowBlur = 4;
+          staticCtx.fillText(node.name, sp.x + 8, sp.y + 4);
+          staticCtx.shadowBlur = 0;
         });
+
+        staticDirty = false;
+      }
+
+      function renderFrame() {
+        if (!width || !height) {
+          resizeCanvas();
+          if (!width) return;
+        }
+
+        if (staticDirty) renderStaticLayer();
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(staticCanvas, 0, 0, width, height);
+
+        // Highlight hovered district if hovering
+        if (isHovering && mouseX > 0 && mouseY > 0 && MH_DISTRICTS) {
+          const mousePt = { x: mouseX, y: mouseY };
+          for (const dist of MH_DISTRICTS) {
+            let hit = false;
+            const screenRings = dist.rings.map(ring => ring.map(p => toScreen(p[0], p[1])));
+            for (const sRing of screenRings) {
+              if (isPointInPoly(mousePt, sRing)) { hit = true; break; }
+            }
+            if (hit) {
+              screenRings.forEach(sRing => {
+                if (sRing.length < 3) return;
+                ctx.beginPath();
+                ctx.moveTo(sRing[0].x, sRing[0].y);
+                for (let i = 1; i < sRing.length; i++) ctx.lineTo(sRing[i].x, sRing[i].y);
+                ctx.closePath();
+                ctx.fillStyle = "rgba(0, 245, 160, 0.12)";
+                ctx.fill();
+                ctx.strokeStyle = "rgba(0, 245, 160, 0.75)";
+                ctx.lineWidth = 1.4;
+                ctx.stroke();
+              });
+              break;
+            }
+          }
+        }
+
+        // Calculate Pune coordinates on canvas
+        const pune = toScreen(PUNE_LON, PUNE_LAT);
 
         // 5. PUNE RED BLEEPING BEACON (Clean pulsing red dot, no text tag)
         const t = performance.now() * 0.001;
@@ -3138,7 +3184,13 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
         }
       });
       // Canvas rendering is completely deferred until section enters viewport
-    })();
+    }
+
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(initMaharashtraWireframeMap, { timeout: 1200 });
+    } else {
+      setTimeout(initMaharashtraWireframeMap, 150);
+    }
 
     // Direct hash target scroll on load for seamless navigation
     if (window.location.hash) {
