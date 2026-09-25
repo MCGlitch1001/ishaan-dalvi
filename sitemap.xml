@@ -9,6 +9,11 @@
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://ishaan-dalvi.pages.dev/" />
     <image:image>
+      <image:loc>https://ishaan-dalvi.pages.dev/portrait-card.avif</image:loc>
+      <image:title>Ishaan Dalvi - 14yo Systems Builder and AI Developer</image:title>
+      <image:caption>Ishaan Dalvi on mountain summit overlooking Pune skyline</image:caption>
+    </image:image>
+    <image:image>
       <image:loc>https://ishaan-dalvi.pages.dev/portrait-card.webp</image:loc>
       <image:title>Ishaan Dalvi - 14yo Systems Builder and AI Developer</image:title>
       <image:caption>Ishaan Dalvi on Katraj mountain summit overlooking Pune skyline</image:caption>
@@ -19,8 +24,16 @@
       <image:caption>Ishaan Dalvi in Pune, Maharashtra</image:caption>
     </image:image>
     <image:image>
+      <image:loc>https://ishaan-dalvi.pages.dev/assets/logos/dirtshack.webp</image:loc>
+      <image:title>DirtShack Brand Logo</image:title>
+    </image:image>
+    <image:image>
       <image:loc>https://ishaan-dalvi.pages.dev/assets/logos/dirtshack.png</image:loc>
       <image:title>DirtShack Brand Logo</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ishaan-dalvi.pages.dev/assets/logos/youralai.webp</image:loc>
+      <image:title>YourAlai Platform Logo</image:title>
     </image:image>
     <image:image>
       <image:loc>https://ishaan-dalvi.pages.dev/assets/logos/youralai.png</image:loc>

@@ -1,16 +1,20 @@
 #!/bin/bash
 # Deploy to Cloudflare Pages
-# Usage: ./deploy.sh
+# Usage: ./deploy.sh [project-name]
 
-echo "🚀 Deploying to Cloudflare Pages..."
+PROJECT_NAME="${1:-${CLOUDFLARE_PROJECT:-ishaan-dalvi}}"
 
-# Check if wrangler is installed
-if ! command -v wrangler &> /dev/null; then
-    echo "Installing Wrangler..."
-    npm install -g wrangler
+echo "🚀 Deploying to Cloudflare Pages (Project: $PROJECT_NAME)..."
+
+if command -v wrangler &> /dev/null; then
+    CMD="wrangler"
+elif command -v npx &> /dev/null; then
+    CMD="npx wrangler"
+else
+    echo "❌ Neither wrangler nor npx is available."
+    exit 1
 fi
 
-# Deploy current directory
-wrangler pages deploy . --project-name=ishaan
+$CMD pages deploy . --project-name="$PROJECT_NAME" || $CMD pages deploy . --project-name="ishaan"
 
-echo "✅ Deployed! Check https://ishaan.pages.dev"
+echo "✅ Deployment complete! Check https://$PROJECT_NAME.pages.dev or https://ishaan.pages.dev"
