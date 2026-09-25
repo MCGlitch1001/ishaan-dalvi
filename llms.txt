@@ -1,16 +1,38 @@
 # Ishaan Dalvi
 
-> 14-year-old systems builder and AI developer in Pune, Maharashtra, India. Engineering autonomous AI agents, sub-30ms edge infrastructure, and IoT microcontrollers on a ₹0 recurring cloud budget.
+> 14-year-old developer and autonomous AI systems builder based in Pune, Maharashtra, India (18.5204° N, 73.8567° E). Building private AI agent workflows, self-hosted LLM clusters on Linux VPS, and sub-30ms edge applications on a ₹0 cloud budget.
 
-## Core Projects
-- [Smart IoT Ant Habitat](https://github.com/ishaandalvi): Microcontroller (ESP32) environment tracking microclimates and regulating automated hydration for ant colonies.
-- [India Road Tax Engine](https://github.com/ishaandalvi): Zero-lag client-side tax computation engine tested with security audits.
-- [Autonomous Media Agent](https://github.com/ishaandalvi): Headless browser automation that formats, schedules, and dispatches media pipelines hands-free.
-- [SkillClaw Fast Proxy](https://github.com/ishaandalvi): Cloudflare Workers edge network proxy delivering sub-28ms responses worldwide.
-- [Heavy Video Processing Engine](https://github.com/ishaandalvi): Distributed FFmpeg worker queue with Redis BullMQ and cloud object storage.
-- [Cyber Portfolio](https://ishaan-dalvi.pages.dev/): Handcrafted pure HTML/CSS/JS with zero runtime bloat and 100% Lighthouse compliance.
+## Base of Operations
+- **Location**: Pune, Maharashtra, India
+- **Coordinates**: 18.5204° N, 73.8567° E
+- **Key Connected Nodes**: Mumbai, Nagpur, Kolhapur
 
-## Links & Social
-- [Portfolio Home](https://ishaan-dalvi.pages.dev/): Official digital workspace and systems dashboard.
-- [GitHub Profile](https://github.com/ishaandalvi): Source code repositories, open-source tools, and projects.
-- [X Profile](https://x.com/ishaandalvi): Real-time development logs and engineering updates.
+## Companies Worked With
+- [Dalvi Consultancy](https://consult.dalvigroup.co.in): Bespoke software development and technical architecture agency.
+- [DirtShack](https://dirtshack.in): India's home for motocross and dirt biking, digital systems and platform architecture.
+- [YourAlai](https://youralai.com): Automotive artificial intelligence platform with multi-agent vehicle diagnostics.
+- **Forge Sites**: High-speed web architecture and edge deployments.
+
+## The Arsenal (7 Core Systems)
+1. **Flagship AI Models**: Multi-modal reasoning with Claude 3.5 Sonnet, GPT-4o, and Gemini 1.5 Pro.
+2. **Self Hosted Models**: Local private inference with Ollama, vLLM, DeepSeek, and Llama 3 on Linux VPS.
+3. **Cloud VPS**: 24/7 autonomous daemons hosted on Hetzner, DigitalOcean, and Linux VM infrastructure.
+4. **n8n**: Autonomous multi-step workflow automations, webhooks, and function-calling pipelines.
+5. **Hermes Agent**: Autonomous CLI agent execution loops with tool calling and ReAct loops.
+6. **GitHub**: CI/CD actions, version control, automated tests, and open-source software repositories.
+7. **Blue Pill STM32**: Embedded ARM Cortex-M microcontrollers for hardware hacking and sensor experiments (sitting in the corner).
+
+## Questions & Answers (FAQ)
+- **Who is Ishaan Dalvi?** Ishaan Dalvi is a 14-year-old developer and AI maker in Pune, India. He builds private AI agent workflows, fast edge websites, and self-hosted systems.
+- **How old is he?** 14 years old (born 2012; started coding at age 11).
+- **Does he freelance?** Yes, open for collaboration on autonomous AI agent setups, n8n automations, and fast web infrastructure.
+- **Why zero cloud cost?** By combining self-hosted AI models on Linux VPS with free global edge networks (Cloudflare Pages & Workers), achieving sub-30ms performance with ₹0 recurring cloud bills.
+- **How did he learn?** By building real projects from day one and reading open-source code on GitHub.
+- **Current build sprint:** Refining autonomous AI workflows with Hermes Agent & n8n, running self-hosted models, with a Blue Pill STM32 sitting in the corner.
+
+## Verification & Official Links
+- [Website](https://ishaan-dalvi.pages.dev/)
+- [Documentation & Replication Guide](https://ishaan-dalvi.pages.dev/docs/)
+- [GitHub](https://github.com/ishaandalvi)
+- [X / Twitter](https://x.com/ishaandalvi)
+- [Contact Email](mailto:ishaan@dalvi.dev)

@@ -8,7 +8,7 @@
   <title>Ishaan Dalvi | 14yo Systems Builder &amp; AI Developer</title>
   <meta name="title" content="Ishaan Dalvi | 14yo Systems Builder &amp; AI Developer">
   <meta name="description" content="Portfolio of Ishaan Dalvi, a 14-year-old developer in Pune, India. Engineering autonomous AI agents, local-first LLMs, low-latency edge networks, and IoT microcontrollers.">
-  <meta name="keywords" content="Ishaan Dalvi, 14yo developer, Pune builder, local AI, Ollama, n8n, Cloudflare Workers, ESP32 ant farm, edge computing, autonomous agents, Hermes Agent, self hosted models">
+  <meta name="keywords" content="Ishaan Dalvi, 14yo developer, Pune builder, local AI, Ollama, n8n, Cloudflare Workers, Blue Pill STM32, edge computing, autonomous agents, Hermes Agent, self hosted models, Dalvi Consultancy, DirtShack, YourAlai, Cloud VPS">
   <meta name="author" content="Ishaan Dalvi">
   <meta name="theme-color" content="#080C10" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#F8FAFC" media="(prefers-color-scheme: light)">
@@ -67,12 +67,12 @@
   <!-- Preload Critical LCP Hero Asset -->
   <link rel="preload" as="image" href="portrait-card.webp" type="image/webp" fetchpriority="high">
 
-  <!-- Preconnect to Google Fonts for High-Performance Typography -->
+  <!-- High-Performance Typography Preconnect & Stylesheet -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@600;700&display=swap">
 
-  <!-- JSON-LD Schema.org Structured Markup (Person + WebSite + FAQPage for Rich Results) -->
+  <!-- JSON-LD Schema.org Structured Markup (Person + ProfilePage + WebSite + FAQPage for Google 1st Rank & AEO) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -81,47 +81,98 @@
         "@type": "Person",
         "@id": "https://ishaan-dalvi.pages.dev/#person",
         "name": "Ishaan Dalvi",
+        "alternateName": ["Ishaan", "Ishaan Dalvi Pune", "Ishaan Dalvi AI"],
         "url": "https://ishaan-dalvi.pages.dev/",
         "image": "https://ishaan-dalvi.pages.dev/portrait-card.jpg",
-        "gender": "male",
+        "gender": "https://schema.org/Male",
         "nationality": "Indian",
+        "birthDate": "2012",
         "birthPlace": {
           "@type": "Place",
-          "name": "Pune, Maharashtra, India"
+          "name": "Pune, Maharashtra, India",
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 18.5204,
+            "longitude": 73.8567
+          }
+        },
+        "homeLocation": {
+          "@type": "Place",
+          "name": "Pune, Maharashtra, India",
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 18.5204,
+            "longitude": 73.8567
+          }
         },
         "address": {
           "@type": "PostalAddress",
           "addressLocality": "Pune",
           "addressRegion": "Maharashtra",
-          "addressCountry": "India"
+          "addressCountry": "IN"
         },
-        "jobTitle": "Systems Builder & AI Developer",
+        "jobTitle": "AI Developer & Systems Builder",
+        "description": "14-year-old developer and systems builder in Pune, India. Builds autonomous AI agents, self-hosted LLMs, and low-latency edge systems on ₹0 cloud budget.",
         "knowsAbout": [
-          "Flagship AI models",
-          "Self Hosted Models",
-          "Cloud VPS",
+          "Flagship AI Models (Claude, GPT-4o, Gemini)",
+          "Self-Hosted Models (Ollama, vLLM, DeepSeek, Llama)",
+          "Cloud VPS (Hetzner, Linux VMs)",
           "n8n Workflow Automation",
-          "Hermes Agent",
+          "Hermes Agent Autonomous Loops",
           "GitHub Actions CI/CD",
-          "ESP32 Microcontrollers",
-          "Edge Infrastructure",
+          "Blue Pill STM32 Microcontrollers",
+          "Edge Architecture & Cloudflare Workers",
           "TypeScript",
-          "Python"
+          "Python",
+          "Linux Systems Architecture"
+        ],
+        "worksFor": [
+          {
+            "@type": "Organization",
+            "name": "Dalvi Consultancy",
+            "url": "https://consult.dalvigroup.co.in"
+          },
+          {
+            "@type": "Organization",
+            "name": "DirtShack",
+            "url": "https://dirtshack.in"
+          },
+          {
+            "@type": "Organization",
+            "name": "YourAlai",
+            "url": "https://youralai.com"
+          },
+          {
+            "@type": "Organization",
+            "name": "Forge Sites"
+          }
         ],
         "sameAs": [
           "https://github.com/ishaandalvi",
-          "https://twitter.com/ishaandalvi"
+          "https://twitter.com/ishaandalvi",
+          "https://x.com/ishaandalvi"
         ]
+      },
+      {
+        "@type": "ProfilePage",
+        "@id": "https://ishaan-dalvi.pages.dev/#profilepage",
+        "url": "https://ishaan-dalvi.pages.dev/",
+        "name": "Ishaan Dalvi - Profile & AI Portfolio",
+        "mainEntity": {
+          "@id": "https://ishaan-dalvi.pages.dev/#person"
+        }
       },
       {
         "@type": "WebSite",
         "@id": "https://ishaan-dalvi.pages.dev/#website",
         "url": "https://ishaan-dalvi.pages.dev/",
-        "name": "Ishaan Dalvi | Systems & AI Portfolio",
-        "description": "Digital workspace and portfolio of Ishaan Dalvi, showcasing local AI pipelines, IoT bio-habitats, edge proxies, and serverless automations.",
+        "name": "Ishaan Dalvi",
+        "alternateName": "Ishaan Dalvi Portfolio",
+        "description": "Official digital workspace and AI portfolio of Ishaan Dalvi, 14-year-old systems builder based in Pune, India.",
         "publisher": {
           "@id": "https://ishaan-dalvi.pages.dev/#person"
-        }
+        },
+        "inLanguage": "en"
       },
       {
         "@type": "FAQPage",
@@ -132,7 +183,7 @@
             "name": "Who is Ishaan Dalvi?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Ishaan Dalvi is a 14-year-old hacker and autonomous system maker based in Pune, India, specializing in self-hosted AI models, sub-30ms edge infrastructure, and IoT microcontrollers."
+              "text": "Ishaan Dalvi is a 14-year-old developer and AI builder based in Pune, India. He builds private AI agent workflows, fast edge websites, and self-hosted systems on Linux VPS."
             }
           },
           {
@@ -140,23 +191,47 @@
             "name": "How old is Ishaan Dalvi?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Ishaan Dalvi is 14 years old. He began programming at age 11."
+              "text": "Ishaan Dalvi is 14 years old. He started writing code at age 11, moving straight into building real-world automation pipelines, bots, and web applications."
             }
           },
           {
             "@type": "Question",
-            "name": "Is Ishaan available for freelance or contract projects?",
+            "name": "Does Ishaan Dalvi take freelance or contract projects?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, Ishaan works with forward-thinking teams on autonomous AI workflows, edge deployment, n8n automations, and backend tools."
+              "text": "Yes! Ishaan collaborates on AI agent setups, n8n automations, and high-performance web systems."
             }
           },
           {
             "@type": "Question",
-            "name": "How does Ishaan build systems with zero cloud cost?",
+            "name": "Why and how does Ishaan achieve zero recurring cloud bills?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "By running heavy reasoning locally on private silicon (Ollama/vLLM) and routing edge traffic via free tiers (Cloudflare Workers, Supabase free tier), achieving sub-30ms speed at ₹0 recurring monthly fees."
+              "text": "By combining self-hosted AI models on Linux VPS with free global edge tiers (Cloudflare), Ishaan delivers fast sub-30ms performance with ₹0 runaway cloud bills."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How did Ishaan learn programming?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Curiosity and building real projects. Instead of getting stuck in tutorial loops, Ishaan read open-source code on GitHub and built working apps from day one."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is Ishaan's current active project?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Refining autonomous AI workflows with Hermes Agent and n8n, running self-hosted models, with a Blue Pill STM32 sitting in the corner for hardware tinkering."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What tools are in Ishaan Dalvi's arsenal?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Ishaan's arsenal includes Flagship AI Models (Claude, GPT-4o, Gemini), Self-Hosted Models (Ollama, vLLM, DeepSeek), Cloud VPS (Linux VMs), n8n workflow automations, Hermes Agent, GitHub CI/CD, and a Blue Pill STM32 microcontroller."
             }
           }
         ]
@@ -205,8 +280,8 @@
       --glow-card: 0 16px 40px -12px rgba(0, 0, 0, 0.7);
 
       /* Font Families */
-      --font-display: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
-      --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-display: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
       /* Spacing & Layout */
@@ -1195,8 +1270,24 @@
       margin-right: -50vw;
       overflow: hidden;
       padding: 16px 0;
-      mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
-      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+    }
+    .companies-carousel-viewport::before,
+    .companies-carousel-viewport::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: clamp(40px, 8vw, 120px);
+      z-index: 2;
+      pointer-events: none;
+    }
+    .companies-carousel-viewport::before {
+      left: 0;
+      background: linear-gradient(to right, var(--bg-base) 0%, transparent 100%);
+    }
+    .companies-carousel-viewport::after {
+      right: 0;
+      background: linear-gradient(to left, var(--bg-base) 0%, transparent 100%);
     }
     @keyframes carouselSpin {
       0% {
@@ -1445,24 +1536,6 @@
       backdrop-filter: blur(12px);
       transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.3s ease;
       overflow: hidden;
-      animation: arsenalFloat 7s ease-in-out infinite;
-    }
-
-    /* Staggered floating breath animations */
-    .arsenal-card:nth-child(1) { animation-delay: 0s; }
-    .arsenal-card:nth-child(2) { animation-delay: 1.1s; }
-    .arsenal-card:nth-child(3) { animation-delay: 2.2s; }
-    .arsenal-card:nth-child(4) { animation-delay: 3.3s; }
-    .arsenal-card:nth-child(5) { animation-delay: 4.4s; }
-    .arsenal-card:nth-child(6) { animation-delay: 5.5s; }
-
-    @keyframes arsenalFloat {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-4px);
-      }
     }
 
     /* Laser scan beam on hover */
@@ -3164,7 +3237,7 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
             }
           }
         });
-      }, { threshold: 0.05 });
+      }, { threshold: 0.15 });
 
       observer.observe(viewport);
 
@@ -3186,11 +3259,26 @@ drwxr-xr-x&nbsp;&nbsp;cyber_portfolio&nbsp;&nbsp;[100% Google speed score]`
       // Canvas rendering is completely deferred until section enters viewport
     }
 
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(initMaharashtraWireframeMap, { timeout: 1200 });
-    } else {
-      setTimeout(initMaharashtraWireframeMap, 150);
+    function scheduleMapInit() {
+      let initialized = false;
+      function run() {
+        if (initialized) return;
+        initialized = true;
+        window.removeEventListener('scroll', run);
+        window.removeEventListener('mousemove', run);
+        window.removeEventListener('touchstart', run);
+        initMaharashtraWireframeMap();
+      }
+      window.addEventListener('scroll', run, { passive: true, once: true });
+      window.addEventListener('mousemove', run, { passive: true, once: true });
+      window.addEventListener('touchstart', run, { passive: true, once: true });
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(run);
+      } else {
+        setTimeout(run, 2500);
+      }
     }
+    scheduleMapInit();
 
     // Direct hash target scroll on load for seamless navigation
     if (window.location.hash) {
