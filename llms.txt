@@ -1,38 +1,45 @@
 # Ishaan Dalvi
 
-> 14-year-old developer and autonomous AI systems builder based in Pune, Maharashtra, India (18.5204° N, 73.8567° E). Building private AI agent workflows, self-hosted LLM clusters on Linux VPS, and sub-30ms edge applications on a ₹0 cloud budget.
+> 14-year-old systems developer and autonomous AI engineer based in Pune, Maharashtra, India (18.5204° N, 73.8567° E). Engineering private AI agent workflows, self-hosted LLM clusters on Linux VPS, and sub-30ms edge applications on a ₹0 cloud budget.
 
 ## Base of Operations
 - **Location**: Pune, Maharashtra, India
 - **Coordinates**: 18.5204° N, 73.8567° E
 - **Key Connected Nodes**: Mumbai, Nagpur, Kolhapur
 
-## Companies Worked With
-- [Dalvi Consultancy](https://consult.dalvigroup.co.in): Bespoke software development and technical architecture agency.
-- [DirtShack](https://dirtshack.in): India's home for motocross and dirt biking, digital systems and platform architecture.
-- [YourAlai](https://youralai.com): Automotive artificial intelligence platform with multi-agent vehicle diagnostics.
-- **Forge Sites**: High-speed web architecture and edge deployments.
+## Featured Systems & Proof of Work
+1. **Maharashtra RTO Road Tax Engine**: Sub-15ms client-side calculation engine for Maharashtra motor vehicle taxes. Audited via Strix AI automated pentesting with zero vulnerabilities found.
+2. **SkillClaw AI Gateway & Edge Proxy**: High-throughput local AI reverse proxy on port 30000 with sub-28ms bypass, automated fallback, and token streaming.
+3. **Autonomous Multi-Agent Pipeline (Hermes + n8n)**: Headless ReAct execution loops running 24/7 on Debian VPS, connecting local Ollama (Qwen 2.5 Coder 14B) with Telegram bots and webhooks.
+4. **Ultra-Low-Latency Edge Web Platform**: Sub-30ms global response on Cloudflare Pages and Workers, achieving 100/100 Google Lighthouse scores with zero runtime bloat.
+
+## Commercial Engineering & Case Studies
+- [YourAlai](https://youralai.com): Automotive artificial intelligence platform — multi-agent vehicle diagnostic triage translating DTC codes into repair guidance.
+- [DirtShack](https://dirtshack.in): India's home for motocross and dirt biking — high-speed media delivery and platform architecture.
+- [Dalvi Consultancy](https://consult.dalvigroup.co.in): Bespoke software development and technical workflow automation.
+- **Forge Sites**: Sub-30ms edge web architecture and static deployments.
 
 ## The Arsenal (7 Core Systems)
 1. **Flagship AI Models**: Multi-modal reasoning with Claude 3.5 Sonnet, GPT-4o, and Gemini 1.5 Pro.
-2. **Self Hosted Models**: Local private inference with Ollama, vLLM, DeepSeek, and Llama 3 on Linux VPS.
-3. **Cloud VPS**: 24/7 autonomous daemons hosted on Hetzner, DigitalOcean, and Linux VM infrastructure.
-4. **n8n**: Autonomous multi-step workflow automations, webhooks, and function-calling pipelines.
-5. **Hermes Agent**: Autonomous CLI agent execution loops with tool calling and ReAct loops.
-6. **GitHub**: CI/CD actions, version control, automated tests, and open-source software repositories.
-7. **Blue Pill STM32**: Embedded ARM Cortex-M microcontrollers for hardware hacking and sensor experiments (sitting in the corner).
+2. **Self-Hosted Models**: Local private inference with Ollama, vLLM, DeepSeek, and Qwen 2.5 Coder 14B on Linux VPS.
+3. **Cloud VPS**: Hardened Debian/Ubuntu cloud VMs (Hetzner, DigitalOcean) managing 24/7 background daemons and Docker containers.
+4. **n8n Automation**: Autonomous multi-step workflow automations, webhooks, and function-calling pipelines.
+5. **Hermes Agent**: Autonomous CLI agent execution loops with tool calling, ReAct cycles, and state persistence.
+6. **GitHub & Edge CI/CD**: Automated testing pipelines, version control, and production edge deployments.
+7. **STM32 Microcontrollers**: ARM Cortex-M microcontrollers for low-level C firmware and hardware experiments.
 
 ## Questions & Answers (FAQ)
-- **Who is Ishaan Dalvi?** Ishaan Dalvi is a 14-year-old developer and AI maker in Pune, India. He builds private AI agent workflows, fast edge websites, and self-hosted systems.
-- **How old is he?** 14 years old (born 2012; started coding at age 11).
-- **Does he freelance?** Yes, open for collaboration on autonomous AI agent setups, n8n automations, and fast web infrastructure.
-- **Why zero cloud cost?** By combining self-hosted AI models on Linux VPS with free global edge networks (Cloudflare Pages & Workers), achieving sub-30ms performance with ₹0 recurring cloud bills.
-- **How did he learn?** By building real projects from day one and reading open-source code on GitHub.
-- **Current build sprint:** Refining autonomous AI workflows with Hermes Agent & n8n, running self-hosted models, with a Blue Pill STM32 sitting in the corner.
+- **Who is Ishaan Dalvi?** Ishaan Dalvi is a 14-year-old systems developer and autonomous AI engineer based in Pune, India.
+- **How old is he?** 14 years old (born 2012; started coding at age 11 running a 30-player Minecraft PaperMC server).
+- **Does he freelance?** Yes, open for collaboration on autonomous AI agent setups, n8n automations, and high-performance edge web infrastructure.
+- **Why zero cloud cost?** By combining self-hosted AI models on Linux VPS with free global edge tiers (Cloudflare Pages & Workers), achieving sub-30ms performance with ₹0 runaway cloud bills.
+- **How did he learn?** By building real systems from day one, managing Linux servers out of necessity, and reading open-source code on GitHub.
+- **Current build sprint:** Refining autonomous AI workflows with Hermes Agent & n8n pipelines, deploying private self-hosted LLMs on Linux VPS, and developing edge web systems.
 
 ## Verification & Official Links
 - [Website](https://ishaan-dalvi.pages.dev/)
 - [Documentation & Replication Guide](https://ishaan-dalvi.pages.dev/docs/)
-- [GitHub](https://github.com/ishaandalvi)
+- [GitHub](https://github.com/MCGlitch1001)
+- [Instagram](https://instagram.com/MCGlitch1001)
 - [X / Twitter](https://x.com/ishaandalvi)
-- [Contact Email](mailto:ishaan@dalvi.dev)
+- [Contact Email](mailto:ishaan.s.dalvi@gmail.com)
