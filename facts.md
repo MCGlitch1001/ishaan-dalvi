@@ -5,17 +5,36 @@ Here is a clear breakdown of every factual detail explicitly stated across the w
 ### 1. Identity & Personal Details
 - **Name**: Ishaan Dalvi
 - **Age**: 15 years old
+- **Current Education**: 10th Standard / Grade (currently preparing for Board exams)
 - **Location**: Pune, India (Sahyadri Range, Maharashtra)
-- **Primary Email**: `ishaan@dalvigroup.co.in`
-- **Affiliated Organization**: Dalvi Group (`https://www.dalvigroup.co.in`)
+- **Work / Affiliation**:
+  - Works for: **Dalvi Consultancy** (AI-focused digital solutions consultancy building modern websites, web applications, and digital platforms)
+  - Family Website / Parent Group: **Dalvi Group** (`https://www.dalvigroup.co.in`)
+- **Primary Contact**: Reach via email at `ishaan@dalvigroup.co.in` (preferred for project inquiries and collaborations).
+- **Social & Code Profiles**:
+  - GitHub: `MCGlitch1001` (`https://github.com/MCGlitch1001`)
+  - Instagram: `MCGlitch1001` (`https://instagram.com/MCGlitch1001`)
+- **Availability / Work Status**: Open to all projects that are okay with remote work.
 - **Key Pursuits**:
-  - Building real-world software systems.
-  - Stewarding a 14,000 sq. ft. organic food forest and micro-life colonies in Pune.
-  - Riding off-road trails and dirt biking.
+  - Building real-world web and software systems.
+  - Stewarding a 14,000 sq. ft. organic food forest in Pune.
+  - Off-road dirt biking, trail riding across Pune, and high-altitude Himalayan trekking.
 
 ---
 
-### 2. Software Projects
+### 2. Software Development, Engineering Rig & Workflow
+- **Operating System**: **Arch Linux** (runs Arch as the primary development OS).
+- **AI Stack & Frontier Models**:
+  - Primary frontier models: **Claude** and **Gemini**.
+  - Uses **AI swarms** for automated testing and test execution.
+  - **Human Verification**: Every output is verified and validated by hand before shipping.
+- **Development Workflow**: Heavily AI-assisted rapid development.
+- **Core Technologies**: Vite, React, JavaScript, HTML, CSS.
+- **Role in Collaborations**: Primary developer / tech builder (handling coding, website creation, styling/CSS, and web setups for project owners who need technical execution).
+
+---
+
+### 3. Software Projects
 
 #### Software Built by Ishaan:
 - **Orivaani**:
@@ -32,64 +51,75 @@ Here is a clear breakdown of every factual detail explicitly stated across the w
   - **Description**: Clean digital link routing and smart workflow hub engineered under Dalvi Group for fast, clutter-free sharing.
 
 #### Collaborative Projects:
+- **PDLC**:
+  - **URL / Domain**: `https://pdlc.dalvigroup.co.in/`
+  - **Role**: Collaboration
+  - **Description**: PDLC smart glass / switchable privacy film solutions platform managed under Dalvi Group.
 - **DirtShack**:
   - **URL / Domain**: `https://dirtshack.in` (`dirtshack.in`)
-  - **Role**: Collaboration
+  - **Role**: Collaboration (built website & code)
   - **Description**: Pune-born off-road dirt biking gear, custom KLX 230 performance parts, and trail rider commerce platform.
 - **Your Alai**:
   - **URL / Domain**: `https://youralai.com` (`youralai.com`)
-  - **Role**: Collaboration
+  - **Role**: Collaboration (built website & code)
   - **Description**: AI-powered automotive companion and community platform featuring personalized garage, diagnostic mechanic, and trip assistants.
 - **Insurance Quest**:
   - **URL / Domain**: `https://insurancequest.in` (`insurancequest.in`)
-  - **Role**: Collaboration
+  - **Role**: Collaboration (built website & code)
   - **Description**: Practical commercial and industrial insurance knowledge center helping businesses prevent underinsurance and streamline claims.
 
+#### Domain Management:
+- All project and company domains/subdomains are owned and directly managed by Ishaan / Dalvi Group.
+
 ---
 
-### 3. Food Forest & Ecology ("Bio Engineering Nature")
-- **Land Size**: 14,000 sq. ft. organic food forest.
-- **Soil & Strata**:
-  - Multi-layer strata consisting of Deccan bedrock base, deep black cotton soil, organic humus/compost layer, and surface mulch/moss cap.
-  - Soil features thriving micro-life, fungal mycelium networks, plant root networks, natural soil aeration, and self-sustaining nutrient cycling.
+### 4. Food Forest & Regenerative Agro
+- **Land Size**: 14,000 sq. ft. organic food forest in Pune.
+- **Soil & Soil Amendments**:
+  - Heavy **mulching** practice for soil health and moisture retention.
+  - Regular addition of **cow dung** (natural organic manure/microbiome boost).
 - **Water Management**:
-  - Deccan basalt dry-stone bund walls with moss.
-  - Monsoon water-retention swale lined with pebbles.
-- **Flora & Tree Species**:
-  - Fruit-bearing trees including Sitaphal (custard apple), Mango, and Pomegranate.
-  - Flowering understory featuring Marigolds, Jasmine, Cover Blossoms, and Roses.
-- **Fauna & Micro-life Habitats**:
-  - **Ant Hills & Caverns**: Subterranean chambers (Nursery, Queen Hall, Granary, Fungus Garden, Seed Vault) and tunnels.
-  - **Named Ants & Roles**:
-    - *Barnaby*: “Carrying crumbs since Tuesday.” (Nursery / brood carrying)
-    - *Crumbelina*: “Queen’s favorite architect.” (Queen Hall)
-    - *Sir Pinch*: “Traffic control in Tunnel 4.” (Granary / seed carrying)
-    - *Pebbles*: “Moved this grain three times.” (Fungus Garden / seed carrying)
-    - *Scout Pip*: “Fresh rain up on the grass!” (Seed Vault)
-  - **Named Bees & Roles**:
-    - *Buz Aldrin*: “One small sip for bee.”
-    - *Beeyoncé*: “Pollinating in formation.”
-    - *Barnabee*: “Late for nectar hour!”
-    - *Honeycomb Hank*: “Best marigold on the farm.”
-  - **Named Earthworms & Roles**:
-    - *Squiggles*: “Aerating the humus 24/7.”
-    - *Sir Wiggles*: “Turning leaves into black gold.”
-    - *Noodle*: “Just passing through the roots!”
+  - Uses dense **natural tree cover** for moisture and water retention.
+- **Flora Philosophy**:
+  - Strictly plants **native-only tree species**.
+- **Purpose & Focus**: Ecological stewardship, natural soil building, and regenerative planting.
 
 ---
 
-### 4. Off-Road & Outdoor Exploration
-- **Geographic Focus**: Sahyadri Mountain Range, Maharashtra.
-- **Dirt Biking**: Single-track dirt rides, red laterite climbs, and loose gravel descents outside Pune.
-- **Hikes**: Early-morning basalt ridge traverses and crestline hikes under monsoon cloud cover.
-- **Field Logs**: Micro-life habitat documentation and seasonal canopy growth monitoring on the farm.
+### 5. Off-Road, Dirt Biking & Trekking
+
+#### Garage / Motorcycles:
+- **Kawasaki KLX 230**:
+  - US-spec model imported directly from the US.
+  - Photo reference: `klx230.jpg`
+- **Modified Hero Impulse**:
+  - Custom modified off-road dual-sport setup.
+  - Photo reference: `impulse.jpg`
+- **Riding Territory**: Single-track trails, dirt paths, red laterite climbs, and loose gravel descents all across Pune and the Sahyadri range.
+
+#### Trekking, High-Altitude & Mountaineering:
+- **Max Altitude Reached**: **13,820 ft**.
+- **Organization**: Treks completed with **GGIM** (Guardian Giripremi Institute of Mountaineering).
+- **Himalayan Expeditions**:
+  - Manali trek.
+  - Pindari Glacier trek.
+  - Plus 2 other Himalayan expeditions.
+- **Sahyadri Fort & Ridge Treks**:
+  - Torna Fort.
+  - Rajgad Fort.
+  - Sinhagad Fort.
+  - Harishchandragad.
 
 ---
 
-### 5. Technical / Website Architecture Facts
-- Single-page application built with HTML5, Tailwind CSS (via CDN), and vanilla JavaScript.
-- Uses Three.js (r128) for 3D interactive food forest rendering and ACESFilmic tone mapping.
-- Background uses an obsidian (#050608) and glacier cyan (#06b6d4) 45° halftone Ben-Day kinetic canvas.
-- UI design language inspired by Apple VisionOS frosted glass aesthetics.
-- Interactive photo upload frames (drag-and-drop & file picker) for portrait and trail gallery slots.
-- Live modal preview window for projects with real favicons fetched via Google S2 service with SVG fallbacks.
+### 6. Interactive / Website Concept Notes (UI Blueprint)
+- **/now Page / Section Concept**:
+  - Interactive sheet/card indicating current life focus: **10th Boards preparation**.
+  - Bottom features an interactive **page fold / drag-up reveal**: dragging up lifts the sheet to reveal the underlying tech stack, AI agent swarms, and active development projects.
+
+---
+
+### 7. Media & Assets
+- **Motorcycle Photos**:
+  - `impulse.jpg`: Hero Impulse custom off-road bike on dirt trail at sunset.
+  - `klx230.jpg`: Kawasaki KLX 230 US import in parking garage.
