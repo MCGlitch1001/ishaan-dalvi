@@ -1,0 +1,37 @@
+# Ishaan Dalvi
+
+> Ishaan Dalvi is a 15-year-old software developer based in Pune, India, working with Dalvi Consultancy and Dalvi Group. He builds verified production web applications and tools, stewards a 14,000 sq. ft. organic regenerative food forest in Pune, and rides off-road trails across Maharashtra.
+
+## Verified Identity & Profiles
+
+- [Website](https://ishaan.dalvigroup.co.in): Official portfolio and personal entity root.
+- [GitHub Profile](https://github.com/MCGlitch1001): Public code repositories, contributions, and developer profile.
+- [Dalvi Group](https://www.dalvigroup.co.in): Parent consultancy and family organization.
+- [Primary Email](mailto:ishaan@dalvigroup.co.in): Direct contact for engineering collaborations and inquiries.
+- [Instagram](https://instagram.com/MCGlitch1001): Personal updates, dirt biking, and trail photography.
+- [Location](https://www.google.com/maps/place/Pune,+Maharashtra): Pune, Maharashtra, India (Sahyadri Mountain Range).
+
+## Built Software (Lead Developer & Author)
+
+- [Orivaani](https://orivaani.dalvigroup.co.in): Voice-first oral memoir web platform that records spoken family stories, transcribes audio, and compiles memories into printed keepsake books. Built with React, Vite, and Web Audio APIs.
+- [RTO Calculator](https://rtocalc.dalvigroup.co.in): High-speed Maharashtra and BH-series vehicle tax, road tax, and re-registration penalty calculator with instant offline client-side computation and exportable PDF audit reports.
+- [Linca](https://linca.dalvigroup.co.in): Low-latency digital link routing and smart workflow redirection platform engineered under Dalvi Group for clean URL distribution.
+
+## Collaborative Projects (Web & Platform Engineering)
+
+- [DirtShack](https://dirtshack.in): Pune-based off-road dirt biking gear, custom Kawasaki KLX 230 performance parts, and trail rider e-commerce platform. Developed front-end interface and product catalog integration.
+- [Your Alai](https://youralai.com): AI-powered automotive companion platform featuring personalized garage management, diagnostic mechanic guides, and trip logging. Developed web application interface and client integrations.
+- [Insurance Quest](https://insurancequest.in): Commercial and industrial insurance reference knowledge portal helping Indian enterprise owners calculate asset risk, prevent underinsurance, and streamline claim filings. Developed web platform.
+- [PDLC](https://pdlc.dalvigroup.co.in/): Architectural switchable privacy smart glass platform under Dalvi Group. Developed product showcase and technical specifications web application.
+
+## Engineering Stack & Development Environment
+
+- Operating System: Arch Linux (primary development rig).
+- Core Technologies: JavaScript (ES6+), React, Vite, HTML5, CSS3, Tailwind CSS, Three.js (r128), Node.js.
+- Engineering Workflow: AI-assisted development utilizing Claude and Gemini frontier models with AI swarms for automated testing, with every deliverable verified and validated by hand before shipping.
+
+## Ecological Stewardship & Off-Road Exploration
+
+- Organic Food Forest: 14,000 sq. ft. regenerative food forest in Pune, Maharashtra. Practices heavy organic mulching, natural cow dung microbiome enrichment, deep Deccan basalt swales, natural canopy water retention, and native-only flora cultivation.
+- Off-Road Dirt Biking: Kawasaki KLX 230 (US-spec import) and custom-modified Hero Impulse dual-sport motorcycle. Regular riding on single-track dirt trails, red laterite climbs, and loose gravel across the Sahyadri range.
+- High-Altitude Trekking: Expeditions completed up to 13,820 ft with GGIM (Guardian Giripremi Institute of Mountaineering), including Manali, Pindari Glacier, and Sahyadri forts (Torna, Rajgad, Sinhagad, Harishchandragad).

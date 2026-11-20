@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hero Impulse — Procedural 3D Voxel Model</title>
+    <style>
+        /* Clean, full-bleed studio presentation with zero borders, text, or UI chrome */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #5e646e;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        #viewport {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            cursor: grab;
+        }
+        #viewport:active {
+            cursor: grabbing;
+        }
+    </style>
+    <!-- Three.js r128 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <canvas id="viewport"></canvas>
+
+    <script>
+    (function () {
+        'use strict';
+
+        // =========================================================================
+        // 1. CONFIGURATION & COLOR PALETTE (EXTRACTED FROM REFERENCE PHOTOGRAPH)
+        // =========================================================================
+
+        /** Base macro voxel size in meters (~12.5mm cubes for crisp mechanical detail) */
+        const V = 0.0125;
+        /** Fine sub-voxel size in meters (~6.25mm cubes for spokes, cables, rotor, fins, decals) */
+        const VF = V * 0.5;
+
+        /** Motorcycle coordinate anchors (meters): +X Forward, +Y Up (0 = ground), +Z Right */
+        const BIKE = {
+            rearAxleX: -0.665,
+            rearAxleY: 0.322,
+            rearTireR: 0.322,
+            rearRimR: 0.232,
+
+            frontAxleX: 0.695,
+            frontAxleY: 0.338,
+            frontTireR: 0.338,
+            frontRimR: 0.258,
+
+            forkRakeRad: 27.5 * Math.PI / 180,
+            forkHalfWidth: 0.094,
+            pivotX: -0.175,
+            pivotY: 0.415,
+            leanAngleRad: -0.052 // Subtle ~3 deg natural lean onto the left-side kickstand
+        };
+
+        /** Exact color palette calibrated to the photographed Hero Impulse */
+        const COLORS = {
+            orangeTank:     0xf2551b,
+            orangeDeep:     0xd84312,
+            blueFender:     0x1c4ea0,
+            blueFenderDark: 0x153b7a,
+            silverShroud:   0xc9cfd6,
+            silverAlloy:    0xb8bfc7,
+            silverRim:      0xc4c9cf,
+            chrome:         0xe4e8ec,
+            enginePewter:   0x969da5,
+            engineDark:     0x23262a,
+            frameBlack:     0x1b1d20,
+            tireRubber:     0x1c1e21,
+            tireKnob:       0x24272b,
+            seatBlack:      0x1d1f23,
+            gaiterBlack:    0x17191c,
+            sidePanelBlack: 0x1e2024,
+            redGuard:       0xe03219,
+            redGuardDark:   0xb82410,
+            exhaustBronze:  0x5a4132,
+            exhaustDark:    0x332823,
+            maskWhite:      0xd9d8d1,
+            decalWhite:     0xebeef2,
+            decalBlack:     0x141619,
+            reflectorAmber: 0xde6a14,
+            strapBrown:     0x6e4a35,
+            chainSteel:     0x45494e,
+            shockRed:       0xc4281b
+        };
+
+        // =========================================================================
+        // 2. VOXEL STORAGE, DEDUPLICATION & PER-VOXEL AMBIENT OCCLUSION ENGINE
+        // =========================================================================
+
+        /**
+         * Packs 3D integer grid indices into a fast numeric key for spatial lookup.
+         * Supports coordinates from -512 to +511 on each axis.
+         */
+        function packKey(ix, iy, iz) {
+            return (ix + 512) + (iy + 512) * 1024 + (iz + 512) * 1048576;
+        }
+
+        /**
+         * Deterministic micro-noise per voxel coordinate to give organic surface realism
+         * without breaking the clean voxel aesthetic.
+         */
+        function voxelHash(ix, iy, iz) {
+            let n = Math.imul(ix, 374761393) + Math.imul(iy, 668265263) + Math.imul(iz, 2147483647);
+            n = (n ^ (n >>> 13)) * 1274126177;
+            return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
+        }
+
+        /**
+         * Manages multi-resolution 3D voxels organized into logical component groups
+         * and material buckets, then compiles them into optimized THREE.InstancedMesh objects
+         * with baked 3D voxel ambient occlusion.
+         */
+        class VoxelMotorcycleBuilder {
+            constructor() {
+                /** Map<groupName, Map<matKey, Array<{x,y,z,size,color,ix,iy,iz,isFine}>>> */
+                this.groups = new Map();
+                /** Global coarse occupancy set for deduplication and 3D AO calculation */
+                this.coarseGrid = new Map();
+                /** Global fine occupancy set for deduplication of fine voxels */
+                this.fineGrid = new Set();
+            }
+
+            /**
+             * Registers a standard base-resolution voxel on the integer grid (step = V).
+             * Later voxels at the same coordinate overwrite earlier ones (useful for decals/details).
+             */
+            setMacro(groupName, matKey, ix, iy, iz, hexColor, overwrite = false) {
+                const key = packKey(ix, iy, iz);
+                const existing = this.coarseGrid.get(key);
+                if (existing) {
+                    if (!overwrite) return;
+                    existing.dead = true;
+                }
+                const record = {
+                    x: ix * V,
+                    y: iy * V,
+                    z: iz * V,
+                    size: V * 0.988, // Crisp 1.2% edge micro-gap so individual cubes catch studio light
+                    color: hexColor,
+                    ix, iy, iz,
+                    isFine: false,
+                    dead: false
+                };
+                this.coarseGrid.set(key, record);
+                this._pushToGroup(groupName, matKey, record);
+            }
+
+            /**
+             * Places a macro voxel using world coordinates (in meters), snapped to grid V.
+             */
+            setMacroWorld(groupName, matKey, wx, wy, wz, hexColor, overwrite = false) {
+                const ix = Math.round(wx / V);
+                const iy = Math.round(wy / V);
+                const iz = Math.round(wz / V);
+                this.setMacro(groupName, matKey, ix, iy, iz, hexColor, overwrite);
+            }
+
+            /**
+             * Places a fine-resolution sub-voxel snapped to grid VF (half of V).
+             * Ideal for spokes, brake rotor, cables, levers, cooling fins, and lettering.
+             */
+            setFineWorld(groupName, matKey, wx, wy, wz, hexColor, scaleMult = 1.0) {
+                const fx = Math.round(wx / VF);
+                const fy = Math.round(wy / VF);
+                const fz = Math.round(wz / VF);
+                const fKey = packKey(fx, fy, fz);
+                if (this.fineGrid.has(fKey)) return;
+                this.fineGrid.add(fKey);
+
+                const record = {
+                    x: fx * VF,
+                    y: fy * VF,
+                    z: fz * VF,
+                    size: VF * scaleMult,
+                    color: hexColor,
+                    ix: Math.round(fx * 0.5),
+                    iy: Math.round(fy * 0.5),
+                    iz: Math.round(fz * 0.5),
+                    isFine: true,
+                    dead: false
+                };
+                this._pushToGroup(groupName, matKey, record);
+            }
+
+            _pushToGroup(groupName, matKey, record) {
+                if (!this.groups.has(groupName)) {
+                    this.groups.set(groupName, new Map());
+                }
+                const matMap = this.groups.get(groupName);
+                if (!matMap.has(matKey)) {
+                    matMap.set(matKey, []);
+                }
+                matMap.get(matKey).push(record);
+            }
+
+            /**
+             * Fills a 3D tapered cylinder/capsule segment with macro or fine voxels.
+             */
+            fillSegment(group, mat, p1, p2, r1, r2, hexColor, fine = false, overwrite = false) {
+                const step = fine ? VF : V;
+                const rMax = Math.max(r1, r2) + step;
+                const minX = Math.floor((Math.min(p1.x, p2.x) - rMax) / step);
+                const maxX = Math.ceil((Math.max(p1.x, p2.x) + rMax) / step);
+                const minY = Math.floor((Math.min(p1.y, p2.y) - rMax) / step);
+                const maxY = Math.ceil((Math.max(p1.y, p2.y) + rMax) / step);
+                const minZ = Math.floor((Math.min(p1.z, p2.z) - rMax) / step);
+                const maxZ = Math.ceil((Math.max(p1.z, p2.z) + rMax) / step);
+
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                const dz = p2.z - p1.z;
+                const lenSq = dx * dx + dy * dy + dz * dz || 1e-6;
+
+                for (let ix = minX; ix <= maxX; ix++) {
+                    const wx = ix * step;
+                    for (let iy = minY; iy <= maxY; iy++) {
+                        const wy = iy * step;
+                        for (let iz = minZ; iz <= maxZ; iz++) {
+                            const wz = iz * step;
+                            let t = ((wx - p1.x) * dx + (wy - p1.y) * dy + (wz - p1.z) * dz) / lenSq;
+                            if (t < 0 || t > 1) continue;
+                            const px = p1.x + dx * t;
+                            const py = p1.y + dy * t;
+                            const pz = p1.z + dz * t;
+                            const distSq = (wx - px) ** 2 + (wy - py) ** 2 + (wz - pz) ** 2;
+                            const r = r1 + (r2 - r1) * t;
+                            if (distSq <= r * r) {
+                                if (fine) {
+                                    this.setFineWorld(group, mat, wx, wy, wz, hexColor);
+                                } else {
+                                    this.setMacro(group, mat, ix, iy, iz, hexColor, overwrite);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            /**
+             * Fills a smooth polyline tube with optional corrugated ribbing (for gaiters & red exhaust guards).
+             */
+            fillTube(group, mat, points, radius, hexColor, options = {}) {
+                const {
+                    fine = false,
+                    overwrite = false,
+                    ribAmp = 0,
+                    ribFreq = 0,
+                    ribColorAlt = null,
+                    strapSpacing = 0,
+                    strapColor = COLORS.frameBlack,
+                    hollow = false,
+                    innerRadius = 0
+                } = options;
+
+                const step = fine ? VF : V;
+                // Compute cumulative arc length along polyline
+                const cumLen = [0];
+                for (let i = 1; i < points.length; i++) {
+                    cumLen.push(cumLen[i - 1] + points[i].distanceTo(points[i - 1]));
+                }
+                const totalLen = cumLen[cumLen.length - 1] || 1e-5;
+
+                // Sample densely along spline to build solid voxel volume
+                for (let i = 0; i < points.length - 1; i++) {
+                    const p1 = points[i];
+                    const p2 = points[i + 1];
+                    const segLen = cumLen[i + 1] - cumLen[i];
+                    const maxR = radius + Math.abs(ribAmp) + step;
+
+                    const minX = Math.floor((Math.min(p1.x, p2.x) - maxR) / step);
+                    const maxX = Math.ceil((Math.max(p1.x, p2.x) + maxR) / step);
+                    const minY = Math.floor((Math.min(p1.y, p2.y) - maxR) / step);
+                    const maxY = Math.ceil((Math.max(p1.y, p2.y) + maxR) / step);
+                    const minZ = Math.floor((Math.min(p1.z, p2.z) - maxR) / step);
+                    const maxZ = Math.ceil((Math.max(p1.z, p2.z) + maxR) / step);
+
+                    const dx = p2.x - p1.x, dy = p2.y - p1.y, dz = p2.z - p1.z;
+                    const lenSq = dx * dx + dy * dy + dz * dz || 1e-6;
+
+                    for (let ix = minX; ix <= maxX; ix++) {
+                        const wx = ix * step;
+                        for (let iy = minY; iy <= maxY; iy++) {
+                            const wy = iy * step;
+                            for (let iz = minZ; iz <= maxZ; iz++) {
+                                const wz = iz * step;
+                                const rawT = ((wx - p1.x) * dx + (wy - p1.y) * dy + (wz - p1.z) * dz) / lenSq;
+                                const t = Math.max(0, Math.min(1, rawT));
+                                const px = p1.x + dx * t;
+                                const py = p1.y + dy * t;
+                                const pz = p1.z + dz * t;
+                                const dist = Math.sqrt((wx - px) ** 2 + (wy - py) ** 2 + (wz - pz) ** 2);
+
+                                const arcS = cumLen[i] + segLen * t;
+                                let effR = radius;
+                                let col = hexColor;
+                                let useMat = mat;
+
+                                if (ribAmp > 0 && ribFreq > 0) {
+                                    const wave = Math.sin((arcS / totalLen) * ribFreq * Math.PI * 2);
+                                    effR += wave > -0.15 ? ribAmp : -ribAmp * 0.45;
+                                    if (wave <= -0.15 && ribColorAlt !== null) {
+                                        col = ribColorAlt;
+                                    }
+                                }
+                                if (strapSpacing > 0) {
+                                    const mod = (arcS % strapSpacing);
+                                    if (mod < 0.011 && arcS > 0.025 && arcS < totalLen - 0.025) {
+                                        effR += 0.004;
+                                        col = strapColor;
+                                        useMat = 'darkMetal';
+                                    }
+                                }
+
+                                if (dist <= effR && (!hollow || dist >= innerRadius)) {
+                                    if (fine) {
+                                        this.setFineWorld(group, useMat, wx, wy, wz, col);
+                                    } else {
+                                        this.setMacro(group, useMat, ix, iy, iz, col, overwrite);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            /**
+             * Computes per-voxel baked Ambient Occlusion by inspecting nearby occupied grid cells.
+             * Darkens deep mechanical crevices while keeping outer painted surfaces crisp and bright.
+             */
+            computeAO(ix, iy, iz, isFine) {
+                let occ = 0;
+                // 26 immediate neighbors on macro grid
+                for (let dx = -1; dx <= 1; dx++) {
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (let dz = -1; dz <= 1; dz++) {
+                            if (dx === 0 && dy === 0 && dz === 0) continue;
+                            if (this.coarseGrid.has(packKey(ix + dx, iy + dy, iz + dz))) {
+                                // Weight overhead occlusion slightly stronger for natural top-down studio bounce
+                                occ += (dy > 0) ? 1.15 : (dy === 0 ? 0.85 : 0.45);
+                            }
+                        }
+                    }
+                }
+                // Medium-range upward ambient shadow check (under fenders, seat, tank)
+                for (let h = 2; h <= 5; h++) {
+                    if (this.coarseGrid.has(packKey(ix, iy + h, iz))) {
+                        occ += 1.6 / h;
+                    }
+                }
+                const maxOcc = isFine ? 18 : 22;
+                const ao = 1.0 - Math.min(0.46, (occ / maxOcc) * 0.52);
+                return ao;
+            }
+
+            /**
+             * Builds the final Three.js Group hierarchy with InstancedMesh per group & material.
+             */
+            compile(materials) {
+                const root = new THREE.Group();
+                root.name = 'HeroImpulseVoxelMotorcycle';
+
+                const unitCube = new THREE.BoxGeometry(1, 1, 1);
+                const dummy = new THREE.Object3D();
+                const tmpColor = new THREE.Color();
+
+                for (const [groupName, matMap] of this.groups.entries()) {
+                    const compGroup = new THREE.Group();
+                    compGroup.name = groupName;
+
+                    for (const [matKey, list] of matMap.entries()) {
+                        // Filter out overwritten dead records
+                        const active = list.filter(v => !v.dead);
+                        if (active.length === 0) continue;
+
+                        const mat = materials[matKey] || materials.darkMetal;
+                        const instMesh = new THREE.InstancedMesh(unitCube, mat, active.length);
+                        instMesh.name = `${groupName}_${matKey}`;
+                        instMesh.castShadow = true;
+                        instMesh.receiveShadow = true;
+
+                        for (let i = 0; i < active.length; i++) {
+                            const v = active[i];
+                            dummy.position.set(v.x, v.y, v.z);
+                            dummy.scale.set(v.size, v.size, v.size);
+                            dummy.updateMatrix();
+                            instMesh.setMatrixAt(i, dummy.matrix);
+
+                            // Combine base color, baked voxel AO, and subtle per-cube studio grain
+                            const ao = this.computeAO(v.ix, v.iy, v.iz, v.isFine);
+                            const grain = 0.985 + voxelHash(v.ix, v.iy, v.iz) * 0.03;
+                            tmpColor.setHex(v.color);
+                            tmpColor.multiplyScalar(ao * grain);
+                            instMesh.setColorAt(i, tmpColor);
+                        }
+
+                        instMesh.instanceMatrix.needsUpdate = true;
+                        if (instMesh.instanceColor) instMesh.instanceColor.needsUpdate = true;
+                        compGroup.add(instMesh);
+                    }
+
+                    root.add(compGroup);
+                }
+
+                return root;
+            }
+        }
+
+        // =========================================================================
+        // 3. PROCEDURAL COMPONENT BUILDERS (FAITHFUL HERO IMPULSE ARCHITECTURE)
+        // =========================================================================
+
+        /**
+         * Builds a complete off-road spoked wheel with knobby motocross tire,
+         * metallic rim, hub, crossed fine-voxel wire spokes, and brake/sprocket assembly.
+         */
+        function buildOffroadWheel(builder, config) {
+            const {
+                groupName, cx, cy, outerR, rimR, halfTireW,
+                hubR, hubHalfW, spokeCount, isFront
+            } = config;
+
+            const innerTireR = rimR + 0.008;
+            const knobBaseR = outerR - 0.022;
+            const rimInnerR = rimR - 0.018;
+            const rimHalfW = halfTireW * 0.68;
+
+            // 1. Knobby Tire Carcass + Aggressive Off-Road Tread Blocks (macro voxels)
+            const minX = Math.floor((cx - outerR - V) / V);
+            const maxX = Math.ceil((cx + outerR + V) / V);
+            const minY = Math.floor((cy - outerR - V) / V);
+            const maxY = Math.ceil((cy + outerR + V) / V);
+            const maxZ = Math.ceil((halfTireW + 0.014) / V);
+
+            const knobPitchCount = isFront ? 26 : 24;
+
+            for (let ix = minX; ix <= maxX; ix++) {
+                const wx = ix * V;
+                const dx = wx - cx;
+                for (let iy = minY; iy <= maxY; iy++) {
+                    const wy = iy * V;
+                    const dy = wy - cy;
+                    const r = Math.sqrt(dx * dx + dy * dy);
+                    if (r < rimInnerR || r > outerR + 0.004) continue;
+
+                    const angle = Math.atan2(dy, dx);
+
+                    for (let iz = -maxZ; iz <= maxZ; iz++) {
+                        const wz = iz * V;
+                        const az = Math.abs(wz);
+
+                        // Metallic Rim Channel
+                        if (r >= rimInnerR && r <= rimR && az <= rimHalfW) {
+                            const isRimEdge = (r > rimR - 0.009) || (az > rimHalfW - 0.011);
+                            if (isRimEdge || r < rimInnerR + 0.012) {
+                                builder.setMacro(groupName, 'metallicSilver', ix, iy, iz, COLORS.silverRim);
+                            }
+                            continue;
+                        }
+
+                        // Rounded Tire Carcass Cross-Section
+                        if (r >= innerTireR && r <= knobBaseR) {
+                            const tR = (r - innerTireR) / (knobBaseR - innerTireR); // 0 at rim, 1 at tread base
+                            // Rounded oval sidewall profile
+                            const profileW = halfTireW * (0.72 + 0.28 * Math.sin(tR * Math.PI * 0.85));
+                            if (az <= profileW) {
+                                // Hollow inner air chamber slightly to keep voxel count clean
+                                const isOuterShell = az > profileW - V * 1.6 || tR > 0.72 || tR < 0.22;
+                                if (isOuterShell) {
+                                    builder.setMacro(groupName, 'rubberMatte', ix, iy, iz, COLORS.tireRubber);
+                                }
+                            }
+                            continue;
+                        }
+
+                        // Staggered Chunky Off-Road Knobby Tread Blocks
+                        if (r > knobBaseR && r <= outerR) {
+                            const normAng = ((angle + Math.PI) / (Math.PI * 2)) * knobPitchCount;
+                            const cellIdx = Math.floor(normAng);
+                            const cellFrac = normAng - cellIdx;
+
+                            // Center paddle blocks & alternating shoulder blocks
+                            const inCenterKnob = (az < halfTireW * 0.36) && (cellFrac > 0.16 && cellFrac < 0.62);
+                            const shoulderPhase = (normAng + 0.5) % 1.0;
+                            const inShoulderKnob = (az >= halfTireW * 0.42 && az <= halfTireW * 1.04) &&
+                                                   (shoulderPhase > 0.14 && shoulderPhase < 0.58) &&
+                                                   (r <= outerR - (az > halfTireW * 0.88 ? 0.006 : 0.0));
+
+                            if (inCenterKnob || inShoulderKnob) {
+                                builder.setMacro(groupName, 'rubberMatte', ix, iy, iz, COLORS.tireKnob);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 2. Wheel Hub & Axle Boss
+            builder.fillSegment(
+                groupName, 'engineAlloy',
+                new THREE.Vector3(cx, cy, -hubHalfW),
+                new THREE.Vector3(cx, cy, hubHalfW),
+                hubR, hubR, COLORS.enginePewter, false
+            );
+            // Center axle nut & spindle
+            builder.fillSegment(
+                groupName, 'chrome',
+                new THREE.Vector3(cx, cy, -hubHalfW - 0.032),
+                new THREE.Vector3(cx, cy, hubHalfW + 0.032),
+                0.015, 0.015, COLORS.silverAlloy, true
+            );
+
+            // 3. Crossed Tangential Wire Spokes (Fine Voxels for crisp realism!)
+            for (let i = 0; i < spokeCount; i++) {
+                const aRim = (i / spokeCount) * Math.PI * 2;
+                const side = (i % 2 === 0) ? 1 : -1;
+                const crossDir = ((i >> 1) % 2 === 0) ? 1 : -1;
+                const aHub = aRim + crossDir * 0.44;
+
+                const pHub = new THREE.Vector3(
+                    cx + Math.cos(aHub) * (hubR * 0.82),
+                    cy + Math.sin(aHub) * (hubR * 0.82),
+                    side * (hubHalfW * 0.78)
+                );
+                const pRim = new THREE.Vector3(
+                    cx + Math.cos(aRim) * (rimInnerR + 0.004),
+                    cy + Math.sin(aRim) * (rimInnerR + 0.004),
+                    side * (rimHalfW * 0.25)
+                );
+
+                // Sample fine voxels along each wire spoke
+                const steps = 30;
+                for (let s = 0; s <= steps; s++) {
+                    const t = s / steps;
+                    const sx = pHub.x + (pRim.x - pHub.x) * t;
+                    const sy = pHub.y + (pRim.y - pHub.y) * t;
+                    const sz = pHub.z + (pRim.z - pHub.z) * t;
+                    builder.setFineWorld(groupName, 'chrome', sx, sy, sz, COLORS.silverRim, 0.82);
+                }
+            }
+
+            // 4. Front Disc Brake Rotor & Caliper (Right Side +Z, matching photo!)
+            if (isFront) {
+                const discZ = hubHalfW + 0.014;
+                const discOuter = 0.126;
+                const discInner = 0.068;
+                const carrierInner = 0.042;
+
+                const dMinX = Math.floor((cx - discOuter) / VF);
+                const dMaxX = Math.ceil((cx + discOuter) / VF);
+                const dMinY = Math.floor((cy - discOuter) / VF);
+                const dMaxY = Math.ceil((cy + discOuter) / VF);
+
+                for (let fx = dMinX; fx <= dMaxX; fx++) {
+                    const wx = fx * VF;
+                    const dx = wx - cx;
+                    for (let fy = dMinY; fy <= dMaxY; fy++) {
+                        const wy = fy * VF;
+                        const dy = wy - cy;
+                        const r = Math.sqrt(dx * dx + dy * dy);
+                        const ang = Math.atan2(dy, dx);
+
+                        // Perforated outer steel braking ring
+                        if (r >= discInner && r <= discOuter) {
+                            const holeRing = (Math.abs(r - 0.097) < 0.007) && (Math.sin(ang * 14) > 0.65);
+                            if (!holeRing) {
+                                builder.setFineWorld(groupName, 'chrome', wx, wy, discZ, COLORS.silverAlloy, 0.95);
+                            }
+                        } else if (r >= carrierInner && r < discInner) {
+                            // 5-spoke inner brake carrier spider
+                            if (Math.sin(ang * 5) > 0.25) {
+                                builder.setFineWorld(groupName, 'darkMetal', wx, wy, discZ - VF, 0x35393e, 0.95);
+                            }
+                        }
+                    }
+                }
+
+                // Black Front Brake Caliper mounted behind right lower fork leg (around 8 o'clock)
+                builder.fillSegment(
+                    groupName, 'darkMetal',
+                    new THREE.Vector3(cx - 0.105, cy + 0.015, discZ + 0.008),
+                    new THREE.Vector3(cx - 0.088, cy - 0.045, discZ + 0.008),
+                    0.025, 0.022, COLORS.frameBlack, false
+                );
+            } else {
+                // Rear Wheel: Right-side Drum Brake Plate + Left-side Chain Sprocket
+                const drumZ = hubHalfW + 0.008;
+                builder.fillSegment(
+                    groupName, 'engineAlloy',
+                    new THREE.Vector3(cx, cy, hubHalfW - 0.01),
+                    new THREE.Vector3(cx, cy, drumZ + 0.014),
+                    0.082, 0.076, COLORS.enginePewter, false
+                );
+                // Left-side rear driven sprocket (visible when rotating around the 3D model!)
+                const sprZ = -hubHalfW - 0.014;
+                const sprR = 0.112;
+                const sMinX = Math.floor((cx - sprR) / VF);
+                const sMaxX = Math.ceil((cx + sprR) / VF);
+                const sMinY = Math.floor((cy - sprR) / VF);
+                const sMaxY = Math.ceil((cy + sprR) / VF);
+                for (let fx = sMinX; fx <= sMaxX; fx++) {
+                    const wx = fx * VF, dx = wx - cx;
+                    for (let fy = sMinY; fy <= sMaxY; fy++) {
+                        const wy = fy * VF, dy = wy - cy;
+                        const r = Math.sqrt(dx * dx + dy * dy);
+                        const ang = Math.atan2(dy, dx);
+                        const teethR = sprR - 0.005 + Math.sin(ang * 42) * 0.005;
+                        if (r >= 0.042 && r <= teethR) {
+                            const cutout = (r > 0.062 && r < 0.094 && Math.sin(ang * 6) > 0.35);
+                            if (!cutout) {
+                                builder.setFineWorld(groupName, 'darkMetal', wx, wy, sprZ, COLORS.chainSteel, 0.95);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Builds the long-travel raked telescopic front forks, silver lower sliders,
+         * amber side reflectors, black ribbed rubber fork gaiters, triple clamps,
+         * off-white motocross front number plate mask, high handlebars, levers & cables.
+         */
+        function buildFrontForksAndCockpit(builder) {
+            const groupFork = 'FrontSuspension';
+            const groupBar = 'HandlebarsAndMask';
+
+            const sinR = Math.sin(BIKE.forkRakeRad);
+            const cosR = Math.cos(BIKE.forkRakeRad);
+
+            // Helper: point along fork axis at distance `d` from front axle
+            const forkPt = (d, z, offsetFwd = 0) => new THREE.Vector3(
+                BIKE.frontAxleX - d * sinR + offsetFwd * cosR,
+                BIKE.frontAxleY + d * cosR + offsetFwd * sinR,
+                z
+            );
+
+            // Left & Right Fork Legs
+            for (const side of [-1, 1]) {
+                const z = side * BIKE.forkHalfWidth;
+
+                // Lower fork slider (Brushed Silver aluminum: d = 0 to 0.41m)
+                builder.fillSegment(
+                    groupFork, 'metallicSilver',
+                    forkPt(-0.025, z), forkPt(0.405, z),
+                    0.024, 0.027, COLORS.silverAlloy, false
+                );
+
+                // Axle clamp boss at bottom of slider
+                builder.fillSegment(
+                    groupFork, 'metallicSilver',
+                    forkPt(-0.02, z, -0.014), forkPt(0.035, z, -0.014),
+                    0.022, 0.020, COLORS.silverAlloy, false
+                );
+
+                // Distinctive Rectangular Amber Side Reflector on lower fork slider (matching photo!)
+                for (let d = 0.145; d <= 0.205; d += VF) {
+                    for (let off = -0.010; off <= 0.010; off += VF) {
+                        const p = forkPt(d, z + side * 0.028, off);
+                        builder.setFineWorld(groupFork, 'reflectorAmber', p.x, p.y, p.z, COLORS.reflectorAmber, 1.05);
+                    }
+                }
+
+                // Black Corrugated Rubber Fork Gaiters (d = 0.405 to 0.655m)
+                builder.fillTube(
+                    groupFork, 'rubberMatte',
+                    [forkPt(0.405, z), forkPt(0.655, z)],
+                    0.028, COLORS.gaiterBlack,
+                    { ribAmp: 0.007, ribFreq: 14, ribColorAlt: 0x101214 }
+                );
+
+                // Upper Chrome Fork Stanchions between lower and upper triple clamps (d = 0.655 to 0.855m)
+                builder.fillSegment(
+                    groupFork, 'chrome',
+                    forkPt(0.655, z), forkPt(0.855, z),
+                    0.019, 0.019, COLORS.chrome, false
+                );
+            }
+
+            // Lower & Upper Triple Clamps + Steering Stem
+            const lowerClampY = 0.665;
+            const upperClampY = 0.840;
+            builder.fillSegment(
+                groupFork, 'darkMetal',
+                forkPt(lowerClampY, -BIKE.forkHalfWidth - 0.01),
+                forkPt(lowerClampY, BIKE.forkHalfWidth + 0.01),
+                0.024, 0.024, COLORS.frameBlack, false
+            );
+            builder.fillSegment(
+                groupFork, 'metallicSilver',
+                forkPt(upperClampY, -BIKE.forkHalfWidth - 0.01),
+                forkPt(upperClampY, BIKE.forkHalfWidth + 0.01),
+                0.020, 0.020, COLORS.silverAlloy, false
+            );
+            // Steering stem tube behind the fork plane
+            builder.fillSegment(
+                groupFork, 'darkMetal',
+                forkPt(lowerClampY - 0.02, 0, -0.042),
+                forkPt(upperClampY + 0.01, 0, -0.042),
+                0.026, 0.026, COLORS.frameBlack, false
+            );
+
+            // Off-White / Light-Grey Angled Motocross Front Number Plate Mask (faithful to photo!)
+            for (let d = 0.64; d <= 0.90; d += VF) {
+                const t = (d - 0.64) / 0.26; // 0 bottom, 1 top
+                const halfW = 0.115 * (1.0 - 0.28 * t * t) * (0.85 + 0.15 * Math.sin(t * Math.PI));
+                for (let z = -halfW; z <= halfW; z += VF) {
+                    const arch = Math.cos((z / (halfW + 0.01)) * Math.PI * 0.45) * 0.032;
+                    const p = forkPt(d, z, 0.034 + arch);
+                    // Thin black outer border / backing behind the white MX plate
+                    const isEdge = Math.abs(z) > halfW - VF * 1.8 || t < 0.06 || t > 0.94;
+                    builder.setFineWorld(
+                        groupBar, isEdge ? 'darkMetal' : 'glossyPaint',
+                        p.x, p.y, p.z,
+                        isEdge ? COLORS.frameBlack : COLORS.maskWhite, 1.05
+                    );
+                    // Black mounting shroud behind mask
+                    const pBack = forkPt(d, z * 0.85, 0.022 + arch * 0.5);
+                    builder.setFineWorld(groupBar, 'darkMetal', pBack.x, pBack.y, pBack.z, COLORS.frameBlack, 1.0);
+                }
+            }
+
+            // Compact black instrument pod behind the front mask
+            const dashP = forkPt(0.87, 0, -0.005);
+            builder.fillSegment(
+                groupBar, 'darkMetal',
+                new THREE.Vector3(dashP.x, dashP.y, -0.055),
+                new THREE.Vector3(dashP.x, dashP.y, 0.055),
+                0.028, 0.028, COLORS.frameBlack, false
+            );
+
+            // Handlebar Risers & High Motocross Handlebars (No mirrors — matching photo!)
+            for (const side of [-1, 1]) {
+                const base = forkPt(upperClampY + 0.01, side * 0.048, -0.015);
+                const top = new THREE.Vector3(base.x - 0.01, base.y + 0.055, side * 0.052);
+                builder.fillSegment(groupBar, 'darkMetal', base, top, 0.014, 0.014, COLORS.frameBlack, true);
+
+                // Swept MX handlebar tubing
+                const p0 = top;
+                const p1 = new THREE.Vector3(top.x - 0.015, top.y + 0.055, side * 0.145);
+                const p2 = new THREE.Vector3(top.x - 0.042, top.y + 0.072, side * 0.255);
+                const p3 = new THREE.Vector3(top.x - 0.065, top.y + 0.064, side * 0.385);
+                builder.fillTube(groupBar, 'darkMetal', [p0, p1, p2], 0.012, COLORS.frameBlack, { fine: true });
+                // Black rubber handlebar grips
+                builder.fillTube(groupBar, 'rubberMatte', [p2, p3], 0.017, COLORS.gaiterBlack, { fine: true });
+
+                // Switchgear housing + Brake/Clutch levers
+                const levBase = new THREE.Vector3(p2.x + 0.028, p2.y - 0.006, side * 0.245);
+                const levTip = new THREE.Vector3(p3.x + 0.052, p3.y - 0.012, side * 0.365);
+                builder.fillSegment(groupBar, 'darkMetal', p2, levBase, 0.016, 0.014, COLORS.frameBlack, true);
+                builder.fillSegment(groupBar, 'metallicSilver', levBase, levTip, 0.007, 0.006, COLORS.silverAlloy, true);
+            }
+            // Handlebar center section & MX crossbar brace
+            const riserL = forkPt(upperClampY + 0.01, -0.052, -0.015);
+            const riserR = forkPt(upperClampY + 0.01, 0.052, -0.015);
+            builder.fillSegment(
+                groupBar, 'darkMetal',
+                new THREE.Vector3(riserL.x - 0.01, riserL.y + 0.055, -0.055),
+                new THREE.Vector3(riserR.x - 0.01, riserR.y + 0.055, 0.055),
+                0.012, 0.012, COLORS.frameBlack, true
+            );
+            // Crossbar brace with slim pad
+            builder.fillSegment(
+                groupBar, 'darkMetal',
+                new THREE.Vector3(riserL.x - 0.025, riserL.y + 0.112, -0.145),
+                new THREE.Vector3(riserR.x - 0.025, riserR.y + 0.112, 0.145),
+                0.008, 0.008, COLORS.frameBlack, true
+            );
+
+            // Arching Black Brake & Throttle Control Cables (prominently silhouetted in the photo!)
+            const cable1 = [
+                new THREE.Vector3(0.285, 1.19, 0.18),
+                new THREE.Vector3(0.355, 1.24, 0.12),
+                new THREE.Vector3(0.415, 1.16, 0.08),
+                new THREE.Vector3(0.455, 0.96, 0.095),
+                new THREE.Vector3(0.545, 0.72, 0.105),
+                new THREE.Vector3(0.610, 0.42, 0.085)
+            ];
+            const cable2 = [
+                new THREE.Vector3(0.285, 1.19, -0.16),
+                new THREE.Vector3(0.340, 1.25, -0.09),
+                new THREE.Vector3(0.390, 1.14, -0.06),
+                new THREE.Vector3(0.320, 0.88, -0.07)
+            ];
+            builder.fillTube(groupBar, 'rubberMatte', cable1, 0.006, COLORS.gaiterBlack, { fine: true });
+            builder.fillTube(groupBar, 'rubberMatte', cable2, 0.006, COLORS.gaiterBlack, { fine: true });
+        }
+
+        /**
+         * Builds the distinctive royal blue high motocross front and rear fenders
+         * plus the black inner rear mudguard tray.
+         */
+        function buildFenders(builder) {
+            const group = 'Fenders';
+
+            // 1. High Royal Blue Front MX Fender (sweeping gracefully over the front wheel)
+            for (let x = 0.34; x <= 0.875; x += VF) {
+                const t = (x - 0.34) / (0.875 - 0.34); // 0 rear lip, 1 front beak
+                // Exact sculpted curve from reference photo
+                let centerY;
+                if (t < 0.22) {
+                    // Short downward rear mud lip behind forks
+                    const lt = t / 0.22;
+                    centerY = 0.805 + 0.075 * Math.sin(lt * Math.PI * 0.5);
+                } else {
+                    // Sweeping flat-to-downward front dirt-bike fender arch
+                    const ft = (t - 0.22) / 0.78;
+                    centerY = 0.880 + 0.006 * Math.sin(ft * Math.PI) - 0.135 * Math.pow(ft, 1.85);
+                }
+
+                // Tapered motocross fender width
+                const halfW = (t < 0.22)
+                    ? 0.078
+                    : 0.080 * (1.0 - 0.36 * Math.pow((t - 0.22) / 0.78, 1.4));
+
+                for (let z = -halfW; z <= halfW; z += VF) {
+                    const zn = z / (halfW + 0.001);
+                    const archDrop = 0.022 * zn * zn;
+                    const y = centerY - archDrop;
+                    builder.setFineWorld(group, 'glossyPaint', x, y, z, COLORS.blueFender, 1.15);
+                    builder.setFineWorld(group, 'glossyPaint', x, y - VF, z, COLORS.blueFenderDark, 1.10);
+                }
+            }
+
+            // 2. High Royal Blue Rear MX Tail Fender (straight-upward motocross tail!)
+            for (let x = -1.035; x <= -0.49; x += VF) {
+                const t = (x - (-0.49)) / (-1.035 - (-0.49)); // 0 under seat, 1 sharp tail tip
+                const centerY = 0.865 + 0.068 * t - 0.012 * t * t;
+                const halfW = 0.088 * (1.0 - 0.44 * Math.pow(t, 1.25));
+
+                for (let z = -halfW; z <= halfW; z += VF) {
+                    const zn = z / (halfW + 0.001);
+                    const archDrop = 0.026 * zn * zn * (1.0 - 0.4 * t);
+                    const y = centerY - archDrop;
+                    builder.setFineWorld(group, 'glossyPaint', x, y, z, COLORS.blueFender, 1.15);
+                    builder.setFineWorld(group, 'glossyPaint', x, y - VF, z, COLORS.blueFenderDark, 1.10);
+                }
+            }
+
+            // 3. Black Under-Tail Inner Mudguard Splash Shield
+            for (let x = -0.78; x <= -0.32; x += V) {
+                const t = (x - (-0.32)) / (-0.78 - (-0.32));
+                const cy = 0.62 + 0.22 * Math.sin(t * Math.PI * 0.68);
+                for (let z = -0.068; z <= 0.068; z += V) {
+                    builder.setMacroWorld(group, 'rubberMatte', x, cy, z, COLORS.frameBlack);
+                }
+            }
+        }
+
+        /**
+         * Builds the sculpted orange Hero Impulse fuel tank, silver/orange sharp forward shrouds,
+         * black fuel cap, diagonal shroud stripes, and voxelized "Impulse" decal graphic!
+         */
+        function buildFuelTankAndShrouds(builder) {
+            const group = 'FuelTankAndShrouds';
+
+            // 1. Main Sculpted Fuel Tank Volume (Bright Tangerine Orange)
+            const xMin = -0.03, xMax = 0.35;
+            const yMin = 0.72, yMax = 1.055;
+
+            for (let x = xMin; x <= xMax; x += V * 0.85) {
+                const t = (x - xMin) / (xMax - xMin); // 0 rear at seat, 1 front at head tube
+                // Iconic Hero Impulse top silhouette curve (peaking high around x=0.17)
+                const topY = 0.825 + 0.220 * Math.sin(Math.pow(t, 0.72) * Math.PI * 0.88);
+                const botY = 0.725 + 0.08 * t;
+                // Tank widens smoothly toward the front knee/shroud area
+                const halfW = 0.082 + 0.072 * Math.sin(Math.pow(t, 0.85) * Math.PI * 0.78);
+
+                for (let y = botY; y <= topY; y += V * 0.85) {
+                    const ty = (y - botY) / (topY - botY + 0.001); // 0 bottom, 1 top
+                    // Rounded upper crown
+                    const crownFactor = Math.sqrt(Math.max(0.05, 1.0 - Math.pow(Math.max(0, ty - 0.45) / 0.55, 2.1)));
+                    const localW = halfW * crownFactor;
+
+                    for (let z = -localW; z <= localW; z += V * 0.85) {
+                        // Shell optimization: keep outer 2 voxel layers solid
+                        const isSurface = Math.abs(z) >= localW - V * 1.8 || y >= topY - V * 1.6 || y <= botY + V * 1.2 || x <= xMin + V * 1.5 || x >= xMax - V * 1.5;
+                        if (!isSurface) continue;
+
+                        // Recessed black fuel filler cap on top peak
+                        const distCap = Math.hypot(x - 0.20, z);
+                        if (ty > 0.90 && distCap < 0.034) {
+                            builder.setMacroWorld(group, 'darkMetal', x, y + 0.004, z, COLORS.frameBlack, true);
+                        } else {
+                            builder.setMacroWorld(group, 'glossyPaint', x, y, z, COLORS.orangeTank);
+                        }
+                    }
+                }
+            }
+
+            // 2. Signature Two-Tone Forward Tank Shrouds (Orange upper + Metallic Silver lower wing + Decals!)
+            // Built at fine voxel resolution (VF) so the diagonal graphics and "Impulse" script read cleanly!
+            for (const side of [-1, 1]) {
+                for (let x = 0.04; x <= 0.435; x += VF) {
+                    // Shroud upper and lower boundary curves matching the exact Impulse geometry
+                    const tx = (x - 0.04) / (0.435 - 0.04); // 0 rear, 1 sharp front tip near forks
+                    const yTop = (tx < 0.35)
+                        ? 0.995 - 0.02 * (tx / 0.35)
+                        : 0.975 - 0.105 * Math.pow((tx - 0.35) / 0.65, 1.1);
+                    const yBot = (tx < 0.55)
+                        ? 0.725 - 0.045 * Math.sin((tx / 0.55) * Math.PI)
+                        : 0.705 + 0.145 * Math.pow((tx - 0.55) / 0.45, 1.05);
+
+                    if (yTop <= yBot + 0.01) continue;
+
+                    for (let y = yBot; y <= yTop; y += VF) {
+                        const ty = (y - yBot) / (yTop - yBot);
+                        // Sculpted outboard shroud flare (flares widest around x=0.22, tucks in at front tip)
+                        const flare = 0.118 + 0.052 * Math.sin(tx * Math.PI * 0.92) * (0.75 + 0.25 * Math.sin(ty * Math.PI));
+                        const z = side * flare;
+
+                        // Determine exact two-tone paint & decal graphics from reference photo:
+                        // Diagonal split line separating Silver lower-front wing from Orange upper shroud
+                        const splitY = 0.745 + 0.34 * (x - 0.06);
+                        let color = COLORS.orangeTank;
+                        let mat = 'glossyPaint';
+
+                        if (y < splitY) {
+                            // Metallic silver lower shroud wing
+                            color = COLORS.silverShroud;
+                            mat = 'metallicSilver';
+
+                            // Sharp black triangular accent wedge inside silver wing (visible in photo!)
+                            const wedgeY = 0.775 + 0.26 * (x - 0.14);
+                            if (x > 0.18 && x < 0.35 && y > wedgeY - 0.026 && y < wedgeY + 0.004) {
+                                color = COLORS.decalBlack;
+                                mat = 'darkMetal';
+                            }
+                        } else {
+                            // Orange upper shroud with sharp diagonal white/black speed stripes + "Impulse" decal
+                            const stripeLine = 0.955 - 0.22 * (x - 0.10);
+                            if (x > 0.12 && x < 0.39 && Math.abs(y - (stripeLine + 0.022)) < 0.008) {
+                                color = COLORS.decalWhite;
+                            } else if (x > 0.14 && x < 0.40 && Math.abs(y - (stripeLine - 0.005)) < 0.011) {
+                                // Stylized slanted "Impulse" graphic band along the orange shroud
+                                const letterPattern = Math.sin((x - 0.14) * 145) * Math.cos((y - stripeLine) * 190);
+                                color = (letterPattern > -0.25) ? COLORS.decalBlack : COLORS.orangeTank;
+                            } else if (x > 0.24 && x < 0.39 && Math.abs(y - (stripeLine - 0.024)) < 0.006) {
+                                color = COLORS.decalBlack;
+                            }
+                        }
+
+                        // Give the shroud realistic thickness (2 fine voxels thick)
+                        builder.setFineWorld(group, mat, x, y, z, color, 1.05);
+                        builder.setFineWorld(group, 'darkMetal', x, y, z - side * VF, COLORS.frameBlack, 1.0);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Builds the scooped black motocross seat (with the owner's distinctive brown strap!),
+         * orange upper side wing panels with black slash decals, and matte black lower side covers.
+         */
+        function buildSeatAndSidePanels(builder) {
+            const group = 'BodyPanelsAndSeat';
+
+            // 1. Scooped Black Motocross Seat
+            for (let x = -0.73; x <= 0.08; x += VF) {
+                const t = (x - (-0.73)) / (0.08 - (-0.73)); // 0 rear tail, 1 front tongue up tank
+                // Exact scooped seat top curve from photo
+                let topY;
+                if (t < 0.62) {
+                    // Gently dipping from rear pillion down into rider scoop
+                    const st = t / 0.62;
+                    topY = 0.935 - 0.128 * Math.sin(st * Math.PI * 0.56);
+                } else {
+                    // Rising steeply up onto the rear of the orange fuel tank
+                    const ft = (t - 0.62) / 0.38;
+                    topY = 0.809 + 0.135 * Math.pow(ft, 1.35);
+                }
+                const thickness = 0.072 * (1.0 - 0.45 * Math.max(0, (t - 0.72) / 0.28)) * (1.0 - 0.35 * Math.max(0, (0.08 - t) / 0.08));
+                const botY = topY - thickness;
+                const halfW = 0.088 * (0.82 + 0.25 * Math.sin(t * Math.PI * 0.85)) * (1.0 - 0.28 * Math.pow(t, 2.2));
+
+                // Distinctive weathered brown strap visible wrapping over the seat at x ≈ -0.44!
+                const isStrap = Math.abs(x - (-0.435 + (topY - 0.84) * 0.45)) < 0.015;
+
+                for (let y = botY; y <= topY; y += VF) {
+                    const ty = (y - botY) / (thickness + 0.001);
+                    const wFactor = Math.sqrt(Math.max(0.12, 1.0 - Math.pow(Math.max(0, ty - 0.52) / 0.48, 2.0)));
+                    const localW = halfW * wFactor;
+
+                    for (let z = -localW; z <= localW; z += VF) {
+                        const isShell = Math.abs(z) >= localW - VF * 1.5 || y >= topY - VF * 1.5 || y <= botY + VF * 1.5 || x <= -0.715;
+                        if (!isShell) continue;
+
+                        if (isStrap && ty > 0.15) {
+                            const oz = z + (z >= 0 ? VF * 0.4 : -VF * 0.4);
+                            builder.setFineWorld(group, 'leatherBrown', x, y + (ty > 0.85 ? VF * 0.5 : 0), oz, COLORS.strapBrown, 1.12);
+                        } else {
+                            builder.setFineWorld(group, 'rubberMatte', x, y, z, COLORS.seatBlack, 1.08);
+                        }
+                    }
+                }
+            }
+
+            // 2. Orange Upper Side Wing Panels + Black Diagonal Louver/Decal Stripes
+            for (const side of [-1, 1]) {
+                for (let x = -0.57; x <= 0.07; x += VF) {
+                    const t = (x - (-0.57)) / (0.07 - (-0.57)); // 0 rear under seat, 1 front at tank
+                    const yTop = 0.855 - 0.072 * Math.sin(t * Math.PI * 0.88);
+                    const yBot = 0.805 - 0.165 * Math.pow(t, 0.75);
+                    if (yTop <= yBot + 0.01) continue;
+
+                    for (let y = yBot; y <= yTop; y += VF) {
+                        const ty = (y - yBot) / (yTop - yBot);
+                        const z = side * (0.092 + 0.036 * Math.sin(t * Math.PI * 0.78) * (0.65 + 0.35 * ty));
+
+                        // Black diagonal slash decals (`///` pattern visible under seat in photo!)
+                        let col = COLORS.orangeTank;
+                        let mat = 'glossyPaint';
+                        const slashVal = (x * 1.0 + y * 0.85);
+                        if (x > -0.34 && x < -0.10 && ty > 0.12 && ty < 0.65) {
+                            const band = Math.sin(slashVal * 115);
+                            if (band > 0.45 || ty < 0.22) {
+                                col = COLORS.decalBlack;
+                                mat = 'darkMetal';
+                            }
+                        }
+                        // Small white/dark "Hero" micro-accent near x = -0.38
+                        if (x > -0.42 && x < -0.34 && ty > 0.52 && ty < 0.72 && Math.sin(x * 160) > 0.1) {
+                            col = COLORS.decalBlack;
+                            mat = 'darkMetal';
+                        }
+
+                        builder.setFineWorld(group, mat, x, y, z, col, 1.08);
+                        builder.setFineWorld(group, 'darkMetal', x, y, z - side * VF, COLORS.sidePanelBlack, 1.0);
+                    }
+                }
+
+                // 3. Lower Matte Black Side Covers / Airbox Triangle (behind engine, above swingarm)
+                for (let x = -0.43; x <= 0.05; x += V) {
+                    const t = (x - (-0.43)) / (0.05 - (-0.43));
+                    const yTop = 0.76 - 0.07 * t;
+                    const yBot = 0.56 - 0.11 * Math.sin(t * Math.PI * 0.75);
+                    if (yTop <= yBot) continue;
+
+                    for (let y = yBot; y <= yTop; y += V) {
+                        const z = side * (0.088 + 0.028 * Math.sin(t * Math.PI));
+                        builder.setMacroWorld(group, 'rubberMatte', x, y, z, COLORS.sidePanelBlack);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Builds the black tubular steel semi-double cradle frame, rear subframe,
+         * air-cooled 150cc finned single-cylinder engine, satin pewter clutch/stator covers,
+         * carburetor, bash plate, footpegs, pedals, kickstart, and side stand.
+         */
+        function buildFrameEngineAndControls(builder) {
+            const gFrame = 'FrameAndStand';
+            const gEngine = 'EngineAndDrivetrain';
+
+            // 1. Black Tubular Semi-Double Cradle Frame
+            const headTop = new THREE.Vector3(0.32, 0.96, 0);
+            const headBot = new THREE.Vector3(0.35, 0.83, 0);
+            const frontCradleBot = new THREE.Vector3(0.24, 0.28, 0);
+            const spineMid = new THREE.Vector3(-0.08, 0.76, 0);
+            const pivotCenter = new THREE.Vector3(BIKE.pivotX, BIKE.pivotY, 0);
+
+            // Backbone & main downtube
+            builder.fillTube(gFrame, 'darkMetal', [headTop, spineMid, new THREE.Vector3(-0.18, 0.65, 0)], 0.022, COLORS.frameBlack);
+            builder.fillTube(gFrame, 'darkMetal', [headBot, new THREE.Vector3(0.28, 0.54, 0), frontCradleBot], 0.020, COLORS.frameBlack);
+
+            // Dual lower cradle rails under engine & rear subframe rails
+            for (const side of [-1, 1]) {
+                const zLow = side * 0.078;
+                const zSub = side * 0.074;
+                // Lower engine cradle loop
+                builder.fillTube(gFrame, 'darkMetal', [
+                    new THREE.Vector3(0.23, 0.29, zLow * 0.6),
+                    new THREE.Vector3(0.14, 0.245, zLow),
+                    new THREE.Vector3(-0.14, 0.265, zLow),
+                    new THREE.Vector3(BIKE.pivotX, BIKE.pivotY, zLow * 1.15),
+                    new THREE.Vector3(-0.16, 0.64, zSub)
+                ], 0.015, COLORS.frameBlack);
+
+                // Rear subframe supporting seat & blue rear fender
+                builder.fillTube(gFrame, 'darkMetal', [
+                    new THREE.Vector3(-0.16, 0.68, zSub),
+                    new THREE.Vector3(-0.52, 0.80, zSub * 0.9),
+                    new THREE.Vector3(-0.74, 0.86, zSub * 0.75)
+                ], 0.013, COLORS.frameBlack);
+
+                // Diagonal subframe brace
+                builder.fillSegment(
+                    gFrame, 'darkMetal',
+                    new THREE.Vector3(BIKE.pivotX, BIKE.pivotY + 0.04, zLow * 1.1),
+                    new THREE.Vector3(-0.50, 0.79, zSub * 0.9),
+                    0.012, 0.012, COLORS.frameBlack
+                );
+            }
+
+            // Bottom engine skid plate / sump guard
+            for (let x = -0.10; x <= 0.22; x += V) {
+                const y = 0.242 + (x > 0.14 ? (x - 0.14) * 0.7 : 0);
+                for (let z = -0.072; z <= 0.072; z += V) {
+                    builder.setMacroWorld(gFrame, 'darkMetal', x, y, z, COLORS.frameBlack);
+                }
+            }
+
+            // 2. Engine Lower Crankcase & Satin Pewter Clutch/Stator Covers (Hero Impulse 150cc!)
+            // Core engine block
+            for (let x = -0.12; x <= 0.16; x += V) {
+                for (let y = 0.275; y <= 0.465; y += V) {
+                    const rx = (x - 0.025) / 0.145;
+                    const ry = (y - 0.365) / 0.105;
+                    if (rx * rx + ry * ry > 1.05) continue;
+                    for (let z = -0.095; z <= 0.095; z += V) {
+                        const isOuter = Math.abs(z) > 0.072;
+                        builder.setMacroWorld(
+                            gEngine, isOuter ? 'engineAlloy' : 'darkMetal',
+                            x, y, z,
+                            isOuter ? COLORS.enginePewter : 0x35393f
+                        );
+                    }
+                }
+            }
+
+            // Sculpted Right Clutch Cover (Prominent silver oval visible in center of photo!)
+            for (let x = -0.06; x <= 0.155; x += VF) {
+                for (let y = 0.295; y <= 0.455; y += VF) {
+                    const dx = (x - 0.048) / 0.105;
+                    const dy = (y - 0.372) / 0.078;
+                    const d2 = dx * dx + dy * dy;
+                    if (d2 <= 1.0) {
+                        const bulge = Math.sqrt(Math.max(0, 1.0 - d2)) * 0.026;
+                        const zPos = 0.096 + bulge;
+                        // Subtle recessed center Hero badge ring & perimeter bolts
+                        const isRimBolt = (d2 > 0.78 && d2 < 0.90) && (Math.sin(Math.atan2(dy, dx) * 10) > 0.85);
+                        const isBadgeLine = Math.abs(y - 0.372) < 0.008 && Math.abs(x - 0.048) < 0.045;
+                        const col = isRimBolt ? COLORS.chrome : (isBadgeLine ? 0x7d848c : COLORS.enginePewter);
+                        builder.setFineWorld(gEngine, 'engineAlloy', x, y, zPos, col, 1.08);
+                    }
+                }
+            }
+            // Matching Left Magneto/Stator Cover (for 360-degree 3D completeness!)
+            for (let x = -0.08; x <= 0.13; x += VF) {
+                for (let y = 0.295; y <= 0.445; y += VF) {
+                    const dx = (x - 0.025) / 0.102;
+                    const dy = (y - 0.368) / 0.072;
+                    const d2 = dx * dx + dy * dy;
+                    if (d2 <= 1.0) {
+                        const bulge = Math.sqrt(Math.max(0, 1.0 - d2)) * 0.024;
+                        builder.setFineWorld(gEngine, 'engineAlloy', x, y, -0.096 - bulge, COLORS.enginePewter, 1.08);
+                    }
+                }
+            }
+
+            // 3. Air-Cooled Upright Finned Cylinder Barrel & Cylinder Head (Dark Charcoal with crisp horizontal fins!)
+            const cylBaseX = 0.065, cylBaseY = 0.465;
+            const cylTilt = 0.18; // Slight forward lean (~10 deg)
+            for (let h = 0; h <= 0.215; h += VF) {
+                const cx = cylBaseX + h * cylTilt;
+                const cy = cylBaseY + h;
+                // Alternating wide cooling fins every ~14mm!
+                const finPhase = (h * 72) % 1.0;
+                const isFin = (h > 0.015 && h < 0.185) && (finPhase < 0.42);
+                const isValveCover = (h >= 0.185);
+
+                const rx = isFin ? 0.076 : (isValveCover ? 0.066 : 0.056);
+                const rz = isFin ? 0.082 : (isValveCover ? 0.070 : 0.058);
+
+                for (let dx = -rx; dx <= rx; dx += VF) {
+                    for (let dz = -rz; dz <= rz; dz += VF) {
+                        if ((dx * dx) / (rx * rx) + (dz * dz) / (rz * rz) > 1.08) continue;
+                        const col = isValveCover ? 0x3b4046 : (isFin ? 0x26292e : 0x191b1e);
+                        const mat = isValveCover ? 'engineAlloy' : 'darkMetal';
+                        builder.setFineWorld(gEngine, mat, cx + dx, cy, dz, col, 1.02);
+                    }
+                }
+            }
+
+            // Carburetor & Intake Boot behind the cylinder
+            builder.fillSegment(
+                gEngine, 'engineAlloy',
+                new THREE.Vector3(-0.02, 0.56, 0),
+                new THREE.Vector3(-0.11, 0.58, 0),
+                0.036, 0.032, COLORS.silverAlloy, false
+            );
+            builder.fillSegment(
+                gEngine, 'rubberMatte',
+                new THREE.Vector3(-0.11, 0.58, 0),
+                new THREE.Vector3(-0.21, 0.62, 0),
+                0.034, 0.042, COLORS.gaiterBlack, false
+            );
+
+            // 4. Rider Footpegs, Rear Brake Pedal, Gear Shifter, Kickstart Lever & Side Stand
+            for (const side of [-1, 1]) {
+                // Serrated off-road footpegs
+                builder.fillSegment(
+                    gFrame, 'darkMetal',
+                    new THREE.Vector3(-0.12, 0.34, side * 0.105),
+                    new THREE.Vector3(-0.12, 0.335, side * 0.215),
+                    0.014, 0.013, COLORS.frameBlack, true
+                );
+            }
+            // Right-side rear brake pedal
+            builder.fillTube(gFrame, 'metallicSilver', [
+                new THREE.Vector3(-0.11, 0.33, 0.125),
+                new THREE.Vector3(0.01, 0.32, 0.145),
+                new THREE.Vector3(0.035, 0.33, 0.185)
+            ], 0.008, COLORS.silverAlloy, { fine: true });
+
+            // Left-side gear shifter pedal
+            builder.fillTube(gFrame, 'darkMetal', [
+                new THREE.Vector3(-0.04, 0.33, -0.115),
+                new THREE.Vector3(0.06, 0.32, -0.135),
+                new THREE.Vector3(0.065, 0.32, -0.185)
+            ], 0.008, COLORS.frameBlack, { fine: true });
+
+            // Tucked chrome/dark kickstart lever on right rear of crankcase
+            builder.fillTube(gFrame, 'chrome', [
+                new THREE.Vector3(-0.075, 0.38, 0.115),
+                new THREE.Vector3(-0.11, 0.44, 0.135),
+                new THREE.Vector3(-0.05, 0.51, 0.135)
+            ], 0.009, COLORS.silverAlloy, { fine: true });
+
+            // Side Stand (Kickstand) extending down from left-lower frame to ground (prominent in photo!)
+            builder.fillTube(gFrame, 'darkMetal', [
+                new THREE.Vector3(-0.185, 0.31, -0.095),
+                new THREE.Vector3(-0.172, 0.015, -0.195)
+            ], 0.012, COLORS.frameBlack, { fine: true });
+            // Flat kickstand foot pad touching Y=0
+            builder.fillSegment(
+                gFrame, 'darkMetal',
+                new THREE.Vector3(-0.195, 0.010, -0.195),
+                new THREE.Vector3(-0.150, 0.010, -0.205),
+                0.012, 0.012, COLORS.frameBlack, true
+            );
+        }
+
+        /**
+         * Builds the brushed silver box-section swingarm, central coil-over monoshock,
+         * and left-side roller drive chain & chain guard.
+         */
+        function buildSwingarmAndSuspension(builder) {
+            const group = 'SwingarmAndShock';
+
+            // 1. Box-Section Brushed Aluminum Swingarm (prominent horizontal silver beam in photo!)
+            for (const side of [-1, 1]) {
+                const zCenter = side * 0.104;
+                const pStart = new THREE.Vector3(BIKE.pivotX, BIKE.pivotY, zCenter);
+                const pEnd = new THREE.Vector3(BIKE.rearAxleX - 0.025, BIKE.rearAxleY, zCenter);
+
+                const steps = 60;
+                for (let s = 0; s <= steps; s++) {
+                    const t = s / steps;
+                    const wx = pStart.x + (pEnd.x - pStart.x) * t;
+                    const wy = pStart.y + (pEnd.y - pStart.y) * t;
+                    const halfH = 0.028 * (1.0 - 0.16 * t);
+                    const halfThick = 0.014;
+
+                    for (let dy = -halfH; dy <= halfH; dy += VF) {
+                        for (let dz = -halfThick; dz <= halfThick; dz += VF) {
+                            const isEdge = Math.abs(dy) >= halfH - VF || Math.abs(dz) >= halfThick - VF;
+                            if (!isEdge && s % 3 !== 0) continue;
+                            // Dark axle adjustment slot near rear end
+                            const isSlot = (t > 0.84 && t < 0.94 && Math.abs(dy) < 0.008 && side * dz > 0);
+                            builder.setFineWorld(
+                                group, isSlot ? 'darkMetal' : 'metallicSilver',
+                                wx, wy + dy, zCenter + dz,
+                                isSlot ? COLORS.frameBlack : COLORS.silverAlloy, 1.05
+                            );
+                        }
+                    }
+                }
+            }
+            // Swingarm pivot crossbar & front yoke
+            builder.fillSegment(
+                group, 'metallicSilver',
+                new THREE.Vector3(BIKE.pivotX, BIKE.pivotY, -0.115),
+                new THREE.Vector3(BIKE.pivotX, BIKE.pivotY, 0.115),
+                0.026, 0.026, COLORS.silverAlloy
+            );
+            builder.fillSegment(
+                group, 'metallicSilver',
+                new THREE.Vector3(BIKE.pivotX - 0.08, BIKE.pivotY - 0.015, -0.095),
+                new THREE.Vector3(BIKE.pivotX - 0.08, BIKE.pivotY - 0.015, 0.095),
+                0.022, 0.022, COLORS.silverAlloy
+            );
+
+            // 2. Central Monoshock with Helical Coil Spring (visible in the frame gap & from angles!)
+            const shockBot = new THREE.Vector3(-0.275, 0.395, 0);
+            const shockTop = new THREE.Vector3(-0.215, 0.675, 0);
+            builder.fillSegment(group, 'darkMetal', shockBot, shockTop, 0.018, 0.018, COLORS.frameBlack, true);
+            // Helical red/orange coil spring wrapping the damper
+            const coilTurns = 7.5;
+            const coilSteps = 160;
+            for (let i = 0; i <= coilSteps; i++) {
+                const t = i / coilSteps;
+                const ang = t * coilTurns * Math.PI * 2;
+                const cx = shockBot.x + (shockTop.x - shockBot.x) * (0.14 + 0.72 * t);
+                const cy = shockBot.y + (shockTop.y - shockBot.y) * (0.14 + 0.72 * t);
+                const r = 0.032;
+                builder.setFineWorld(
+                    group, 'glossyPaint',
+                    cx + Math.cos(ang) * r,
+                    cy,
+                    Math.sin(ang) * r,
+                    COLORS.shockRed, 1.25
+                );
+            }
+
+            // 3. Left-Side Drive Chain & Black Chain Guard
+            const chainZ = -0.088;
+            // Upper & lower chain runs from engine front sprocket (-0.11, 0.37) to rear sprocket (-0.665, 0.322)
+            builder.fillTube(group, 'darkMetal', [
+                new THREE.Vector3(-0.11, 0.415, chainZ),
+                new THREE.Vector3(BIKE.rearAxleX, BIKE.rearAxleY + 0.112, chainZ)
+            ], 0.008, COLORS.chainSteel, { fine: true });
+            builder.fillTube(group, 'darkMetal', [
+                new THREE.Vector3(-0.11, 0.335, chainZ),
+                new THREE.Vector3(BIKE.rearAxleX, BIKE.rearAxleY - 0.112, chainZ)
+            ], 0.008, COLORS.chainSteel, { fine: true });
+
+            // Black chain guard sitting on top of the left swingarm
+            builder.fillTube(group, 'rubberMatte', [
+                new THREE.Vector3(-0.28, 0.435, chainZ),
+                new THREE.Vector3(-0.56, 0.455, chainZ)
+            ], 0.016, COLORS.frameBlack, { fine: true });
+        }
+
+        /**
+         * Builds the iconic custom high-mount right-side exhaust system:
+         * - Header pipe with bright red-orange ribbed silicone heat guard in front of cylinder
+         * - Heat-weathered bronze mid-pipe sweeping up behind the right side panel
+         * - Upswept motocross silencer fully wrapped in chunky red-orange ribbed silicone armor
+         * - Gleaming chrome hollow exhaust tailpipe tip
+         */
+        function buildExhaustSystem(builder) {
+            const group = 'ExhaustSystem';
+
+            // 1. Exhaust Header Pipe exiting cylinder head + Bright Red Ribbed Header Protector (key feature in photo!)
+            const headerPort = [
+                new THREE.Vector3(0.155, 0.575, 0.015),
+                new THREE.Vector3(0.225, 0.555, 0.065),
+                new THREE.Vector3(0.245, 0.505, 0.112)
+            ];
+            builder.fillTube(group, 'exhaustBronze', headerPort, 0.018, COLORS.exhaustBronze, { fine: true });
+
+            // Curved lower header bend wrapped in bright red-orange ribbed silicone guard
+            const headerGuardPts = [
+                new THREE.Vector3(0.242, 0.515, 0.112),
+                new THREE.Vector3(0.225, 0.478, 0.132),
+                new THREE.Vector3(0.155, 0.472, 0.138),
+                new THREE.Vector3(0.085, 0.486, 0.132),
+                new THREE.Vector3(0.035, 0.495, 0.118)
+            ];
+            builder.fillTube(group, 'siliconeRed', headerGuardPts, 0.025, COLORS.redGuard, {
+                fine: true,
+                ribAmp: 0.008,
+                ribFreq: 8,
+                ribColorAlt: COLORS.redGuardDark,
+                strapSpacing: 0.075,
+                strapColor: COLORS.frameBlack
+            });
+
+            // 2. Heat-Cycled Bronze Mid-Pipe curving back and steeply upward behind side panel
+            const midPipePts = [
+                new THREE.Vector3(0.035, 0.495, 0.115),
+                new THREE.Vector3(-0.08, 0.455, 0.108),
+                new THREE.Vector3(-0.22, 0.465, 0.112),
+                new THREE.Vector3(-0.33, 0.530, 0.125),
+                new THREE.Vector3(-0.44, 0.625, 0.145)
+            ];
+            builder.fillTube(group, 'exhaustBronze', midPipePts, 0.021, COLORS.exhaustBronze, { fine: true });
+
+            // 3. Upswept Muffler / Silencer wrapped in Iconic Red-Orange Ribbed Silicone Protector!
+            const mufStart = new THREE.Vector3(-0.445, 0.630, 0.152);
+            const mufEnd   = new THREE.Vector3(-0.775, 0.785, 0.165);
+            builder.fillTube(group, 'siliconeRed', [mufStart, mufEnd], 0.056, COLORS.redGuard, {
+                fine: false,
+                overwrite: true,
+                ribAmp: 0.015,
+                ribFreq: 10.5,
+                ribColorAlt: COLORS.redGuardDark,
+                strapSpacing: 0.115,
+                strapColor: COLORS.frameBlack
+            });
+
+            // Dark metallic end-cap on the rear of the silencer
+            const capDir = new THREE.Vector3().subVectors(mufEnd, mufStart).normalize();
+            const capEnd = mufEnd.clone().addScaledVector(capDir, 0.022);
+            builder.fillSegment(group, 'darkMetal', mufEnd, capEnd, 0.044, 0.034, COLORS.exhaustDark, true);
+
+            // 4. Chrome/Silver Protruding Exhaust Tailpipe Tip (hollow!)
+            const tipEnd = capEnd.clone().addScaledVector(capDir, 0.058);
+            builder.fillTube(group, 'chrome', [capEnd, tipEnd], 0.019, COLORS.chrome, {
+                fine: true,
+                hollow: true,
+                innerRadius: 0.010
+            });
+            // Dark soot inside tailpipe mouth
+            builder.fillSegment(
+                group, 'darkMetal',
+                capEnd, capEnd.clone().addScaledVector(capDir, 0.032),
+                0.010, 0.010, 0x0b0c0e, true
+            );
+        }
+
+        // =========================================================================
+        // 4. STUDIO PBR MATERIALS & PROCEDURAL SOFTBOX ENVIRONMENT MAP
+        // =========================================================================
+
+        /**
+         * Creates a procedural studio softbox environment texture via PMREMGenerator
+         * so metallic rims, aluminum swingarm, chrome forks, and glossy paint reflect naturally.
+         */
+        function createStudioEnvironment(renderer) {
+            const pmrem = new THREE.PMREMGenerator(renderer);
+            pmrem.compileEquirectangularShader();
+
+            const envScene = new THREE.Scene();
+            envScene.background = new THREE.Color(0x686e78);
+
+            // Large overhead studio softbox
+            const topBox = new THREE.Mesh(
+                new THREE.PlaneGeometry(14, 14),
+                new THREE.MeshBasicMaterial({ color: 0xf0f2f5, side: THREE.DoubleSide })
+            );
+            topBox.position.set(0, 7, 0);
+            topBox.rotation.x = Math.PI / 2;
+            envScene.add(topBox);
+
+            // Warm right-side studio reflector strip
+            const rightCard = new THREE.Mesh(
+                new THREE.PlaneGeometry(10, 6),
+                new THREE.MeshBasicMaterial({ color: 0xece6dd, side: THREE.DoubleSide })
+            );
+            rightCard.position.set(4, 3, 7);
+            rightCard.lookAt(0, 1, 0);
+            envScene.add(rightCard);
+
+            // Cool left-side fill reflector
+            const leftCard = new THREE.Mesh(
+                new THREE.PlaneGeometry(10, 6),
+                new THREE.MeshBasicMaterial({ color: 0xcad6e8, side: THREE.DoubleSide })
+            );
+            leftCard.position.set(-4, 3, -7);
+            leftCard.lookAt(0, 1, 0);
+            envScene.add(leftCard);
+
+            // Darker horizon strip for richer metallic and painted contrast
+            const band = new THREE.Mesh(
+                new THREE.CylinderGeometry(10, 10, 1.8, 24, 1, true),
+                new THREE.MeshBasicMaterial({ color: 0x464b54, side: THREE.BackSide })
+            );
+            band.position.y = 0.2;
+            envScene.add(band);
+
+            const envRT = pmrem.fromScene(envScene, 0.035);
+            pmrem.dispose();
+            return envRT.texture;
+        }
+
+        /**
+         * Builds the physically-based material library tuned for voxel studio rendering.
+         * Note: Base colors remain 0xffffff because per-voxel colors & AO are applied via instanceColor.
+         */
+        function createMaterials(envMap) {
+            const mk = (roughness, metalness, extra = {}) => new THREE.MeshStandardMaterial(Object.assign({
+                color: 0xffffff,
+                roughness,
+                metalness,
+                envMap,
+                envMapIntensity: 0.72
+            }, extra));
+
+            return {
+                glossyPaint:    mk(0.24, 0.08, { envMapIntensity: 0.65 }),
+                metallicSilver: mk(0.28, 0.80, { envMapIntensity: 1.10 }),
+                chrome:         mk(0.14, 0.92, { envMapIntensity: 1.30 }),
+                engineAlloy:    mk(0.42, 0.62, { envMapIntensity: 0.85 }),
+                rubberMatte:    mk(0.88, 0.02, { envMapIntensity: 0.18 }),
+                siliconeRed:    mk(0.46, 0.04, { envMapIntensity: 0.38 }),
+                darkMetal:      mk(0.50, 0.44, { envMapIntensity: 0.55 }),
+                exhaustBronze:  mk(0.44, 0.66, { envMapIntensity: 0.85 }),
+                leatherBrown:   mk(0.84, 0.02, { envMapIntensity: 0.20 }),
+                reflectorAmber: mk(0.15, 0.10, { emissive: new THREE.Color(0x2e1100), envMapIntensity: 1.0 })
+            };
+        }
+
+        // =========================================================================
+        // 5. SMOOTH DAMPED ORBIT / ZOOM / PAN CONTROLLER (MOUSE + TOUCH)
+        // =========================================================================
+
+        class StudioOrbitController {
+            constructor(camera, domElement) {
+                this.camera = camera;
+                this.dom = domElement;
+
+                // Spherical coordinates around target
+                this.target = new THREE.Vector3(-0.02, 0.61, 0.0);
+                this.targetGoal = this.target.clone();
+
+                // Initial viewing angle faithfully matching reference photo (right-side profile)
+                this.defaultTheta = 0.025;      // Pure right-side (+Z) with tiny natural depth cue
+                this.defaultPhi = Math.PI * 0.488; // Eye-level low-mid stance matching photo horizon
+                this.defaultRadius = 3.55;
+
+                this.theta = this.defaultTheta;
+                this.phi = this.defaultPhi;
+                this.radius = this.defaultRadius;
+
+                this.thetaGoal = this.theta;
+                this.phiGoal = this.phi;
+                this.radiusGoal = this.radius;
+
+                this.dragging = false;
+                this.panning = false;
+                this.lastX = 0;
+                this.lastY = 0;
+                this.pinchDist = 0;
+                this.lastTapTime = 0;
+
+                this._bindEvents();
+                this.fitToViewport();
+                this.snapImmediate();
+            }
+
+            /** Automatically computes camera radius so the entire bike fits with clean margins on any screen */
+            fitToViewport() {
+                const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+                const vFovRad = this.camera.fov * Math.PI / 180;
+                const hFovRad = 2 * Math.atan(Math.tan(vFovRad / 2) * aspect);
+
+                // Motorcycle total visual span: ~2.15m wide (X), ~1.35m tall (Y)
+                const halfSpanX = 1.28;
+                const halfSpanY = 0.80;
+
+                const distH = halfSpanX / Math.tan(hFovRad / 2);
+                const distV = halfSpanY / Math.tan(vFovRad / 2);
+                this.defaultRadius = Math.max(distH, distV);
+                this.radiusGoal = this.defaultRadius;
+            }
+
+            resetView() {
+                this.thetaGoal = this.defaultTheta;
+                this.phiGoal = this.defaultPhi;
+                this.radiusGoal = this.defaultRadius;
+                this.targetGoal.set(-0.02, 0.61, 0.0);
+            }
+
+            snapImmediate() {
+                this.theta = this.thetaGoal;
+                this.phi = this.phiGoal;
+                this.radius = this.radiusGoal;
+                this.target.copy(this.targetGoal);
+                this._applyCamera();
+            }
+
+            update() {
+                const damp = 0.12;
+                this.theta += (this.thetaGoal - this.theta) * damp;
+                this.phi += (this.phiGoal - this.phi) * damp;
+                this.radius += (this.radiusGoal - this.radius) * damp;
+                this.target.lerp(this.targetGoal, damp);
+                this._applyCamera();
+            }
+
+            _applyCamera() {
+                const sinPhi = Math.sin(this.phi);
+                const x = this.target.x + this.radius * sinPhi * Math.sin(this.theta);
+                const y = this.target.y + this.radius * Math.cos(this.phi);
+                const z = this.target.z + this.radius * sinPhi * Math.cos(this.theta);
+                this.camera.position.set(x, Math.max(0.06, y), z);
+                this.camera.lookAt(this.target);
+            }
+
+            _pan(dx, dy) {
+                const panScale = this.radius * 0.0014;
+                const forward = new THREE.Vector3();
+                this.camera.getWorldDirection(forward);
+                const right = new THREE.Vector3().crossVectors(forward, this.camera.up).normalize();
+                const up = new THREE.Vector3().crossVectors(right, forward).normalize();
+                this.targetGoal.addScaledVector(right, -dx * panScale);
+                this.targetGoal.addScaledVector(up, dy * panScale);
+                this.targetGoal.y = Math.max(0.15, Math.min(1.4, this.targetGoal.y));
+            }
+
+            _bindEvents() {
+                // Mouse interaction
+                this.dom.addEventListener('mousedown', (e) => {
+                    this.dragging = true;
+                    this.panning = (e.button === 2 || e.shiftKey);
+                    this.lastX = e.clientX;
+                    this.lastY = e.clientY;
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    if (!this.dragging) return;
+                    const dx = e.clientX - this.lastX;
+                    const dy = e.clientY - this.lastY;
+                    this.lastX = e.clientX;
+                    this.lastY = e.clientY;
+
+                    if (this.panning) {
+                        this._pan(dx, dy);
+                    } else {
+                        this.thetaGoal -= dx * 0.0068;
+                        this.phiGoal = Math.max(0.14, Math.min(Math.PI * 0.535, this.phiGoal - dy * 0.0068));
+                    }
+                });
+
+                window.addEventListener('mouseup', () => {
+                    this.dragging = false;
+                    this.panning = false;
+                });
+
+                this.dom.addEventListener('contextmenu', (e) => e.preventDefault());
+
+                this.dom.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const factor = 1 + Math.sign(e.deltaY) * 0.09;
+                    this.radiusGoal = Math.max(1.15, Math.min(9.5, this.radiusGoal * factor));
+                }, { passive: false });
+
+                this.dom.addEventListener('dblclick', () => this.resetView());
+
+                // Touch interaction (1-finger rotate, 2-finger pinch zoom & pan, double-tap reset)
+                this.dom.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    if (e.touches.length === 1) {
+                        const now = performance.now();
+                        if (now - this.lastTapTime < 280) {
+                            this.resetView();
+                        }
+                        this.lastTapTime = now;
+                        this.dragging = true;
+                        this.panning = false;
+                        this.lastX = e.touches[0].clientX;
+                        this.lastY = e.touches[0].clientY;
+                    } else if (e.touches.length === 2) {
+                        this.dragging = false;
+                        const dx = e.touches[0].clientX - e.touches[1].clientX;
+                        const dy = e.touches[0].clientY - e.touches[1].clientY;
+                        this.pinchDist = Math.hypot(dx, dy);
+                        this.lastX = (e.touches[0].clientX + e.touches[1].clientX) * 0.5;
+                        this.lastY = (e.touches[0].clientY + e.touches[1].clientY) * 0.5;
+                    }
+                }, { passive: false });
+
+                this.dom.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    if (e.touches.length === 1 && this.dragging) {
+                        const dx = e.touches[0].clientX - this.lastX;
+                        const dy = e.touches[0].clientY - this.lastY;
+                        this.lastX = e.touches[0].clientX;
+                        this.lastY = e.touches[0].clientY;
+                        this.thetaGoal -= dx * 0.0075;
+                        this.phiGoal = Math.max(0.14, Math.min(Math.PI * 0.535, this.phiGoal - dy * 0.0075));
+                    } else if (e.touches.length === 2) {
+                        const dx = e.touches[0].clientX - e.touches[1].clientX;
+                        const dy = e.touches[0].clientY - e.touches[1].clientY;
+                        const dist = Math.hypot(dx, dy);
+                        if (this.pinchDist > 0) {
+                            const scale = this.pinchDist / Math.max(1, dist);
+                            this.radiusGoal = Math.max(1.15, Math.min(9.5, this.radiusGoal * scale));
+                        }
+                        this.pinchDist = dist;
+
+                        const midX = (e.touches[0].clientX + e.touches[1].clientX) * 0.5;
+                        const midY = (e.touches[0].clientY + e.touches[1].clientY) * 0.5;
+                        this._pan(midX - this.lastX, midY - this.lastY);
+                        this.lastX = midX;
+                        this.lastY = midY;
+                    }
+                }, { passive: false });
+
+                this.dom.addEventListener('touchend', () => {
+                    this.dragging = false;
+                    this.pinchDist = 0;
+                });
+            }
+        }
+
+        // =========================================================================
+        // 6. SCENE ASSEMBLY, STUDIO LIGHTING & RENDER LOOP
+        // =========================================================================
+
+        function initScene() {
+            const canvas = document.getElementById('viewport');
+
+            // Renderer with high-DPI support, ACES Filmic tone mapping & soft shadows
+            const renderer = new THREE.WebGLRenderer({
+                canvas,
+                antialias: true,
+                powerPreference: 'high-performance'
+            });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            renderer.setSize(window.innerWidth, window.innerHeight, false);
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 0.94;
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // Plain seamless mid-dark neutral studio grey backdrop
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x5e646e);
+
+            // Studio Environment Map & Materials
+            const envMap = createStudioEnvironment(renderer);
+            scene.environment = envMap;
+            const materials = createMaterials(envMap);
+
+            // Camera (34 deg FOV ~ 55mm telephoto lens for faithful profile proportions)
+            const camera = new THREE.PerspectiveCamera(
+                34,
+                window.innerWidth / Math.max(1, window.innerHeight),
+                0.08,
+                40
+            );
+
+            // Studio 3-Point + Hemisphere Lighting Rig (balanced for rich color saturation)
+            const hemiLight = new THREE.HemisphereLight(0xf5f7fa, 0x3b4048, 0.42);
+            scene.add(hemiLight);
+
+            // Key studio softbox light (front-right-above, casting crisp grounded voxel shadows)
+            const keyLight = new THREE.DirectionalLight(0xfff9f0, 1.42);
+            keyLight.position.set(1.8, 4.6, 3.2);
+            keyLight.castShadow = true;
+            keyLight.shadow.mapSize.width = 2048;
+            keyLight.shadow.mapSize.height = 2048;
+            keyLight.shadow.camera.near = 1.0;
+            keyLight.shadow.camera.far = 11.0;
+            keyLight.shadow.camera.left = -1.65;
+            keyLight.shadow.camera.right = 1.65;
+            keyLight.shadow.camera.top = 1.65;
+            keyLight.shadow.camera.bottom = -1.65;
+            keyLight.shadow.bias = -0.00045;
+            keyLight.shadow.radius = 2.4;
+            scene.add(keyLight);
+
+            // Cool opposite fill light (ensures left side and dark mechanical recesses stay detailed)
+            const fillLight = new THREE.DirectionalLight(0xdce7ff, 0.52);
+            fillLight.position.set(-2.5, 2.8, -3.4);
+            scene.add(fillLight);
+
+            // Rear rim light for clean silhouette separation against the studio grey backdrop
+            const rimLight = new THREE.DirectionalLight(0xffffff, 0.58);
+            rimLight.position.set(-3.2, 2.2, 1.4);
+            scene.add(rimLight);
+
+            // Invisible shadow-catching ground plane at Y = 0 (seamlessly merges into studio grey)
+            const floorGeo = new THREE.PlaneGeometry(16, 16);
+            const floorMat = new THREE.ShadowMaterial({ opacity: 0.34 });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = 0;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            // Procedurally construct every logical component of the Hero Impulse in 3D voxels
+            const builder = new VoxelMotorcycleBuilder();
+
+            // Rear Knobby Wheel (17" visual proportion)
+            buildOffroadWheel(builder, {
+                groupName: 'RearWheel',
+                cx: BIKE.rearAxleX,
+                cy: BIKE.rearAxleY,
+                outerR: BIKE.rearTireR,
+                rimR: BIKE.rearRimR,
+                halfTireW: 0.062,
+                hubR: 0.068,
+                hubHalfW: 0.068,
+                spokeCount: 36,
+                isFront: false
+            });
+
+            // Front Knobby Wheel (19" visual proportion + right-side perforated brake disc & caliper)
+            buildOffroadWheel(builder, {
+                groupName: 'FrontWheel',
+                cx: BIKE.frontAxleX,
+                cy: BIKE.frontAxleY,
+                outerR: BIKE.frontTireR,
+                rimR: BIKE.frontRimR,
+                halfTireW: 0.048,
+                hubR: 0.052,
+                hubHalfW: 0.056,
+                spokeCount: 36,
+                isFront: true
+            });
+
+            buildFrontForksAndCockpit(builder);
+            buildFenders(builder);
+            buildFuelTankAndShrouds(builder);
+            buildSeatAndSidePanels(builder);
+            buildFrameEngineAndControls(builder);
+            buildSwingarmAndSuspension(builder);
+            buildExhaustSystem(builder);
+
+            // Compile all logical groups into optimized InstancedMeshes with baked voxel AO
+            const motorcycleGroup = builder.compile(materials);
+
+            // Apply subtle natural kickstand lean matching the reference photograph
+            motorcycleGroup.rotation.x = BIKE.leanAngleRad;
+            // Re-seat lowest point cleanly onto Y = 0 studio floor
+            motorcycleGroup.updateMatrixWorld(true);
+            const bbox = new THREE.Box3().setFromObject(motorcycleGroup);
+            motorcycleGroup.position.y -= bbox.min.y;
+            scene.add(motorcycleGroup);
+
+            // Interactive Studio Camera Controls
+            const controls = new StudioOrbitController(camera, canvas);
+
+            // Responsive Resize Handler
+            window.addEventListener('resize', () => {
+                const w = window.innerWidth;
+                const h = Math.max(1, window.innerHeight);
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+                renderer.setSize(w, h, false);
+                controls.fitToViewport();
+            });
+
+            // Main Render Loop
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // Start safely after window load
+        window.onload = function () {
+            try {
+                initScene();
+            } catch (err) {
+                console.error('Failed to initialize 3D voxel scene:', err);
+            }
+        };
+    })();
+    </script>
+</body>
+</html>

@@ -123,3 +123,19 @@ Here is a clear breakdown of every factual detail explicitly stated across the w
 - **Motorcycle Photos**:
   - `impulse.jpg`: Hero Impulse custom off-road bike on dirt trail at sunset.
   - `klx230.jpg`: Kawasaki KLX 230 US import in parking garage.
+
+---
+
+### 8. Generative Engine Optimization (GEO) & Entity Verification Architecture
+- **Bi-Directional Linking**:
+  - Outbound links to verified GitHub profile (`https://github.com/MCGlitch1001` with `rel="me"`), parent group Dalvi Group (`https://www.dalvigroup.co.in` with `rel="me"`), live production subdomains, and partner platforms.
+  - Inbound reciprocal entity signals: GitHub bio, project footers, and official domain records linking back to `https://ishaan.dalvigroup.co.in`.
+- **JSON-LD Schema (`Schema.org`)**:
+  - Declares `@type: "Person"` entity with `@id: "https://ishaan.dalvigroup.co.in/#person"`, `sameAs` array for GitHub, Instagram, and Dalvi Group.
+  - Connects projects via `@type: "SoftwareApplication"` and `"WebApplication"` blocks using `"author": { "@id": "https://ishaan.dalvigroup.co.in/#person" }` and verified production URLs.
+- **`llms.txt` Emerging Standard**:
+  - Standard markdown context file served at `/llms.txt`.
+  - Features a 2-sentence neutral bio, bulleted project list with tech stacks and live URLs, and verified identity profiles stripped of CSS and presentation noise.
+  - Linked in `<head>` via `<link rel="alternate" type="text/markdown" href="/llms.txt" title="LLM and Agent Context" />` and in the website footer.
+- **Fact-Dense, Neutral Copywriting**:
+  - Avoids promotional hype or vague claims. Uses checkable details: exact URLs, technology stacks, roles (Lead Developer vs. Collaborator), and subdomain ownership proofs.

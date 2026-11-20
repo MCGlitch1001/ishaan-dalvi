@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kawasaki KLX 230R - 3D Voxel Model</title>
+    <!-- Three.js r128 Core Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* Clean, borderless full-viewport studio canvas presentation */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #5c626b;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        #viewport {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            cursor: grab;
+        }
+        #viewport:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main WebGL Rendering Canvas -->
+    <canvas id="viewport"></canvas>
+
+    <script>
+    (function () {
+        'use strict';
+
+        // =========================================================================
+        // 1. MULTI-RESOLUTION VOXEL CONSTANTS & MATERIAL PALETTE
+        // =========================================================================
+        // Three distinct physical cube sizes (in meters) balance fine mechanical
+        // fidelity (spokes, fins, rotors, decals) with clean voxel aesthetics.
+        const S_MAIN = 0.0125;  // 12.5 mm: bodywork panels, seat, tires, muffler, swingarm
+        const S_MED  = 0.0090;  //  9.0 mm: frame tubes, forks, gaiters, engine, exhaust, knobs
+        const S_FINE = 0.0056;  //  5.6 mm: wire spokes, cooling fins, petal discs, bolts, chain
+
+        // Accurate PBR material definitions sampled from the reference Kawasaki KLX 230R
+        const MATERIAL_SPECS = {
+            limeGreen:      { color: 0x45c814, roughness: 0.24, metalness: 0.05 },
+            limeGreenDark:  { color: 0x35a80d, roughness: 0.28, metalness: 0.05 },
+            seatBlack:      { color: 0x222427, roughness: 0.82, metalness: 0.02 },
+            tankBlack:      { color: 0x1b1d20, roughness: 0.36, metalness: 0.06 },
+            decalBlack:     { color: 0x15171a, roughness: 0.26, metalness: 0.06 },
+            decalWhite:     { color: 0xedf1f4, roughness: 0.24, metalness: 0.12 },
+            frameWhite:     { color: 0xdce0e4, roughness: 0.36, metalness: 0.24 },
+            frameGuard:     { color: 0x393c41, roughness: 0.56, metalness: 0.06 },
+            tireRubber:     { color: 0x2d2f31, roughness: 0.90, metalness: 0.02 },
+            tireDust:       { color: 0x45443f, roughness: 0.94, metalness: 0.01 },
+            rimBlack:       { color: 0x16181c, roughness: 0.25, metalness: 0.78 },
+            aluminum:       { color: 0xc5cacf, roughness: 0.30, metalness: 0.84 },
+            aluminumCast:   { color: 0xa1a6ab, roughness: 0.44, metalness: 0.70 },
+            chrome:         { color: 0xe3e8ed, roughness: 0.11, metalness: 0.96 },
+            spokeSteel:     { color: 0xd0d5da, roughness: 0.22, metalness: 0.90 },
+            cylinderOxide:  { color: 0x766c60, roughness: 0.62, metalness: 0.46 },
+            exhaustHeader:  { color: 0x765540, roughness: 0.56, metalness: 0.54 },
+            mufflerSteel:   { color: 0xd0d4d8, roughness: 0.24, metalness: 0.88 },
+            mufflerCap:     { color: 0x3a3d41, roughness: 0.54, metalness: 0.48 },
+            gaiterRubber:   { color: 0x38322a, roughness: 0.86, metalness: 0.02 },
+            gripTan:        { color: 0xba9b6e, roughness: 0.82, metalness: 0.02 },
+            darkSteel:      { color: 0x2c2f34, roughness: 0.40, metalness: 0.74 },
+            strapBlack:     { color: 0x1c1e21, roughness: 0.88, metalness: 0.02 }
+        };
+
+        // =========================================================================
+        // 2. VOXEL STORAGE, DEDUPLICATION & AMBIENT OCCLUSION ENGINE
+        // =========================================================================
+        /**
+         * VoxelLayer stores quantized 3D voxel cubes for a specific logical component
+         * at a specific voxel resolution, performs interior-face culling, and converts
+         * the data into optimized THREE.InstancedMesh objects with per-voxel AO.
+         */
+        class VoxelLayer {
+            constructor(size, jitter = 0.03) {
+                this.size = size;
+                this.jitter = jitter;
+                this.voxels = new Map(); // key "ix,iy,iz" -> { ix, iy, iz, mat, tint }
+            }
+
+            /** Add a single voxel at local coordinates (x, y, z) */
+            set(x, y, z, mat, tint = 1.0) {
+                const ix = Math.round(x / this.size);
+                const iy = Math.round(y / this.size);
+                const iz = Math.round(z / this.size);
+                const key = ix + ',' + iy + ',' + iz;
+                this.voxels.set(key, { ix, iy, iz, mat, tint });
+            }
+
+            /** Add a voxel only if the cell is currently empty */
+            setIfEmpty(x, y, z, mat, tint = 1.0) {
+                const ix = Math.round(x / this.size);
+                const iy = Math.round(y / this.size);
+                const iz = Math.round(z / this.size);
+                const key = ix + ',' + iy + ',' + iz;
+                if (!this.voxels.has(key)) {
+                    this.voxels.set(key, { ix, iy, iz, mat, tint });
+                }
+            }
+
+            /** Fill a 3D cylindrical tube/capsule between point A and point B */
+            addTube(ax, ay, az, bx, by, bz, radius, mat, hollow = false, tint = 1.0) {
+                const s = this.size;
+                const dx = bx - ax, dy = by - ay, dz = bz - az;
+                const lenSq = dx * dx + dy * dy + dz * dz;
+                const pad = radius + s;
+                const minX = Math.floor((Math.min(ax, bx) - pad) / s);
+                const maxX = Math.ceil((Math.max(ax, bx) + pad) / s);
+                const minY = Math.floor((Math.min(ay, by) - pad) / s);
+                const maxY = Math.ceil((Math.max(ay, by) + pad) / s);
+                const minZ = Math.floor((Math.min(az, bz) - pad) / s);
+                const maxZ = Math.ceil((Math.max(az, bz) + pad) / s);
+                const rSq = radius * radius;
+                const innerRSq = hollow ? Math.pow(Math.max(0, radius - s * 1.35), 2) : -1;
+
+                for (let ix = minX; ix <= maxX; ix++) {
+                    const px = ix * s;
+                    for (let iy = minY; iy <= maxY; iy++) {
+                        const py = iy * s;
+                        for (let iz = minZ; iz <= maxZ; iz++) {
+                            const pz = iz * s;
+                            let t = 0;
+                            if (lenSq > 1e-8) {
+                                t = ((px - ax) * dx + (py - ay) * dy + (pz - az) * dz) / lenSq;
+                                if (t < 0) t = 0;
+                                else if (t > 1) t = 1;
+                            }
+                            const cx = ax + t * dx - px;
+                            const cy = ay + t * dy - py;
+                            const cz = az + t * dz - pz;
+                            const dSq = cx * cx + cy * cy + cz * cz;
+                            if (dSq <= rSq && dSq >= innerRSq) {
+                                const key = ix + ',' + iy + ',' + iz;
+                                this.voxels.set(key, { ix, iy, iz, mat, tint });
+                            }
+                        }
+                    }
+                }
+            }
+
+            /** Fill a tapered cone/cylinder between point A (radius rA) and point B (radius rB) */
+            addTaperedTube(ax, ay, az, bx, by, bz, rA, rB, mat, tint = 1.0) {
+                const s = this.size;
+                const dx = bx - ax, dy = by - ay, dz = bz - az;
+                const lenSq = dx * dx + dy * dy + dz * dz;
+                const maxR = Math.max(rA, rB);
+                const pad = maxR + s;
+                const minX = Math.floor((Math.min(ax, bx) - pad) / s);
+                const maxX = Math.ceil((Math.max(ax, bx) + pad) / s);
+                const minY = Math.floor((Math.min(ay, by) - pad) / s);
+                const maxY = Math.ceil((Math.max(ay, by) + pad) / s);
+                const minZ = Math.floor((Math.min(az, bz) - pad) / s);
+                const maxZ = Math.ceil((Math.max(az, bz) + pad) / s);
+
+                for (let ix = minX; ix <= maxX; ix++) {
+                    const px = ix * s;
+                    for (let iy = minY; iy <= maxY; iy++) {
+                        const py = iy * s;
+                        for (let iz = minZ; iz <= maxZ; iz++) {
+                            const pz = iz * s;
+                            let t = 0;
+                            if (lenSq > 1e-8) {
+                                t = ((px - ax) * dx + (py - ay) * dy + (pz - az) * dz) / lenSq;
+                                if (t < 0) t = 0;
+                                else if (t > 1) t = 1;
+                            }
+                            const r = rA + (rB - rA) * t;
+                            const cx = ax + t * dx - px;
+                            const cy = ay + t * dy - py;
+                            const cz = az + t * dz - pz;
+                            if (cx * cx + cy * cy + cz * cz <= r * r) {
+                                const key = ix + ',' + iy + ',' + iz;
+                                this.voxels.set(key, { ix, iy, iz, mat, tint });
+                            }
+                        }
+                    }
+                }
+            }
+
+            /** Fill a polyline of connected cylindrical segments */
+            addPolyline(points, radius, mat, tint = 1.0) {
+                for (let i = 0; i < points.length - 1; i++) {
+                    const a = points[i], b = points[i + 1];
+                    this.addTube(a[0], a[1], a[2], b[0], b[1], b[2], radius, mat, false, tint);
+                }
+            }
+
+            /** Fill an axis-aligned rectangular box */
+            addBox(x0, y0, z0, x1, y1, z1, mat, tint = 1.0) {
+                const s = this.size;
+                const minX = Math.round(Math.min(x0, x1) / s);
+                const maxX = Math.round(Math.max(x0, x1) / s);
+                const minY = Math.round(Math.min(y0, y1) / s);
+                const maxY = Math.round(Math.max(y0, y1) / s);
+                const minZ = Math.round(Math.min(z0, z1) / s);
+                const maxZ = Math.round(Math.max(z0, z1) / s);
+                for (let ix = minX; ix <= maxX; ix++) {
+                    for (let iy = minY; iy <= maxY; iy++) {
+                        for (let iz = minZ; iz <= maxZ; iz++) {
+                            const key = ix + ',' + iy + ',' + iz;
+                            this.voxels.set(key, { ix, iy, iz, mat, tint });
+                        }
+                    }
+                }
+            }
+
+            /** Fill a 3D ellipsoid */
+            addEllipsoid(cx, cy, cz, rx, ry, rz, mat, tint = 1.0) {
+                const s = this.size;
+                const minX = Math.floor((cx - rx) / s), maxX = Math.ceil((cx + rx) / s);
+                const minY = Math.floor((cy - ry) / s), maxY = Math.ceil((cy + ry) / s);
+                const minZ = Math.floor((cz - rz) / s), maxZ = Math.ceil((cz + rz) / s);
+                for (let ix = minX; ix <= maxX; ix++) {
+                    const nx = (ix * s - cx) / rx;
+                    const nx2 = nx * nx;
+                    if (nx2 > 1) continue;
+                    for (let iy = minY; iy <= maxY; iy++) {
+                        const ny = (iy * s - cy) / ry;
+                        const ny2 = nx2 + ny * ny;
+                        if (ny2 > 1) continue;
+                        for (let iz = minZ; iz <= maxZ; iz++) {
+                            const nz = (iz * s - cz) / rz;
+                            if (ny2 + nz * nz <= 1) {
+                                const key = ix + ',' + iy + ',' + iz;
+                                this.voxels.set(key, { ix, iy, iz, mat, tint });
+                            }
+                        }
+                    }
+                }
+            }
+
+            /**
+             * Build InstancedMesh objects for this layer, culling hidden interior voxels
+             * and baking realistic local 3D neighbor ambient occlusion into instance colors.
+             */
+            buildInstancedMeshes(sharedBoxGeo, materialsMap, targetGroup) {
+                const byMat = new Map();
+                const map = this.voxels;
+
+                // 1. Cull completely occluded interior voxels & compute 26-neighbor AO
+                for (const [, v] of map) {
+                    const { ix, iy, iz } = v;
+                    const nXP = map.has((ix + 1) + ',' + iy + ',' + iz);
+                    const nXM = map.has((ix - 1) + ',' + iy + ',' + iz);
+                    const nYP = map.has(ix + ',' + (iy + 1) + ',' + iz);
+                    const nYM = map.has(ix + ',' + (iy - 1) + ',' + iz);
+                    const nZP = map.has(ix + ',' + iy + ',' + (iz + 1));
+                    const nZM = map.has(ix + ',' + iy + ',' + (iz - 1));
+
+                    // Skip completely buried interior cubes for high performance
+                    if (nXP && nXM && nYP && nYM && nZP && nZM) continue;
+
+                    // Count local 26-connected neighbors for smooth voxel ambient occlusion
+                    let occ = 0;
+                    for (let dx = -1; dx <= 1; dx++) {
+                        for (let dy = -1; dy <= 1; dy++) {
+                            for (let dz = -1; dz <= 1; dz++) {
+                                if (dx === 0 && dy === 0 && dz === 0) continue;
+                                if (map.has((ix + dx) + ',' + (iy + dy) + ',' + (iz + dz))) {
+                                    // Slightly higher weight for upward occlusion (sky blocking)
+                                    occ += (dy > 0) ? 1.25 : 0.85;
+                                }
+                            }
+                        }
+                    }
+                    // Normalize AO into realistic shadow falloff range [0.64, 1.03]
+                    const ao = Math.max(0.64, Math.min(1.03, 1.04 - (occ / 22.0) * 0.36));
+
+                    // Deterministic subtle micro-variation per voxel for tactile realism
+                    const hash = Math.sin(ix * 12.9898 + iy * 78.233 + iz * 37.719) * 43758.5453;
+                    const noise = (hash - Math.floor(hash) - 0.5) * 2.0 * this.jitter;
+                    const shade = Math.max(0.45, Math.min(1.12, ao * v.tint * (1.0 + noise)));
+
+                    if (!byMat.has(v.mat)) byMat.set(v.mat, []);
+                    byMat.get(v.mat).push({
+                        x: ix * this.size,
+                        y: iy * this.size,
+                        z: iz * this.size,
+                        shade
+                    });
+                }
+
+                // 2. Construct one InstancedMesh per material for minimal WebGL draw calls
+                const dummy = new THREE.Object3D();
+                const tmpColor = new THREE.Color();
+                // Micro-seam (0.985) lets studio lighting catch individual voxel cube bevels
+                const cubeScale = this.size * 0.986;
+
+                for (const [matKey, list] of byMat) {
+                    const mat = materialsMap[matKey];
+                    const inst = new THREE.InstancedMesh(sharedBoxGeo, mat, list.length);
+                    inst.castShadow = true;
+                    inst.receiveShadow = true;
+
+                    for (let i = 0; i < list.length; i++) {
+                        const item = list[i];
+                        dummy.position.set(item.x, item.y, item.z);
+                        dummy.scale.set(cubeScale, cubeScale, cubeScale);
+                        dummy.updateMatrix();
+                        inst.setMatrixAt(i, dummy.matrix);
+
+                        // Per-instance multiplicative color (white * AO * tint)
+                        tmpColor.setRGB(item.shade, item.shade, item.shade);
+                        inst.setColorAt(i, tmpColor);
+                    }
+                    inst.instanceMatrix.needsUpdate = true;
+                    if (inst.instanceColor) inst.instanceColor.needsUpdate = true;
+                    targetGroup.add(inst);
+                }
+            }
+        }
+
+        // =========================================================================
+        // 3. GRAPHICS / DECAL BITMAP SAMPLER FOR "KLX" AND "230R" SHROUD GRAPHICS
+        // =========================================================================
+        // Compact pixel-art font for authentic voxelized Kawasaki shroud decals
+        const DECAL_KLX = [
+            "1001001000010001",
+            "1010001000001010",
+            "1100001000000100",
+            "1010001000001010",
+            "1001001111010001"
+        ];
+        const DECAL_230R = [
+            "1110011100111001110",
+            "0001000010100101001",
+            "0110001100100101110",
+            "1000000010100101010",
+            "1111011100111001001"
+        ];
+
+        function sampleBitmap(bitmap, u, v) {
+            if (u < 0 || u >= 1 || v < 0 || v >= 1) return false;
+            const rows = bitmap.length;
+            const cols = bitmap[0].length;
+            const r = Math.min(rows - 1, Math.floor((1 - v) * rows));
+            const c = Math.min(cols - 1, Math.floor(u * cols));
+            return bitmap[r][c] === '1';
+        }
+
+        // =========================================================================
+        // 4. PROCEDURAL STUDIO ENVIRONMENT MAP (PMREM SOFTBOX LIGHTING)
+        // =========================================================================
+        function createStudioEnvironment(renderer) {
+            const pmrem = new THREE.PMREMGenerator(renderer);
+            pmrem.compileEquirectangularShader();
+
+            const envScene = new THREE.Scene();
+            envScene.background = new THREE.Color(0x525760);
+
+            // Overhead primary studio softbox
+            const topBox = new THREE.Mesh(
+                new THREE.PlaneGeometry(14, 10),
+                new THREE.MeshBasicMaterial({ color: 0xfafcff, side: THREE.DoubleSide })
+            );
+            topBox.position.set(0, 6.5, 0);
+            topBox.rotation.x = Math.PI / 2;
+            envScene.add(topBox);
+
+            // Right-front warm key softbox (illuminates the chrome, aluminum, & lime plastics)
+            const keyBox = new THREE.Mesh(
+                new THREE.PlaneGeometry(8, 5),
+                new THREE.MeshBasicMaterial({ color: 0xfff8ee, side: THREE.DoubleSide })
+            );
+            keyBox.position.set(3.5, 3.2, 6.0);
+            keyBox.lookAt(0, 0.5, 0);
+            envScene.add(keyBox);
+
+            // Left-rear cool rim reflector strip
+            const rimBox = new THREE.Mesh(
+                new THREE.PlaneGeometry(9, 4),
+                new THREE.MeshBasicMaterial({ color: 0xdce6f5, side: THREE.DoubleSide })
+            );
+            rimBox.position.set(-4.0, 3.6, -5.5);
+            rimBox.lookAt(0, 0.5, 0);
+            envScene.add(rimBox);
+
+            // Darker contrast floor bounce so chrome, metals, and plastics show deep reflections
+            const floorStrip = new THREE.Mesh(
+                new THREE.PlaneGeometry(18, 18),
+                new THREE.MeshBasicMaterial({ color: 0x383c42, side: THREE.DoubleSide })
+            );
+            floorStrip.position.set(0, -3.5, 0);
+            floorStrip.rotation.x = -Math.PI / 2;
+            envScene.add(floorStrip);
+
+            const envRT = pmrem.fromScene(envScene, 0.04);
+            pmrem.dispose();
+            return envRT.texture;
+        }
+
+        // =========================================================================
+        // 5. COMPONENT BUILDERS FOR THE KAWASAKI KLX 230R
+        // =========================================================================
+
+        /**
+         * Build a complete off-road dirt-bike wheel (21" front or 18" rear) with:
+         * - Knobby tire carcass & staggered 3D center/shoulder rubber tread blocks
+         * - Black anodized aluminum rim
+         * - Brushed aluminum hub
+         * - 36 fine crossed wire spokes (left & right flanges)
+         * - Wave/petal stainless brake disc rotor
+         * - Optional rear chain sprocket (for rear wheel)
+         */
+        function buildWheel(group, sharedBoxGeo, materials, cfg) {
+            const main = new VoxelLayer(S_MAIN, 0.035);
+            const med  = new VoxelLayer(S_MED,  0.035);
+            const fine = new VoxelLayer(S_FINE, 0.020);
+
+            const {
+                outerR, tireInnerR, rimInnerR,
+                tireWidth, rimWidth, hubR, hubWidth,
+                knobPitches, discSide, discR,
+                hasSprocket, sprocketR
+            } = cfg;
+
+            const carcassR = outerR - 0.023;
+            const halfTireW = tireWidth * 0.5;
+            const halfRimW = rimWidth * 0.5;
+
+            // 1. Tire carcass (rounded cross-section torus in S_MAIN voxels)
+            const tireCenterR = (carcassR + tireInnerR) * 0.5;
+            const tireTubeR   = (carcassR - tireInnerR) * 0.5;
+            const minI = Math.floor(-carcassR / S_MAIN);
+            const maxI = Math.ceil(carcassR / S_MAIN);
+            const maxZ = Math.ceil(halfTireW / S_MAIN);
+
+            for (let ix = minI; ix <= maxI; ix++) {
+                const x = ix * S_MAIN;
+                for (let iy = minI; iy <= maxI; iy++) {
+                    const y = iy * S_MAIN;
+                    const r = Math.hypot(x, y);
+                    if (r < tireInnerR - S_MAIN || r > carcassR + S_MAIN) continue;
+                    const dr = (r - tireCenterR) / tireTubeR;
+                    for (let iz = -maxZ; iz <= maxZ; iz++) {
+                        const z = iz * S_MAIN;
+                        const dz = z / halfTireW;
+                        if (dr * dr * 0.92 + dz * dz <= 1.0 && r >= tireInnerR) {
+                            // Subtle dusty tone closer to outer tread
+                            const isOuter = r > carcassR - 0.018;
+                            main.set(x, y, z, isOuter ? 'tireRubber' : 'tireRubber', isOuter ? 1.06 : 0.96);
+                        }
+                    }
+                }
+            }
+
+            // 2. Aggressive Knobby Off-Road Tread Blocks (S_MED voxels)
+            for (let i = 0; i < knobPitches; i++) {
+                const ang = (i / knobPitches) * Math.PI * 2;
+                const ca = Math.cos(ang), sa = Math.sin(ang);
+                const tx = -sa, ty = ca; // tangent
+
+                // Alternating center & intermediate/shoulder motocross tread blocks
+                const pattern = i % 2;
+                const blocks = pattern === 0
+                    ? [
+                        { z: 0, w: 0.022, len: 0.015, h: 0.024, tilt: 0 },
+                        { z:  halfTireW * 0.72, w: 0.015, len: 0.016, h: 0.021, tilt:  0.18 },
+                        { z: -halfTireW * 0.72, w: 0.015, len: 0.016, h: 0.021, tilt: -0.18 }
+                      ]
+                    : [
+                        { z:  halfTireW * 0.36, w: 0.017, len: 0.015, h: 0.023, tilt:  0.07 },
+                        { z: -halfTireW * 0.36, w: 0.017, len: 0.015, h: 0.023, tilt: -0.07 },
+                        { z:  halfTireW * 0.85, w: 0.013, len: 0.014, h: 0.018, tilt:  0.26 },
+                        { z: -halfTireW * 0.85, w: 0.013, len: 0.014, h: 0.018, tilt: -0.26 }
+                      ];
+
+                for (const b of blocks) {
+                    const baseR = carcassR - 0.005 - Math.abs(b.tilt) * 0.032;
+                    for (let dr = 0; dr <= b.h; dr += S_MED * 0.85) {
+                        const r = baseR + dr;
+                        const isTip = dr > b.h * 0.55;
+                        for (let dt = -b.len * 0.5; dt <= b.len * 0.5; dt += S_MED * 0.85) {
+                            for (let dz = -b.w * 0.5; dz <= b.w * 0.5; dz += S_MED * 0.85) {
+                                const px = ca * r + tx * dt;
+                                const py = sa * r + ty * dt;
+                                const pz = b.z + dz + dr * b.tilt;
+                                med.set(px, py, pz, isTip ? 'tireDust' : 'tireRubber', isTip ? 1.04 : 0.94);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 3. Black Anodized Aluminum Rim (S_MED voxels)
+            const rimOuterR = tireInnerR + 0.006;
+            const rMin = Math.floor(-rimOuterR / S_MED);
+            const rMax = Math.ceil(rimOuterR / S_MED);
+            const rimZMax = Math.ceil(halfRimW / S_MED);
+            for (let ix = rMin; ix <= rMax; ix++) {
+                const x = ix * S_MED;
+                for (let iy = rMin; iy <= rMax; iy++) {
+                    const y = iy * S_MED;
+                    const r = Math.hypot(x, y);
+                    if (r >= rimInnerR && r <= rimOuterR) {
+                        for (let iz = -rimZMax; iz <= rimZMax; iz++) {
+                            const z = iz * S_MED;
+                            // Rim channel profile (thicker at beads, slightly narrower at spoke bed)
+                            const edgeFactor = (r - rimInnerR) / (rimOuterR - rimInnerR);
+                            const allowedZ = halfRimW * (0.72 + 0.28 * edgeFactor);
+                            if (Math.abs(z) <= allowedZ) {
+                                med.set(x, y, z, 'rimBlack', edgeFactor > 0.7 ? 1.15 : 0.95);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 4. Silver Aluminum Wheel Hub & Axle Bosses (S_MED voxels)
+            med.addTube(0, 0, -hubWidth * 0.5, 0, 0, hubWidth * 0.5, hubR * 0.62, 'aluminum');
+            // Wider spoke flanges on left and right ends of hub
+            med.addTube(0, 0, -hubWidth * 0.44, 0, 0, -hubWidth * 0.30, hubR, 'aluminum');
+            med.addTube(0, 0,  hubWidth * 0.30, 0, 0,  hubWidth * 0.44, hubR, 'aluminum');
+            // Central steel axle nut/bolt detail
+            med.addTube(0, 0, -hubWidth * 0.62, 0, 0, hubWidth * 0.62, 0.015, 'aluminumCast');
+
+            // 5. 36 Crossed Wire Spokes (S_FINE voxels)
+            const spokeCount = 36;
+            for (let i = 0; i < spokeCount; i++) {
+                const side = (i % 2 === 0) ? 1 : -1;
+                const crossDir = ((Math.floor(i / 2) % 2) === 0) ? 1 : -1;
+                const hubAng = (i / spokeCount) * Math.PI * 2;
+                const rimAng = hubAng + crossDir * 0.28; // realistic 2-cross tangential lace
+
+                const hx = Math.cos(hubAng) * (hubR * 0.88);
+                const hy = Math.sin(hubAng) * (hubR * 0.88);
+                const hz = side * (hubWidth * 0.38);
+
+                const rx = Math.cos(rimAng) * (rimInnerR + 0.004);
+                const ry = Math.sin(rimAng) * (rimInnerR + 0.004);
+                const rz = side * 0.005;
+
+                // Trace fine voxels cleanly along each spoke
+                const steps = Math.ceil(Math.hypot(rx - hx, ry - hy, rz - hz) / (S_FINE * 0.82));
+                for (let k = 0; k <= steps; k++) {
+                    const t = k / steps;
+                    const sx = hx + (rx - hx) * t;
+                    const sy = hy + (ry - hy) * t;
+                    const sz = hz + (rz - hz) * t;
+                    fine.set(sx, sy, sz, 'spokeSteel', (t > 0.88) ? 1.1 : 1.0);
+                }
+            }
+
+            // 6. Stainless Steel Wave / Petal Brake Rotor (S_FINE voxels)
+            const discZ = discSide * (hubWidth * 0.5 + 0.012);
+            const dMax = Math.ceil((discR + 0.01) / S_FINE);
+            for (let ix = -dMax; ix <= dMax; ix++) {
+                const x = ix * S_FINE;
+                for (let iy = -dMax; iy <= dMax; iy++) {
+                    const y = iy * S_FINE;
+                    const r = Math.hypot(x, y);
+                    const ang = Math.atan2(y, x);
+                    const waveOuter = discR + Math.sin(ang * 8) * 0.005;
+                    const trackInner = discR * 0.72;
+                    const carrierInner = hubR * 0.75;
+
+                    if (r >= trackInner && r <= waveOuter) {
+                        // Drilled brake cooling holes
+                        const holePhase = Math.sin(ang * 16) * Math.cos((r - trackInner) * 140);
+                        if (holePhase < 0.72) {
+                            fine.set(x, y, discZ, 'spokeSteel', 1.05);
+                        }
+                    } else if (r >= carrierInner && r < trackInner) {
+                        // 6 curved spider arms connecting rotor track to hub
+                        const arm = Math.cos(ang * 6 + r * 14);
+                        if (arm > 0.58 || r < carrierInner + 0.012) {
+                            fine.set(x, y, discZ, 'aluminumCast', 0.96);
+                        }
+                    }
+                }
+            }
+
+            // 7. Rear Chain Sprocket (left side of rear wheel, S_FINE voxels)
+            if (hasSprocket) {
+                const spZ = -hubWidth * 0.5 - 0.014;
+                const spMax = Math.ceil((sprocketR + 0.01) / S_FINE);
+                for (let ix = -spMax; ix <= spMax; ix++) {
+                    const x = ix * S_FINE;
+                    for (let iy = -spMax; iy <= spMax; iy++) {
+                        const y = iy * S_FINE;
+                        const r = Math.hypot(x, y);
+                        const ang = Math.atan2(y, x);
+                        const teethR = sprocketR + (Math.sin(ang * 44) > 0.15 ? 0.006 : -0.002);
+                        if (r >= hubR * 0.78 && r <= teethR) {
+                            // Weight-saving radial cutouts in sprocket center
+                            const inCutout = r > hubR * 1.15 && r < sprocketR * 0.78 && Math.cos(ang * 6) > 0.25;
+                            if (!inCutout) {
+                                fine.set(x, y, spZ, 'darkSteel', r > sprocketR * 0.85 ? 1.18 : 0.95);
+                            }
+                        }
+                    }
+                }
+            }
+
+            main.buildInstancedMeshes(sharedBoxGeo, materials, group);
+            med.buildInstancedMeshes(sharedBoxGeo, materials, group);
+            fine.buildInstancedMeshes(sharedBoxGeo, materials, group);
+        }
+
+        /**
+         * Build the white/silver tubular perimeter steel frame, engine cradle,
+         * rear subframe, dark charcoal frame guards, and left-side kickstand.
+         */
+        function buildFrame(group, sharedBoxGeo, materials) {
+            const med  = new VoxelLayer(S_MED, 0.02);
+            const fine = new VoxelLayer(S_FINE, 0.02);
+
+            // Steering head tube (aligned with 26.3 deg fork rake)
+            med.addTube(0.320, 1.005, 0, 0.395, 0.840, 0, 0.026, 'frameWhite');
+
+            // Twin white perimeter main spars (left & right) from steering head to swingarm pivot
+            for (const side of [-1, 1]) {
+                med.addPolyline([
+                    [0.335, 0.950, side * 0.025],
+                    [0.240, 0.865, side * 0.088],
+                    [0.060, 0.735, side * 0.105],
+                    [-0.140, 0.560, side * 0.112],
+                    [-0.215, 0.430, side * 0.115],
+                    [-0.220, 0.345, side * 0.105]
+                ], 0.017, 'frameWhite');
+
+                // Secondary upper gusset tube under tank
+                med.addTube(0.340, 0.920, side * 0.028, 0.140, 0.815, side * 0.092, 0.013, 'frameWhite');
+
+                // Lower engine cradle rails (white/silver tubular loop under engine)
+                med.addPolyline([
+                    [0.235, 0.375, side * 0.032],
+                    [0.195, 0.305, side * 0.072],
+                    [0.030, 0.292, side * 0.084],
+                    [-0.165, 0.308, side * 0.095],
+                    [-0.218, 0.348, side * 0.104]
+                ], 0.014, 'frameWhite');
+
+                // Rear subframe upper rails
+                med.addPolyline([
+                    [-0.115, 0.760, side * 0.082],
+                    [-0.360, 0.815, side * 0.090],
+                    [-0.660, 0.895, side * 0.076]
+                ], 0.013, 'aluminumCast');
+
+                // Rear subframe diagonal support strut (visible under rear green panel)
+                med.addTube(-0.215, 0.485, side * 0.110, -0.460, 0.795, side * 0.092, 0.012, 'aluminumCast');
+
+                // Sculpted Dark Grey Plastic Frame Guards above swingarm pivot (very visible in photo)
+                for (let x = -0.255; x <= -0.140; x += S_MED * 0.85) {
+                    const t = (x + 0.255) / 0.115;
+                    const yBot = 0.365 + t * 0.045;
+                    const yTop = 0.475 + Math.sin(t * Math.PI) * 0.115 + t * 0.06;
+                    for (let y = yBot; y <= yTop; y += S_MED * 0.85) {
+                        const zOut = side * (0.118 + Math.sin(t * Math.PI) * 0.014);
+                        med.set(x, y, zOut, 'frameGuard');
+                        med.set(x, y, zOut - side * 0.008, 'frameGuard');
+                    }
+                }
+            }
+
+            // Central front downtube descending from lower steering head to split cradle
+            med.addPolyline([
+                [0.370, 0.875, 0],
+                [0.295, 0.640, 0],
+                [0.240, 0.380, 0]
+            ], 0.019, 'frameWhite');
+
+            // Crossmembers uniting left & right frame halves
+            med.addTube(-0.220, 0.395, -0.115, -0.220, 0.395, 0.115, 0.018, 'aluminumCast'); // swingarm pivot shaft
+            med.addTube(-0.180, 0.725, -0.090, -0.180, 0.725, 0.090, 0.015, 'frameWhite');   // upper shock mount
+            med.addTube(-0.460, 0.810, -0.090, -0.460, 0.810, 0.090, 0.012, 'aluminumCast');
+            med.addTube( 0.040, 0.292, -0.080,  0.040, 0.292, 0.080, 0.012, 'frameWhite');
+
+            // Left-side Kickstand (angled down, slightly forward & outward to -Z so it rests on ground)
+            // Visible peeking beneath the middle of the engine in the reference photograph!
+            med.addTube(-0.205, 0.320, -0.108, -0.145, 0.024, -0.255, 0.011, 'aluminumCast');
+            // Kickstand foot pad resting flush on ground when bike leans ~4.9 deg
+            med.addBox(-0.165, 0.016, -0.275, -0.125, 0.028, -0.238, 'darkSteel');
+            // Kickstand return spring
+            fine.addTube(-0.215, 0.310, -0.102, -0.185, 0.185, -0.165, 0.005, 'spokeSteel');
+
+            med.buildInstancedMeshes(sharedBoxGeo, materials, group);
+            fine.buildInstancedMeshes(sharedBoxGeo, materials, group);
+        }
+
+        /**
+         * Build the 230cc air-cooled single-cylinder 4-stroke engine:
+         * - Finned oxidized aluminum cylinder & cylinder head (tilted slightly forward)
+         * - Cast silver crankcase & iconic circular right-side clutch cover with bolt ring
+         * - Left stator cover, carburetor/throttle body, black airbox, footpegs & pedals
+         */
+        function buildEngine(group, sharedBoxGeo, materials) {
+            const main = new VoxelLayer(S_MAIN, 0.025);
+            const med  = new VoxelLayer(S_MED,  0.025);
+            const fine = new VoxelLayer(S_FINE, 0.025);
+
+            // 1. Central Engine Crankcase & Transmission Housing
+            med.addEllipsoid(-0.02, 0.425, 0.0, 0.170, 0.108, 0.092, 'aluminumCast');
+            med.addBox(-0.145, 0.330, -0.082, 0.115, 0.495, 0.082, 'aluminumCast');
+
+            // 2. Right-Side Bright Silver Circular Clutch Cover (prominent in photo)
+            const ccX = -0.015, ccY = 0.415, ccZ = 0.098, ccR = 0.078;
+            for (let x = ccX - ccR; x <= ccX + ccR; x += S_MED * 0.85) {
+                for (let y = ccY - ccR; y <= ccY + ccR; y += S_MED * 0.85) {
+                    const r = Math.hypot(x - ccX, y - ccY);
+                    if (r <= ccR) {
+                        const dome = Math.sqrt(Math.max(0, 1 - (r / ccR) * (r / ccR))) * 0.024;
+                        med.set(x, y, ccZ + dome, 'aluminum', r < 0.04 ? 1.06 : 1.0);
+                        med.set(x, y, ccZ + dome - 0.010, 'aluminum', 0.96);
+                    }
+                }
+            }
+            // Front-right crankcase extension & oil filter cover (ahead of clutch cover)
+            med.addEllipsoid(0.090, 0.395, 0.092, 0.055, 0.056, 0.026, 'aluminum');
+            med.addTube(0.118, 0.398, 0.095, 0.118, 0.398, 0.122, 0.022, 'aluminum'); // oil filter cap
+            // Oil filler cap on upper right clutch cover
+            fine.addTube(0.042, 0.465, 0.105, 0.048, 0.478, 0.126, 0.012, 'darkSteel');
+
+            // Ring of fine perimeter bolts around right clutch cover
+            for (let b = 0; b < 10; b++) {
+                const a = (b / 10) * Math.PI * 2;
+                fine.set(ccX + Math.cos(a) * (ccR - 0.008), ccY + Math.sin(a) * (ccR - 0.008), ccZ + 0.015, 'spokeSteel', 1.12);
+            }
+
+            // 3. Left-Side Stator / Alternator Cover
+            med.addEllipsoid(-0.020, 0.415, -0.095, 0.090, 0.076, 0.025, 'aluminum');
+            med.addEllipsoid(-0.125, 0.415, -0.090, 0.048, 0.054, 0.024, 'aluminumCast'); // sprocket cover
+
+            // 4. Air-Cooled Cylinder Barrel & Head with Horizontal Cooling Fins (S_FINE voxels)
+            // Tilted ~13 deg forward from vertical, oxidized earthy cast-aluminum tone
+            const cylBaseX = 0.065, cylBaseY = 0.505;
+            const tiltX = 0.225; // forward lean slope dx/dy
+            const cylH = 0.235;
+
+            for (let h = 0; h <= cylH; h += S_FINE * 0.92) {
+                const cx = cylBaseX + h * tiltX;
+                const cy = cylBaseY + h;
+                // Alternating fin layers vs recessed core layers for dramatic shadow lines
+                const finPhase = Math.sin(h * 340);
+                const isHead = h > 0.145;
+                const isValveCover = h > 0.195;
+                const finExtra = isValveCover ? 0.0 : (finPhase > -0.05 ? (isHead ? 0.024 : 0.019) : 0.0);
+
+                const rx = (isHead ? 0.064 : 0.054) + finExtra;
+                const rz = (isHead ? 0.072 : 0.058) + finExtra;
+
+                const step = S_FINE * 0.95;
+                for (let dx = -rx; dx <= rx; dx += step) {
+                    for (let dz = -rz; dz <= rz; dz += step) {
+                        const nx = dx / rx, nz = dz / rz;
+                        // Slightly squared-off motocross cylinder fin silhouette
+                        if (Math.pow(Math.abs(nx), 2.5) + Math.pow(Math.abs(nz), 2.5) <= 1.0) {
+                            const mat = isValveCover ? 'aluminumCast' : 'cylinderOxide';
+                            const tint = finExtra > 0 ? 1.06 : 0.84;
+                            fine.set(cx + dx, cy, dz, mat, tint);
+                        }
+                    }
+                }
+            }
+            // Spark plug & dark boot on right side of cylinder head
+            fine.addTube(0.115, 0.665, 0.065, 0.130, 0.680, 0.098, 0.008, 'darkSteel');
+
+            // 5. Throttle Body, Fuel Injector & Black Airbox under the Seat
+            med.addTube(-0.020, 0.635, 0.0, 0.050, 0.650, 0.0, 0.032, 'aluminumCast');
+            med.addTube(-0.105, 0.640, 0.0, -0.020, 0.635, 0.0, 0.036, 'tankBlack');
+            main.addBox(-0.345, 0.600, -0.088, -0.105, 0.785, 0.088, 'tankBlack');
+
+            // 6. Rider Footpegs, Right Rear Brake Pedal & Left Gear Shifter
+            for (const side of [-1, 1]) {
+                // Mounting bracket
+                med.addBox(-0.205, 0.320, side * 0.105, -0.165, 0.360, side * 0.128, 'aluminumCast');
+                // Serrated off-road steel footpeg
+                for (let z = 0.125; z <= 0.215; z += S_FINE * 1.1) {
+                    fine.set(-0.175, 0.342, side * z, 'darkSteel', 1.15);
+                    fine.set(-0.198, 0.342, side * z, 'darkSteel', 1.15);
+                    fine.set(-0.186, 0.336, side * z, 'darkSteel', 0.95);
+                }
+            }
+            // Right-side Rear Brake Pedal sweeping forward below clutch cover
+            fine.addPolyline([
+                [-0.170, 0.345, 0.128],
+                [-0.080, 0.326, 0.132],
+                [ 0.035, 0.336, 0.136],
+                [ 0.055, 0.352, 0.142]
+            ], 0.008, 'aluminum');
+            fine.addBox(0.042, 0.346, 0.132, 0.068, 0.360, 0.168, 'aluminum'); // brake toe pad
+
+            // Left-side Gear Shift Lever
+            fine.addPolyline([
+                [-0.135, 0.355, -0.118],
+                [-0.015, 0.345, -0.126],
+                [ 0.020, 0.352, -0.155]
+            ], 0.007, 'darkSteel');
+
+            // Bottom aluminum skid/sump guard detail
+            med.addBox(-0.080, 0.285, -0.072, 0.165, 0.298, 0.072, 'aluminumCast');
+
+            main.buildInstancedMeshes(sharedBoxGeo, materials, group);
+            med.buildInstancedMeshes(sharedBoxGeo, materials, group);
+            fine.buildInstancedMeshes(sharedBoxGeo, materials, group);
+        }
+
+        /**
+         * Build the high-mount right-side exhaust system:
+         * - Heat-tinted bronze header exiting front of cylinder & looping back
+         * - Iconic brushed-silver slotted heat shield angled right above clutch cover
+         * - Upswept mid-pipe & large stainless cylindrical muffler with dark conical end cap
+         */
+        function buildExhaust(group, sharedBoxGeo, materials) {
+            const main = new VoxelLayer(S_MAIN, 0.022);
+            const med  = new VoxelLayer(S_MED,  0.025);
+            const fine = new VoxelLayer(S_FINE, 0.020);
+
+            // 1. Header Pipe (bronze/rust-tinted steel) from cylinder exhaust port -> down -> sweep up
+            const headerPts = [
+                [0.165, 0.625, 0.025],
+                [0.212, 0.600, 0.070],
+                [0.228, 0.495, 0.095],
+                [0.215, 0.435, 0.112],
+                [0.165, 0.465, 0.128],
+                [0.085, 0.505, 0.134],
+                [-0.015, 0.538, 0.132],
+                [-0.140, 0.560, 0.132],
+                [-0.290, 0.585, 0.135],
+                [-0.440, 0.635, 0.142],
+                [-0.530, 0.675, 0.148]
+            ];
+            med.addPolyline(headerPts, 0.019, 'exhaustHeader');
+
+            // 2. Iconic Brushed Silver Heat Shield right above the clutch cover (clearly visible in photo)
+            const shieldStart = [0.168, 0.475, 0.148];
+            const shieldEnd   = [-0.028, 0.548, 0.150];
+            const shieldSteps = 34;
+            for (let i = 0; i <= shieldSteps; i++) {
+                const t = i / shieldSteps;
+                const sx = shieldStart[0] + (shieldEnd[0] - shieldStart[0]) * t;
+                const sy = shieldStart[1] + (shieldEnd[1] - shieldStart[1]) * t;
+                const sz = shieldStart[2] + (shieldEnd[2] - shieldStart[2]) * t;
+                // Curved C-section shield wrapping outside of header pipe
+                for (let a = -0.95; a <= 0.95; a += 0.24) {
+                    const oy = Math.sin(a) * 0.024;
+                    const oz = (Math.cos(a) - 0.85) * 0.020;
+                    // Slotted cooling cutouts in the middle of the heat shield
+                    const isSlot = (i % 5 === 2) && Math.abs(a) < 0.45 && i > 4 && i < shieldSteps - 4;
+                    if (!isSlot) {
+                        fine.set(sx, sy + oy, sz + oz, 'mufflerSteel', 1.06);
+                    }
+                }
+            }
+
+            // 3. Large Brushed Stainless Steel Cylindrical Muffler tucked under rear fender
+            const mufA = [-0.515, 0.672, 0.152];
+            const mufB = [-0.790, 0.822, 0.148];
+            main.addTaperedTube(mufA[0], mufA[1], mufA[2], mufB[0], mufB[1], mufB[2], 0.052, 0.058, 'mufflerSteel');
+
+            // Dark charcoal conical exhaust end cap & inner exhaust outlet pipe
+            const capA = [-0.790, 0.822, 0.148];
+            const capB = [-0.858, 0.858, 0.146];
+            med.addTaperedTube(capA[0], capA[1], capA[2], capB[0], capB[1], capB[2], 0.056, 0.032, 'mufflerCap');
+            fine.addTube(-0.848, 0.852, 0.146, -0.875, 0.866, 0.146, 0.016, 'darkSteel');
+
+            main.buildInstancedMeshes(sharedBoxGeo, materials, group);
+            med.buildInstancedMeshes(sharedBoxGeo, materials, group);
+            fine.buildInstancedMeshes(sharedBoxGeo, materials, group);
+        }
+
+        /**
+         * Build the rear suspension assembly:
+         * - Box-section silver aluminum swingarm with chain adjuster blocks
+         * - Rear brake caliper (right side)
+         * - Central rear monoshock & dark coil spring + linkage
+         * - Left-side drive chain & chain guide
+         */
+        function buildRearSuspension(group, sharedBoxGeo, materials) {
+            const med  = new VoxelLayer(S_MED,  0.02);
+            const fine = new VoxelLayer(S_FINE, 0.02);
+
+            const pivX = -0.220, pivY = 0.395;
+            const axX  = -0.670, axY  = 0.345;
+
+            // 1. Twin Rectangular Box-Section Aluminum Swingarm Beams
+            for (const side of [-1, 1]) {
+                const steps = 62;
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const x = pivX + (axX - pivX) * t;
+                    const y = pivY + (axY - pivY) * t;
+                    // Smooth taper in height & slight outward flare around rear tire
+                    const h = 0.062 * (1 - 0.30 * t);
+                    const w = 0.028 * (1 - 0.14 * t);
+                    const zCenter = side * (0.095 + Math.sin(Math.min(1, t * 1.6) * Math.PI * 0.5) * 0.018);
+
+                    for (let dy = -h * 0.5; dy <= h * 0.5; dy += S_MED * 0.88) {
+                        for (let dz = -w * 0.5; dz <= w * 0.5; dz += S_MED * 0.88) {
+                            med.set(x, y + dy, zCenter + dz, 'aluminum', dy > 0 ? 1.04 : 0.94);
+                        }
+                    }
+                }
+                // Rear axle chain adjuster block & axle nut
+                med.addBox(axX - 0.022, axY - 0.024, side * 0.096, axX + 0.022, axY + 0.024, side * 0.130, 'aluminumCast');
+            }
+
+            // Swingarm front cross-bridge ahead of rear tire
+            med.addBox(-0.305, 0.365, -0.098, -0.215, 0.422, 0.098, 'aluminum');
+
+            // 2. Right-Side Rear Brake Caliper & Hydraulic Line
+            med.addBox(-0.675, 0.415, 0.060, -0.595, 0.478, 0.104, 'aluminumCast');
+            fine.addPolyline([
+                [-0.600, 0.455, 0.098],
+                [-0.450, 0.415, 0.122],
+                [-0.250, 0.425, 0.120]
+            ], 0.005, 'darkSteel');
+
+            // 3. Central Rear Monoshock & Progressive Linkage
+            const shTop = [-0.215, 0.715, 0];
+            const shBot = [-0.275, 0.345, 0];
+            // Inner damper shaft
+            med.addTube(shTop[0], shTop[1], 0, shBot[0], shBot[1], 0, 0.014, 'chrome');
+            // Upper shock reservoir body
+            med.addTube(shTop[0], shTop[1], 0, -0.235, 0.595, 0, 0.025, 'aluminumCast');
+            // Helical black coil spring coils (S_FINE)
+            const coils = 8;
+            for (let i = 0; i <= coils * 22; i++) {
+                const t = i / (coils * 22);
+                const y = 0.625 - t * 0.215;
+                const x = -0.228 - t * 0.036;
+                const ang = t * coils * Math.PI * 2;
+                fine.set(x + Math.cos(ang) * 0.032, y, Math.sin(ang) * 0.032, 'darkSteel', 0.92);
+                fine.set(x + Math.cos(ang) * 0.032, y + 0.004, Math.sin(ang) * 0.032, 'darkSteel', 1.05);
+            }
+            // Lower suspension dogbone linkage
+            med.addTube(-0.225, 0.300, 0, -0.310, 0.335, 0, 0.015, 'aluminumCast');
+
+            // 4. Left-Side Drive Chain & Lower Chain Guide
+            const chainZ = -0.088;
+            // Upper chain run (countershaft sprocket -> top of rear sprocket)
+            fine.addTube(-0.140, 0.440, chainZ, -0.665, 0.455, chainZ, 0.007, 'darkSteel');
+            // Lower chain run (bottom of countershaft -> bottom of rear sprocket)
+            fine.addTube(-0.140, 0.365, chainZ, -0.665, 0.238, chainZ, 0.007, 'darkSteel');
+            // Black plastic rear chain guide under left swingarm
+            med.addBox(-0.560, 0.255, -0.106, -0.490, 0.335, -0.072, 'tankBlack');
+
+            med.buildInstancedMeshes(sharedBoxGeo, materials, group);
+            fine.buildInstancedMeshes(sharedBoxGeo, materials, group);
+        }
+
+        /**
+         * Build the complete steering & front suspension assembly in steering-axis local space!
+         * Local Origin = steering head pivot; local -Y points down the fork tubes toward front axle.
+         * Contains:
+         * - Twin telescopic forks (chrome upper stanchions, corrugated rubber accordion gaiters, silver lowers)
+         * - Silver upper & lower triple clamps + handlebar risers
+         * - Black handlebars, crossbar, iconic TAN/GUM rubber grips, brake/clutch levers & master cylinder
+         * - Lime green racing front number plate & high sweeping lime green front fender
+         * - Left-side front brake caliper & brake hose + black fork wrap strap
+         */
+        function buildFrontAssembly(steeringGroup, frontWheelGroup, sharedBoxGeo, materials) {
+            const main = new VoxelLayer(S_MAIN, 0.020);
+            const med  = new VoxelLayer(S_MED,  0.022);
+            const fine = new VoxelLayer(S_FINE, 0.020);
+
+            // Fork tube local coordinates: offset slightly forward (+0.032) from steering stem
+            const fx = 0.032;
+            const forkZ = 0.095;
+            const axleY = -0.674; // Matches exact world y = 0.385 m so 21" tire touches y = 0!
+
+            // 1. Twin Conventional Telescopic Fork Legs
+            for (const side of [-1, 1]) {
+                const z = side * forkZ;
+
+                // Chrome upper stanchions (from top clamp down to lower clamp)
+                med.addTube(fx, 0.055, z, fx, -0.165, z, 0.019, 'chrome');
+                // Fork top cap bolts
+                med.addTube(fx, 0.056, z, fx, 0.068, z, 0.017, 'aluminum');
+
+                // Iconic Corrugated Dark Rubber Accordion Fork Gaiters (between lower clamp & fork slider!)
+                for (let y = -0.168; y >= -0.398; y -= S_FINE * 0.92) {
+                    const rib = Math.sin((y + 0.168) * 285);
+                    const r = 0.025 + (rib > 0 ? 0.0085 : 0.001);
+                    const step = S_FINE * 0.95;
+                    for (let dx = -r; dx <= r; dx += step) {
+                        for (let dz = -r; dz <= r; dz += step) {
+                            const d = Math.hypot(dx, dz);
+                            if (d <= r && d >= r - 0.010) {
+                                fine.set(fx + dx, y, z + dz, 'gaiterRubber', rib > 0 ? 1.12 : 0.78);
+                            }
+                        }
+                    }
+                }
+
+                // Brushed Silver Aluminum Fork Lowers extending down past front axle
+                med.addTube(fx, -0.395, z, fx, axleY - 0.032, z, 0.025, 'aluminum');
+                // Upper dust seal lip on fork slider
+                med.addTube(fx, -0.392, z, fx, -0.410, z, 0.028, 'tankBlack');
+                // Sculpted front axle clamp lug
+                med.addBox(fx - 0.028, axleY - 0.028, z - 0.022, fx + 0.028, axleY + 0.026, z + 0.022, 'aluminum');
+            }
+
+            // Front steel axle rod
+            med.addTube(fx, axleY, -forkZ - 0.012, fx, axleY, forkZ + 0.012, 0.014, 'aluminumCast');
+
+            // Left-side Front Brake Caliper & Black Hydraulic Brake Hose
+            med.addBox(fx - 0.088, axleY + 0.055, -0.095, fx - 0.015, axleY + 0.145, -0.045, 'aluminumCast');
+            fine.addPolyline([
+                [fx - 0.045, axleY + 0.145, -0.075],
+                [fx + 0.018, -0.400, -0.118],
+                [fx + 0.038, -0.165, -0.115],
+                [0.045, 0.060, 0.045],
+                [-0.010, 0.145, 0.210]
+            ], 0.0045, 'darkSteel');
+
+            // 2. Silver Upper & Lower Triple Clamps + Steering Stem + Bar Risers
+            med.addBox(-0.015,  0.028, -forkZ - 0.018, fx + 0.025,  0.052, forkZ + 0.018, 'aluminum');
+            med.addBox(-0.018, -0.168, -forkZ - 0.020, fx + 0.026, -0.136, forkZ + 0.020, 'aluminum');
+            med.addTube(0, -0.160, 0, 0, 0.055, 0, 0.017, 'aluminumCast'); // steering stem
+            // Handlebar risers
+            med.addTube(0.008, 0.050, -0.045, 0.002, 0.095, -0.045, 0.014, 'aluminum');
+            med.addTube(0.008, 0.050,  0.045, 0.002, 0.095,  0.045, 0.014, 'aluminum');
+
+            // Black protective strap / brake guide around upper fork/clamp (with subtle white markings from photo)
+            med.addTube(fx + 0.025, -0.160,  0.075, fx + 0.025, -0.115,  0.112, 0.012, 'strapBlack');
+            med.addTube(fx + 0.025, -0.160, -0.075, fx + 0.025, -0.115, -0.112, 0.012, 'strapBlack');
+            fine.set(fx + 0.036, -0.145,  0.098, 'decalWhite');
+            fine.set(fx + 0.036, -0.132,  0.105, 'decalWhite');
+
+            // 3. Handlebars, Crossbar, TAN/GUM Grips, Master Cylinder & Levers (NO mirrors!)
+            for (const side of [-1, 1]) {
+                // Black tubular motocross handlebar
+                med.addPolyline([
+                    [ 0.000, 0.095, side * 0.000],
+                    [ 0.000, 0.098, side * 0.085],
+                    [-0.018, 0.158, side * 0.165],
+                    [-0.052, 0.172, side * 0.275],
+                    [-0.082, 0.178, side * 0.388]
+                ], 0.012, 'darkSteel');
+
+                // Distinctive TAN / GUM Rubber Grips (matching the photograph!)
+                med.addTube(-0.052, 0.172, side * 0.268, -0.084, 0.178, side * 0.392, 0.017, 'gripTan');
+                // Grip inner flange
+                med.addTube(-0.050, 0.172, side * 0.262, -0.054, 0.173, side * 0.274, 0.024, 'gripTan');
+                // Dark rubber bar-end cap
+                med.addTube(-0.084, 0.178, side * 0.388, -0.088, 0.179, side * 0.398, 0.016, 'seatBlack');
+            }
+            // Handlebar crossbar & dark foam crossbar pad
+            fine.addTube(-0.016, 0.156, -0.155, -0.016, 0.156, 0.155, 0.006, 'darkSteel');
+            med.addTube(-0.016, 0.156, -0.082, -0.016, 0.156, 0.082, 0.017, 'seatBlack');
+
+            // Right Front Brake Master Cylinder, Throttle Housing & Lever
+            med.addBox(-0.048, 0.168, 0.195, -0.005, 0.205, 0.252, 'tankBlack');
+            fine.addPolyline([
+                [-0.010, 0.175, 0.245],
+                [ 0.015, 0.172, 0.295],
+                [ 0.002, 0.170, 0.355]
+            ], 0.0055, 'aluminum');
+            // Left Clutch Perch, Kill Switch & Lever
+            med.addBox(-0.056, 0.162, -0.255, -0.020, 0.192, -0.210, 'tankBlack');
+            fine.addPolyline([
+                [-0.015, 0.175, -0.245],
+                [ 0.012, 0.172, -0.295],
+                [ 0.000, 0.170, -0.355]
+            ], 0.0055, 'aluminum');
+
+            // 4. Lime Green Racing Front Number Plate (off-road KLX 230R — no headlight!)
+            for (let y = -0.125; y <= 0.125; y += S_MED * 0.85) {
+                const ty = (y + 0.125) / 0.250; // 0 bottom -> 1 top
+                const halfW = 0.072 + Math.sin(ty * Math.PI * 0.85) * 0.036;
+                for (let z = -halfW; z <= halfW; z += S_MED * 0.85) {
+                    const zn = z / halfW;
+                    // Gentle aerodynamic curve wrapping forward
+                    const x = fx + 0.056 + (1 - zn * zn) * 0.022 - ty * 0.008;
+                    let mat = 'limeGreen';
+                    // Black upper center cutout & crisp white racing stripe accent
+                    if (ty > 0.86 && Math.abs(zn) < 0.42) mat = 'tankBlack';
+                    else if (ty > 0.22 && ty < 0.72 && Math.abs(zn) < 0.58 && (Math.abs(zn) > 0.48 || ty > 0.64)) {
+                        mat = 'decalWhite';
+                    }
+                    med.set(x, y, z, mat);
+                    med.set(x - 0.009, y, z, 'limeGreenDark');
+                }
+            }
+
+            // 5. High Sweeping Lime Green Front Fender (attached to lower triple clamp!)
+            // Remember: in local steering space, +X is angled slightly UP (26.3 deg),
+            // so to extend horizontally forward in world space, we follow (cos(rake), -sin(rake))!
+            const rake = 0.46;
+            const cr = Math.cos(rake), sr = Math.sin(rake);
+
+            for (let sDist = -0.095; sDist <= 0.565; sDist += S_MAIN * 0.72) {
+                const t = (sDist + 0.095) / 0.660;
+                // Graceful convex arch curving down over the front tire
+                const worldDx = sDist;
+                const worldDy = -0.145 * Math.pow(Math.max(0, t - 0.22), 1.85) - (sDist < 0 ? 0.035 * (-sDist / 0.095) : 0);
+
+                // Transform world-aligned fender offsets into steering-axis local frame
+                const lxBase = fx + 0.025 + worldDx * cr + worldDy * sr;
+                const lyBase = -0.168 - worldDx * sr + worldDy * cr;
+
+                // Width tapers smoothly from fork mount to sharp dirt-bike tip
+                const halfW = (sDist < 0)
+                    ? 0.072 * (1 + sDist / 0.14)
+                    : 0.078 * (1 - 0.56 * Math.pow(t, 1.35));
+
+                for (let z = -halfW; z <= halfW; z += S_MAIN * 0.78) {
+                    const zn = z / Math.max(0.01, halfW);
+                    // Cambered cross-section (edges droop downward)
+                    const drop = -zn * zn * 0.022;
+                    const lx = lxBase + drop * sr;
+                    const ly = lyBase + drop * cr;
+                    main.set(lx, ly, z, 'limeGreen', 1.0 - zn * zn * 0.08);
+                    // Thickness layer beneath
+                    main.set(lx - 0.009 * sr, ly - 0.009 * cr, z, 'limeGreenDark', 0.92);
+                }
+            }
+
+            main.buildInstancedMeshes(sharedBoxGeo, materials, steeringGroup);
+            med.buildInstancedMeshes(sharedBoxGeo, materials, steeringGroup);
+            fine.buildInstancedMeshes(sharedBoxGeo, materials, steeringGroup);
+
+            // Position the 21-inch front wheel at the exact front axle inside the steering group
+            frontWheelGroup.position.set(fx, axleY, 0);
+            steeringGroup.add(frontWheelGroup);
+        }
+
+        /**
+         * Build the Kawasaki KLX 230R Lime Green Bodywork & Black Fuel Tank:
+         * - Sculpted tank/radiator shrouds with authentic embedded voxel "KLX" & "230R" graphics
+         * - Black upper fuel tank & vented filler cap
+         * - Swooping rear side number plates (right side bulged for muffler + dark vent slot)
+         * - High sweeping lime green rear fender & black rear grab/rescue strap
+         */
+        function buildBodywork(group, sharedBoxGeo, materials) {
+            const main = new VoxelLayer(S_MAIN, 0.018);
+            const med  = new VoxelLayer(S_MED,  0.018);
+            const fine = new VoxelLayer(S_FINE, 0.018);
+
+            // 1. Black Fuel Tank Core & Raised Circular Vented Fuel Cap
+            for (let x = 0.020; x <= 0.285; x += S_MAIN * 0.85) {
+                const t = (x - 0.020) / 0.265;
+                const yTop = 0.915 + Math.sin(t * Math.PI * 0.78) * 0.055;
+                const yBot = 0.780 + t * 0.030;
+                const halfW = 0.065 + Math.sin(t * Math.PI) * 0.068;
+                for (let y = yBot; y <= yTop; y += S_MAIN * 0.85) {
+                    const yt = (y - yBot) / Math.max(0.01, yTop - yBot);
+                    const w = halfW * (1 - 0.35 * yt * yt);
+                    for (let z = -w; z <= w; z += S_MAIN * 0.85) {
+                        main.set(x, y, z, 'tankBlack', 1.0 + yt * 0.06);
+                    }
+                }
+            }
+            // Vented fuel cap & breather tube
+            med.addTube(0.205, 0.960, 0, 0.210, 0.992, 0, 0.030, 'tankBlack');
+            fine.addPolyline([
+                [0.210, 0.992, 0],
+                [0.245, 1.015, 0],
+                [0.285, 0.990, 0]
+            ], 0.005, 'darkSteel');
+
+            // 2. Sculpted Lime Green Tank/Radiator Shrouds with Embedded "KLX" & "230R" Voxel Decals!
+            // Built at S_FINE/S_MED hybrid resolution so the decals are razor-sharp 3D colored voxels
+            for (const side of [-1, 1]) {
+                for (let x = -0.055; x <= 0.445; x += S_MED * 0.82) {
+                    const tx = (x + 0.055) / 0.500; // 0 rear -> 1 spear tip
+
+                    // Define exact KLX 230R shroud upper & lower silhouette curves
+                    let yTop, yBot;
+                    if (tx < 0.58) {
+                        const u = tx / 0.58;
+                        yTop = 0.855 + Math.sin(u * Math.PI * 0.55) * 0.105;
+                        yBot = 0.755 - u * 0.025;
+                    } else {
+                        const u = (tx - 0.58) / 0.42;
+                        yTop = 0.958 - u * 0.122;
+                        // Distinctive lower front fork-wing drop down to sharp point near x=0.33, y=0.64
+                        if (x < 0.335) {
+                            const d = (x - 0.235) / 0.100;
+                            yBot = 0.730 - d * 0.095;
+                        } else {
+                            const d = (x - 0.335) / 0.110;
+                            yBot = 0.635 + d * 0.195;
+                        }
+                    }
+                    if (yTop <= yBot + 0.008) continue;
+
+                    for (let y = yBot; y <= yTop; y += S_MED * 0.82) {
+                        const ty = (y - yBot) / Math.max(0.01, yTop - yBot);
+                        // 3D flare outward over fuel tank & radiator/upper cylinder area
+                        const flare = 0.092 + Math.sin(Math.min(1, tx * 1.15) * Math.PI * 0.72) * 0.088
+                                      - Math.abs(ty - 0.55) * 0.028;
+                        const zOut = side * flare;
+
+                        // Determine voxel color: Kawasaki Lime Green OR embedded Black/White Decals
+                        let mat = 'limeGreen';
+
+                        // Lower angled black geometric racing stripe & "230R" white voxel graphic
+                        const stripeCenterY = 0.768 - (x - 0.26) * 0.42;
+                        const inBlackWedge = (x > 0.195 && x < 0.395 && Math.abs(y - stripeCenterY) < 0.036);
+                        if (inBlackWedge) {
+                            mat = 'decalBlack';
+                            // Sample "230R" white lettering inside the black wedge
+                            const u230 = (side > 0) ? (x - 0.215) / 0.145 : (0.360 - x) / 0.145;
+                            const v230 = (y - (stripeCenterY - 0.022)) / 0.044;
+                            if (sampleBitmap(DECAL_230R, u230, v230)) {
+                                mat = 'decalWhite';
+                            }
+                        }
+
+                        // Upper bold diagonal "KLX" white/black graphic along top-front shroud
+                        const klxCenterY = 0.905 - (x - 0.18) * 0.26;
+                        const uKLX = (side > 0) ? (x - 0.095) / 0.225 : (0.320 - x) / 0.225;
+                        const vKLX = (y - (klxCenterY - 0.026)) / 0.052;
+                        if (uKLX >= 0 && uKLX <= 1 && vKLX >= 0 && vKLX <= 1) {
+                            if (sampleBitmap(DECAL_KLX, uKLX, vKLX)) {
+                                mat = 'decalWhite';
+                            } else if (
+                                sampleBitmap(DECAL_KLX, uKLX - 0.04, vKLX - 0.06) ||
+                                sampleBitmap(DECAL_KLX, uKLX + 0.03, vKLX - 0.04)
+                            ) {
+                                mat = 'decalBlack'; // sharp drop-shadow outline behind KLX letters
+                            }
+                        }
+
+                        // Lower-rear dark intake edge accent
+                        if (x > 0.31 && x < 0.38 && y < 0.70) {
+                            mat = 'decalBlack';
+                        }
+
+                        med.set(x, y, zOut, mat);
+                        // Inner backing wall of shroud
+                        med.set(x, y, zOut - side * 0.011, 'limeGreenDark', 0.88);
+                    }
+                }
+            }
+
+            // 3. Sculpted Lime Green Rear Side Number Plates (covering airbox & exhaust!)
+            for (const side of [-1, 1]) {
+                // Right side (+1) bulges slightly further outward to clear the high-mount exhaust
+                const extraExhaustBulge = (side > 0) ? 0.026 : 0.0;
+
+                for (let x = -0.735; x <= -0.095; x += S_MAIN * 0.78) {
+                    const tx = (x + 0.735) / 0.640; // 0 rear -> 1 front near seat middle
+
+                    // Upper & lower sweeping motocross number plate boundary
+                    const yTop = 0.945 - Math.pow(tx, 1.35) * 0.105;
+                    let yBot;
+                    if (tx < 0.45) {
+                        const u = tx / 0.45;
+                        yBot = 0.860 - Math.sin(u * Math.PI * 0.5) * 0.215;
+                    } else {
+                        const u = (tx - 0.45) / 0.55;
+                        yBot = 0.645 + Math.pow(u, 1.45) * 0.085;
+                    }
+                    if (yTop <= yBot + 0.01) continue;
+
+                    for (let y = yBot; y <= yTop; y += S_MAIN * 0.78) {
+                        const ty = (y - yBot) / Math.max(0.01, yTop - yBot);
+
+                        // Distinctive dark recessed diagonal air-vent cutout in lower-middle of panel (photo!)
+                        const ventDist = Math.abs((x + 0.455) - (y - 0.675) * 0.75);
+                        const isVent = (y > 0.665 && y < 0.765 && ventDist < 0.014);
+
+                        const bulge = 0.112 + Math.sin(tx * Math.PI * 0.88) * 0.056
+                                      + Math.sin(ty * Math.PI) * 0.022 + extraExhaustBulge * (1 - tx * 0.6);
+                        const zOut = side * bulge;
+
+                        if (isVent) {
+                            main.set(x, y, zOut - side * 0.014, 'tankBlack', 0.75);
+                        } else {
+                            main.set(x, y, zOut, 'limeGreen', 0.96 + ty * 0.08);
+                            main.set(x, y, zOut - side * 0.012, 'limeGreenDark', 0.86);
+                        }
+                    }
+                }
+            }
+
+            // 4. High Sweeping Lime Green Rear Fender (extends from behind seat to sharp tail tip)
+            for (let x = -1.035; x <= -0.555; x += S_MAIN * 0.74) {
+                const t = (x + 1.035) / 0.480; // 0 tip -> 1 seat base
+                // Rises gently toward the rear tail tip just like the KLX 230R
+                const yCenter = 1.035 - Math.pow(t, 1.15) * 0.085;
+                const halfW = 0.026 + Math.pow(t, 0.75) * 0.068;
+
+                for (let z = -halfW; z <= halfW; z += S_MAIN * 0.78) {
+                    const zn = z / Math.max(0.01, halfW);
+                    const y = yCenter - zn * zn * 0.018;
+                    main.set(x, y, z, 'limeGreen', 1.02 - zn * zn * 0.08);
+                    main.set(x, y - 0.011, z, 'limeGreenDark', 0.85);
+                }
+            }
+            // Black inner rear mud-flap guarding the shock from rear tire spray
+            main.addBox(-0.425, 0.470, -0.065, -0.405, 0.785, 0.065, 'tankBlack');
+
+            // 5. Iconic Black Rear Grab / Tugger Strap looped across rear fender base (photo!)
+            for (let a = -1.45; a <= 1.45; a += 0.08) {
+                const z = Math.sin(a) * 0.095;
+                const y = 0.945 + Math.cos(a) * 0.048;
+                for (let x = -0.625; x <= -0.585; x += S_FINE * 1.1) {
+                    fine.set(x, y, z, 'strapBlack');
+                    fine.set(x, y + 0.005, z, 'strapBlack', 1.08);
+                }
+            }
+            // Small metallic strap mounting bolts on each side
+            fine.set(-0.605, 0.935,  0.098, 'spokeSteel', 1.1);
+            fine.set(-0.605, 0.935, -0.098, 'spokeSteel', 1.1);
+
+            main.buildInstancedMeshes(sharedBoxGeo, materials, group);
+            med.buildInstancedMeshes(sharedBoxGeo, materials, group);
+            fine.buildInstancedMeshes(sharedBoxGeo, materials, group);
+        }
+
+        /**
+         * Build the contoured black motocross gripper seat with realistic
+         * transverse ribbed top texture matching the photograph.
+         */
+        function buildSeat(group, sharedBoxGeo, materials) {
+            const main = new VoxelLayer(S_MAIN, 0.025);
+            const med  = new VoxelLayer(S_MED,  0.025);
+
+            for (let x = -0.585; x <= 0.115; x += S_MAIN * 0.78) {
+                const t = (x + 0.585) / 0.700; // 0 rear -> 1 front tank rise
+
+                // Authentic motocross scooped saddle profile
+                let yTop;
+                if (t < 0.62) {
+                    // Gently descends from tail toward rider pocket
+                    const u = t / 0.62;
+                    yTop = 0.962 - Math.sin(u * Math.PI * 0.5) * 0.098;
+                } else {
+                    // Curves smoothly up onto the black fuel tank
+                    const u = (t - 0.62) / 0.38;
+                    yTop = 0.864 + Math.pow(u, 1.55) * 0.096;
+                }
+                const yBot = yTop - (0.068 - Math.abs(t - 0.5) * 0.032);
+                const halfW = 0.082 * (1 - 0.32 * Math.pow(t, 1.3)) * (t < 0.08 ? (0.65 + t * 4.2) : 1.0);
+
+                for (let z = -halfW; z <= halfW; z += S_MAIN * 0.78) {
+                    const zn = z / Math.max(0.01, halfW);
+                    const crown = (1 - zn * zn) * 0.022;
+                    const localTop = yTop + crown;
+
+                    for (let y = yBot; y <= localTop; y += S_MAIN * 0.82) {
+                        main.set(x, y, z, 'seatBlack', 0.94 + ((y - yBot) / 0.08) * 0.10);
+                    }
+                }
+            }
+
+            // Transverse motocross gripper ribs across top of seat (clearly visible in photo!)
+            for (let rx = -0.515; rx <= -0.025; rx += 0.056) {
+                const t = (rx + 0.585) / 0.700;
+                const u = Math.min(1, t / 0.62);
+                const yTop = (t < 0.62)
+                    ? 0.962 - Math.sin(u * Math.PI * 0.5) * 0.098
+                    : 0.864 + Math.pow((t - 0.62) / 0.38, 1.55) * 0.096;
+                const halfW = 0.068 * (1 - 0.25 * t);
+
+                for (let z = -halfW; z <= halfW; z += S_MED * 0.85) {
+                    const zn = z / halfW;
+                    const y = yTop + (1 - zn * zn) * 0.024 + 0.005;
+                    med.set(rx, y, z, 'seatBlack', 1.18);
+                }
+            }
+
+            main.buildInstancedMeshes(sharedBoxGeo, materials, group);
+            med.buildInstancedMeshes(sharedBoxGeo, materials, group);
+        }
+
+        // =========================================================================
+        // 6. SMOOTH INTERACTIVE ORBIT / ZOOM / PAN CAMERA CONTROLLER
+        // =========================================================================
+        class StudioOrbitController {
+            constructor(camera, domElement, defaultState) {
+                this.camera = camera;
+                this.dom = domElement;
+                this.defaultState = Object.assign({}, defaultState);
+
+                // Current & target spherical coordinates around lookAt target
+                this.target = new THREE.Vector3(...defaultState.target);
+                this.targetGoal = this.target.clone();
+                this.spherical = new THREE.Spherical(defaultState.radius, defaultState.phi, defaultState.theta);
+                this.sphericalGoal = this.spherical.clone();
+
+                this.isDragging = false;
+                this.isPanning = false;
+                this.prevX = 0;
+                this.prevY = 0;
+                this.pinchDist = 0;
+                this.lastTapTime = 0;
+
+                this._bindEvents();
+                this.update(1.0); // Immediate initial placement
+            }
+
+            reset() {
+                this.targetGoal.set(...this.defaultState.target);
+                this.sphericalGoal.set(
+                    this.defaultState.radius,
+                    this.defaultState.phi,
+                    this.defaultState.theta
+                );
+            }
+
+            setDefaultRadius(r) {
+                this.defaultState.radius = r;
+                this.sphericalGoal.radius = r;
+                this.spherical.radius = r;
+                this.update(1.0);
+            }
+
+            _bindEvents() {
+                const dom = this.dom;
+
+                dom.addEventListener('contextmenu', e => e.preventDefault());
+
+                dom.addEventListener('mousedown', e => {
+                    this.isDragging = true;
+                    this.isPanning = (e.button === 2 || e.shiftKey);
+                    this.prevX = e.clientX;
+                    this.prevY = e.clientY;
+                });
+
+                window.addEventListener('mousemove', e => {
+                    if (!this.isDragging) return;
+                    const dx = e.clientX - this.prevX;
+                    const dy = e.clientY - this.prevY;
+                    this.prevX = e.clientX;
+                    this.prevY = e.clientY;
+
+                    if (this.isPanning) {
+                        this._pan(dx, dy);
+                    } else {
+                        this._orbit(dx, dy);
+                    }
+                });
+
+                window.addEventListener('mouseup', () => {
+                    this.isDragging = false;
+                    this.isPanning = false;
+                });
+
+                dom.addEventListener('wheel', e => {
+                    e.preventDefault();
+                    const factor = 1 + Math.sign(e.deltaY) * 0.085;
+                    this.sphericalGoal.radius = Math.max(1.25, Math.min(7.5, this.sphericalGoal.radius * factor));
+                }, { passive: false });
+
+                dom.addEventListener('dblclick', () => this.reset());
+
+                // Touch support (1-finger orbit, 2-finger pinch zoom & pan, double-tap reset)
+                dom.addEventListener('touchstart', e => {
+                    e.preventDefault();
+                    if (e.touches.length === 1) {
+                        const now = Date.now();
+                        if (now - this.lastTapTime < 280) {
+                            this.reset();
+                        }
+                        this.lastTapTime = now;
+                        this.isDragging = true;
+                        this.prevX = e.touches[0].clientX;
+                        this.prevY = e.touches[0].clientY;
+                    } else if (e.touches.length === 2) {
+                        this.isDragging = false;
+                        this.pinchDist = Math.hypot(
+                            e.touches[0].clientX - e.touches[1].clientX,
+                            e.touches[0].clientY - e.touches[1].clientY
+                        );
+                        this.prevX = (e.touches[0].clientX + e.touches[1].clientX) * 0.5;
+                        this.prevY = (e.touches[0].clientY + e.touches[1].clientY) * 0.5;
+                    }
+                }, { passive: false });
+
+                dom.addEventListener('touchmove', e => {
+                    e.preventDefault();
+                    if (e.touches.length === 1 && this.isDragging) {
+                        const dx = e.touches[0].clientX - this.prevX;
+                        const dy = e.touches[0].clientY - this.prevY;
+                        this.prevX = e.touches[0].clientX;
+                        this.prevY = e.touches[0].clientY;
+                        this._orbit(dx * 1.15, dy * 1.15);
+                    } else if (e.touches.length === 2) {
+                        const dist = Math.hypot(
+                            e.touches[0].clientX - e.touches[1].clientX,
+                            e.touches[0].clientY - e.touches[1].clientY
+                        );
+                        if (this.pinchDist > 0) {
+                            const scale = this.pinchDist / dist;
+                            this.sphericalGoal.radius = Math.max(1.25, Math.min(7.5, this.sphericalGoal.radius * scale));
+                        }
+                        this.pinchDist = dist;
+
+                        const cx = (e.touches[0].clientX + e.touches[1].clientX) * 0.5;
+                        const cy = (e.touches[0].clientY + e.touches[1].clientY) * 0.5;
+                        this._pan(cx - this.prevX, cy - this.prevY);
+                        this.prevX = cx;
+                        this.prevY = cy;
+                    }
+                }, { passive: false });
+
+                dom.addEventListener('touchend', () => {
+                    this.isDragging = false;
+                    this.pinchDist = 0;
+                });
+            }
+
+            _orbit(dx, dy) {
+                const rotSpeed = 0.0068;
+                this.sphericalGoal.theta -= dx * rotSpeed;
+                this.sphericalGoal.phi = Math.max(0.08, Math.min(Math.PI * 0.495, this.sphericalGoal.phi - dy * rotSpeed));
+            }
+
+            _pan(dx, dy) {
+                const panScale = this.spherical.radius * 0.0012;
+                const right = new THREE.Vector3().setFromMatrixColumn(this.camera.matrix, 0);
+                const up    = new THREE.Vector3().setFromMatrixColumn(this.camera.matrix, 1);
+                this.targetGoal.addScaledVector(right, -dx * panScale);
+                this.targetGoal.addScaledVector(up, dy * panScale);
+                // Keep target comfortably bounded near the motorcycle
+                this.targetGoal.x = Math.max(-1.2, Math.min(1.2, this.targetGoal.x));
+                this.targetGoal.y = Math.max( 0.1, Math.min(1.4, this.targetGoal.y));
+                this.targetGoal.z = Math.max(-1.0, Math.min(1.0, this.targetGoal.z));
+            }
+
+            update(damping = 0.14) {
+                this.spherical.radius += (this.sphericalGoal.radius - this.spherical.radius) * damping;
+                this.spherical.phi    += (this.sphericalGoal.phi    - this.spherical.phi)    * damping;
+                this.spherical.theta  += (this.sphericalGoal.theta  - this.spherical.theta)  * damping;
+                this.target.lerp(this.targetGoal, damping);
+
+                const offset = new THREE.Vector3().setFromSpherical(this.spherical);
+                this.camera.position.copy(this.target).add(offset);
+                this.camera.lookAt(this.target);
+            }
+        }
+
+        // =========================================================================
+        // 7. SCENE INITIALIZATION, STUDIO LIGHTING & MAIN RENDER LOOP
+        // =========================================================================
+        function initScene() {
+            try {
+                const canvas = document.getElementById('viewport');
+                const renderer = new THREE.WebGLRenderer({
+                    canvas,
+                    antialias: true,
+                    powerPreference: 'high-performance'
+                });
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                renderer.outputEncoding = THREE.sRGBEncoding;
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                renderer.toneMappingExposure = 0.96;
+
+                // Clean, plain medium-dark studio grey background for strong color & metal contrast
+                const scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x5c626b);
+                scene.environment = createStudioEnvironment(renderer);
+
+                // Camera configured to match the reference photograph's right-side elevated angle
+                const aspect = window.innerWidth / window.innerHeight;
+                const camera = new THREE.PerspectiveCamera(34, aspect, 0.05, 40);
+
+                // Calculate responsive camera radius so the entire motorcycle fits without cropping
+                const computeIdealRadius = (asp) => {
+                    const base = 3.05;
+                    return asp < 1.25 ? base * (1.28 / Math.max(0.45, asp)) : base;
+                };
+
+                const controls = new StudioOrbitController(camera, canvas, {
+                    target: [0.02, 0.56, 0.0],
+                    radius: computeIdealRadius(aspect),
+                    phi: 1.27,   // ~17 deg above horizontal (matching reference photo elevation)
+                    theta: 0.05  // Right-side broadside (+Z) with very slight forward-right angle
+                });
+
+                // -----------------------------------------------------------------
+                // Professional Three-Point Studio Lighting + Soft Ground Shadow
+                // -----------------------------------------------------------------
+                const hemiLight = new THREE.HemisphereLight(0xe8edf2, 0x3a3e45, 0.42);
+                scene.add(hemiLight);
+
+                // Main studio key light (upper front-right) casting crisp soft voxel shadows
+                const keyLight = new THREE.DirectionalLight(0xfffcf5, 1.35);
+                keyLight.position.set(2.4, 4.6, 3.2);
+                keyLight.castShadow = true;
+                keyLight.shadow.mapSize.width = 2048;
+                keyLight.shadow.mapSize.height = 2048;
+                keyLight.shadow.camera.near = 1.0;
+                keyLight.shadow.camera.far = 12.0;
+                const d = 1.65;
+                keyLight.shadow.camera.left = -d;
+                keyLight.shadow.camera.right = d;
+                keyLight.shadow.camera.top = d;
+                keyLight.shadow.camera.bottom = -d;
+                keyLight.shadow.bias = -0.00045;
+                keyLight.shadow.radius = 2.6;
+                scene.add(keyLight);
+
+                // Subtle cool fill light from opposite left side without flattening shadows
+                const fillLight = new THREE.DirectionalLight(0xd6e2f0, 0.32);
+                fillLight.position.set(-2.6, 2.2, -3.4);
+                scene.add(fillLight);
+
+                // Overhead-rear rim light for clean edge separation against the darker grey backdrop
+                const rimLight = new THREE.DirectionalLight(0xf5f8ff, 0.55);
+                rimLight.position.set(-1.5, 4.0, -1.8);
+                scene.add(rimLight);
+
+                // Invisible shadow-catcher plane at y = 0 for grounded studio contact shadows
+                const shadowFloor = new THREE.Mesh(
+                    new THREE.PlaneGeometry(14, 14),
+                    new THREE.ShadowMaterial({ opacity: 0.36 })
+                );
+                shadowFloor.rotation.x = -Math.PI / 2;
+                shadowFloor.position.y = 0;
+                shadowFloor.receiveShadow = true;
+                scene.add(shadowFloor);
+
+                // -----------------------------------------------------------------
+                // Shared Voxel Geometry & PBR Materials Registry
+                // -----------------------------------------------------------------
+                const sharedBoxGeo = new THREE.BoxGeometry(1, 1, 1);
+                const materials = {};
+                for (const [key, spec] of Object.entries(MATERIAL_SPECS)) {
+                    materials[key] = new THREE.MeshStandardMaterial({
+                        color: spec.color,
+                        roughness: spec.roughness,
+                        metalness: spec.metalness,
+                        envMapIntensity: 0.85
+                    });
+                }
+
+                // -----------------------------------------------------------------
+                // Logical Component Hierarchy of the Kawasaki KLX 230R
+                // -----------------------------------------------------------------
+                const motorcycleRoot = new THREE.Group();
+                motorcycleRoot.name = 'Kawasaki_KLX_230R';
+
+                // Subtle authentic left kickstand lean (~4.9 deg toward -Z) matching the photo!
+                motorcycleRoot.rotation.x = -0.085;
+                scene.add(motorcycleRoot);
+
+                const frameGroup          = new THREE.Group(); frameGroup.name = 'FrameAndKickstand';
+                const engineGroup         = new THREE.Group(); engineGroup.name = 'AirCooledEngine230cc';
+                const exhaustGroup        = new THREE.Group(); exhaustGroup.name = 'HighMountExhaust';
+                const rearSuspensionGroup = new THREE.Group(); rearSuspensionGroup.name = 'SwingarmAndMonoshock';
+                const rearWheelGroup      = new THREE.Group(); rearWheelGroup.name = 'RearWheel18Inch';
+                const bodyworkGroup       = new THREE.Group(); bodyworkGroup.name = 'BodyworkAndDecals';
+                const seatGroup           = new THREE.Group(); seatGroup.name = 'RibbedMotocrossSeat';
+
+                // Steering head hierarchy (pivots around true 26.3 deg steering axis)
+                const steeringHeadPivot = new THREE.Group();
+                steeringHeadPivot.name = 'SteeringHeadPivot';
+                steeringHeadPivot.position.set(0.355, 0.975, 0);
+                steeringHeadPivot.rotation.z = 0.46; // 26.3 deg dirt-bike fork rake
+
+                const frontSuspensionGroup = new THREE.Group();
+                frontSuspensionGroup.name = 'FrontForksHandlebarsAndFender';
+                // Subtle realistic parked left-turn of handlebars & front wheel (~5.5 deg)
+                frontSuspensionGroup.rotation.y = 0.095;
+                steeringHeadPivot.add(frontSuspensionGroup);
+
+                const frontWheelGroup = new THREE.Group();
+                frontWheelGroup.name = 'FrontWheel21Inch';
+
+                // Assemble logical groups into the root motorcycle object
+                motorcycleRoot.add(
+                    frameGroup,
+                    engineGroup,
+                    exhaustGroup,
+                    rearSuspensionGroup,
+                    rearWheelGroup,
+                    bodyworkGroup,
+                    seatGroup,
+                    steeringHeadPivot
+                );
+
+                // Position rear wheel at its exact rear axle
+                rearWheelGroup.position.set(-0.670, 0.345, 0);
+
+                // Procedurally construct every motorcycle component in pure 3D voxel cubes
+                buildWheel(rearWheelGroup, sharedBoxGeo, materials, {
+                    outerR: 0.345,
+                    tireInnerR: 0.232,
+                    rimInnerR: 0.208,
+                    tireWidth: 0.118,
+                    rimWidth: 0.068,
+                    hubR: 0.052,
+                    hubWidth: 0.128,
+                    knobPitches: 28,
+                    discSide: 1,       // Right-side rear brake disc
+                    discR: 0.118,
+                    hasSprocket: true, // Left-side rear sprocket
+                    sprocketR: 0.112
+                });
+
+                buildWheel(frontWheelGroup, sharedBoxGeo, materials, {
+                    outerR: 0.385,
+                    tireInnerR: 0.278,
+                    rimInnerR: 0.254,
+                    tireWidth: 0.088,
+                    rimWidth: 0.054,
+                    hubR: 0.044,
+                    hubWidth: 0.112,
+                    knobPitches: 32,
+                    discSide: -1,      // Left-side front brake disc (visible through spokes)
+                    discR: 0.132,
+                    hasSprocket: false,
+                    sprocketR: 0
+                });
+
+                buildFrame(frameGroup, sharedBoxGeo, materials);
+                buildEngine(engineGroup, sharedBoxGeo, materials);
+                buildExhaust(exhaustGroup, sharedBoxGeo, materials);
+                buildRearSuspension(rearSuspensionGroup, sharedBoxGeo, materials);
+                buildFrontAssembly(frontSuspensionGroup, frontWheelGroup, sharedBoxGeo, materials);
+                buildBodywork(bodyworkGroup, sharedBoxGeo, materials);
+                buildSeat(seatGroup, sharedBoxGeo, materials);
+
+                // Responsive viewport resizing
+                window.addEventListener('resize', () => {
+                    const w = window.innerWidth;
+                    const h = window.innerHeight;
+                    const newAsp = w / h;
+                    camera.aspect = newAsp;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(w, h);
+                    controls.setDefaultRadius(computeIdealRadius(newAsp));
+                });
+
+                // Smooth 60 FPS studio rendering loop
+                function animate() {
+                    requestAnimationFrame(animate);
+                    controls.update();
+                    renderer.render(scene, camera);
+                }
+                animate();
+            } catch (err) {
+                console.error('Error initializing 3D voxel motorcycle scene:', err);
+            }
+        }
+
+        window.onload = initScene;
+    })();
+    </script>
+</body>
+</html>

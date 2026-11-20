@@ -1,0 +1,33 @@
+# Robots.txt for Ishaan Dalvi Portfolio (https://ishaan.dalvigroup.co.in)
+User-agent: *
+Allow: /
+
+# Specifically allow and optimize for Generative AI Crawlers and Search Engines (GEO)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Cohere-ai
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+# Clean AI context file
+# Context: https://ishaan.dalvigroup.co.in/llms.txt
+
+Sitemap: https://ishaan.dalvigroup.co.in/sitemap.xml

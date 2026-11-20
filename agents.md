@@ -24,3 +24,4 @@
 | Date (ISO) | Agent / Author | Action & Files Modified | Summary of Changes |
 | :--- | :--- | :--- | :--- |
 | 2026-11-19 | Antigravity | Created `facts.md`, Created `agents.md` | Extracted and documented all facts from `index.html` into `facts.md`. Established `agents.md` with guidelines requiring updates upon file modification. |
+| 2026-11-20 | Antigravity | Updated `index.html`, `facts.md`, `agents.md`; Created `llms.txt`, `_headers`, `_redirects`, `robots.txt`, `sitemap.xml` | Implemented Generative Engine Optimization (GEO) and entity verification. Added JSON-LD schema with `sameAs`, bi-directional GitHub/Dalvi links, `/llms.txt` markdown context file, fact-dense neutral copy, and Cloudflare Pages hosting optimizations (security/cache headers, redirects, AI-friendly robots.txt, sitemap). |
