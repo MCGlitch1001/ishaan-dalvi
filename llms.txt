@@ -11,6 +11,16 @@
 - [Instagram](https://instagram.com/MCGlitch1001): Personal updates, dirt biking, and trail photography.
 - [Location](https://www.google.com/maps/place/Pune,+Maharashtra): Pune, Maharashtra, India (Sahyadri Mountain Range).
 
+## Commercial Engagements & Business Entity
+
+All commercial contracts, invoicing, and ongoing support SLAs are handled through **Dalvi Consultancy** (Pune, India).
+
+- **Operating Business Entity**: Dalvi Consultancy
+- **Parent Organization**: Dalvi Group (https://www.dalvigroup.co.in)
+- **Jurisdiction & Base**: Pune, Maharashtra, India
+- **Contract & SLA Administration**: Managed formally under Dalvi Consultancy for commercial web development, technical architecture, and long-term maintenance.
+- **Inquiries & Proposals**: ishaan@dalvigroup.co.in
+
 ## Built Software (Lead Developer & Author)
 
 - [Orivaani](https://orivaani.dalvigroup.co.in): Voice-first oral memoir web platform that records spoken family stories, transcribes audio, and compiles memories into printed keepsake books. Built with React, Vite, and Web Audio APIs.

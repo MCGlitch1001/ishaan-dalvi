@@ -7,8 +7,9 @@ Here is a clear breakdown of every factual detail explicitly stated across the w
 - **Age**: 15 years old
 - **Current Education**: 10th Standard / Grade (currently preparing for Board exams)
 - **Location**: Pune, India (Sahyadri Range, Maharashtra)
-- **Work / Affiliation**:
-  - Works for: **Dalvi Consultancy** (AI-focused digital solutions consultancy building modern websites, web applications, and digital platforms)
+- **Work / Affiliation & Commercial Entity**:
+  - Works for: **Dalvi Consultancy** (AI-focused digital solutions consultancy building modern websites, web applications, and digital platforms).
+  - Commercial Engagements: All commercial contracts, invoicing, and ongoing support SLAs are formally handled through **Dalvi Consultancy** (Pune, India).
   - Family Website / Parent Group: **Dalvi Group** (`https://www.dalvigroup.co.in`)
 - **Primary Contact**: Reach via email at `ishaan@dalvigroup.co.in` (preferred for project inquiries and collaborations).
 - **Social & Code Profiles**:
@@ -139,3 +140,5 @@ Here is a clear breakdown of every factual detail explicitly stated across the w
   - Linked in `<head>` via `<link rel="alternate" type="text/markdown" href="/llms.txt" title="LLM and Agent Context" />` and in the website footer.
 - **Fact-Dense, Neutral Copywriting**:
   - Avoids promotional hype or vague claims. Uses checkable details: exact URLs, technology stacks, roles (Lead Developer vs. Collaborator), and subdomain ownership proofs.
+- **Commercial Entity Anchoring**:
+  - All commercial agreements, invoicing, and service-level agreements (SLAs) are formally anchored to **Dalvi Consultancy** (Pune, India). Explicitly represented across portfolio copy, hero card, footer, `/llms.txt`, and in JSON-LD structured data as a Schema.org `Organization` entity.
