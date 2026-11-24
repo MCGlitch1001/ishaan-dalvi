@@ -197,7 +197,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     :root {
       --bg-obsidian: #050608;
@@ -488,11 +487,11 @@
       }
     }
 
-    /* Section 3: 3D Food Forest Scroll-Zoom Track & Sticky Viewport */
+    /* Section 3: 3D Food Forest Scroll-Zoom Track (Zoom In -> Full-Screen Hold -> Zoom Back Out) */
     .forest-scroll-track {
       position: relative;
       z-index: 10;
-      height: 340vh;
+      height: 540vh;
     }
 
     .forest-sticky-stage {
@@ -503,39 +502,182 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 14px;
-    }
-
-    @media (min-width: 640px) {
-      .forest-sticky-stage {
-        padding: 20px;
-      }
+      padding: 0;
+      overflow: hidden;
     }
 
     .forest-viewport-frame {
-      width: 100%;
-      max-width: 1240px;
-      height: calc(100vh - 28px);
-      max-height: 820px;
+      width: min(1240px, calc(100vw - 28px));
+      height: min(820px, calc(100vh - 28px));
       border-radius: 24px;
       overflow: hidden;
       position: relative;
+      z-index: 12;
       touch-action: pan-y;
+      will-change: width, height, border-radius, transform, opacity;
     }
 
-    @media (min-width: 640px) {
-      .forest-viewport-frame {
-        height: calc(100vh - 40px);
-        border-radius: 28px;
-      }
-    }
-
-    #forest-3d-canvas-wrap {
+    /* Live 3D Voxel Garage Layer Sitting Directly Behind the Shrinking Garden Window */
+    #garage-stage-layer {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
-      transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), filter 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 16;
+      background: transparent;
+      opacity: 0;
+      pointer-events: none;
+      will-change: opacity;
+    }
+
+    #garage-stage-layer.is-interactive {
+      pointer-events: auto;
+    }
+
+    .garage-hud-fade {
+      opacity: 0;
+      will-change: opacity;
+    }
+
+    /* 4-Pane Steel Voxel Window Crossbars Overlay During Garden-to-Garage Pull-Back */
+    #forest-window-mullions {
+      position: absolute;
+      inset: 0;
+      z-index: 28;
+      pointer-events: none;
+      opacity: 0;
+      border: 6px solid #1b212d;
+      box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
+      will-change: opacity;
+    }
+
+    #forest-window-mullions::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 5px;
+      transform: translateX(-50%);
+      background: #1b212d;
+    }
+
+    #forest-window-mullions::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 5px;
+      transform: translateY(-50%);
+      background: #1b212d;
+    }
+
+    #forest-3d-canvas-wrap {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 100vw;
+      height: 100vh;
+      transform: translate(-50%, -50%);
+      transition: filter 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Section 3.5: The Garage — Seamless Plain Black 3D Room */
+    .garage-section {
+      position: relative;
+      z-index: 12;
+      width: 100%;
+      min-height: 100vh;
+      background: #000000;
+      overflow: hidden;
+      border-top: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .garage-stage {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 680px;
+    }
+
+    @media (max-width: 767px) {
+      .garage-stage {
+        height: 112vh;
+        min-height: 760px;
+      }
+    }
+
+    #garage-3d-canvas-wrap {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      touch-action: pan-y;
+    }
+
+    #garage-3d-canvas-wrap:active {
+      cursor: grabbing;
+    }
+
+    /* Clickable Full Uncropped DirtShack.in Wide Logo Back-Wall Wallpaper */
+    .garage-dirtshack-wallpaper {
+      position: absolute;
+      left: 58%;
+      top: 24%;
+      z-index: 18;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      cursor: pointer;
+      pointer-events: auto;
+      opacity: 0;
+      transition:
+        opacity 0.45s ease,
+        filter 0.25s ease;
+      will-change: left, top, width, height, opacity;
+    }
+
+    .garage-dirtshack-wallpaper.is-ready {
+      opacity: 0.92;
+    }
+
+    .garage-dirtshack-wallpaper:hover,
+    .garage-dirtshack-wallpaper:focus-visible {
+      opacity: 1;
+      filter: drop-shadow(0 0 22px rgba(184, 255, 0, 0.45));
+      outline: none;
+    }
+
+    .garage-dirtshack-wallpaper img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .garage-dirtshack-wallpaper .ds-hover-tag {
+      position: absolute;
+      right: 2px;
+      bottom: -16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(184, 255, 0, 0.85);
+      opacity: 0.68;
+      transition: opacity 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .garage-dirtshack-wallpaper:hover .ds-hover-tag {
+      opacity: 1;
     }
 
     /* 2D Cavern Canvas Layer for Ant Hills Enlarged View */
@@ -885,12 +1027,73 @@
     </div>
   </div>
 
-  <!-- 4. Section 3 — Bio Engineering Nature (3D Food Forest + Dedicated Enlarged Views) -->
-  <section id="food-forest-section" class="forest-scroll-track" aria-label="Bio Engineering Nature">
-    <div class="forest-sticky-stage">
+  <!-- 4. Section 3 & 3.5 — Unified Bio Engineering Nature (3D Food Forest) -> Corner Window Pull-Back -> The Garage -->
+  <section id="food-forest-section" class="forest-scroll-track" aria-label="Bio Engineering Nature and The Garage">
+    <div id="forest-sticky-stage" class="forest-sticky-stage">
+      <!-- Live 3D Voxel Garage Layer (Revealed Directly Behind the Garden as It Pulls Back Into the Garage Corner Window) -->
+      <div id="garage-stage-layer" aria-label="The Garage — 3D Motorcycles">
+        <div id="garage-3d-canvas-wrap"></div>
+
+        <!-- Clickable Full Uncropped DirtShack.in Wide Logo Back-Wall Wallpaper -->
+        <a id="garage-dirtshack-sign" href="https://dirtshack.in" target="_blank" rel="noopener noreferrer" class="garage-dirtshack-wallpaper" aria-label="Visit DirtShack.in — India's Home for Dirt Biking">
+          <img src="dirtshack-logo-wide.png" alt="DirtShack.in Logo" loading="lazy" />
+          <span class="ds-hover-tag">dirtshack.in ↗</span>
+        </a>
+
+        <!-- Lazy-Load Shimmer -->
+        <div id="garage-loading-overlay" class="absolute inset-0 z-15 flex items-center justify-center bg-black transition-opacity duration-500 pointer-events-none">
+          <div class="vision-glass-compact px-4 py-2 rounded-full flex items-center gap-2.5">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span class="font-mono-telemetry text-[11px] tracking-[0.08em] text-[#9BA4B5]">ROLLING OUT GARAGE 3D MODELS</span>
+          </div>
+        </div>
+
+        <!-- Top Garage Header Overlay -->
+        <div class="garage-hud-fade absolute top-5 sm:top-7 left-0 right-0 z-20 px-5 sm:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-2 pointer-events-none">
+          <div class="flex items-center gap-3">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_12px_#06b6d4]"></span>
+            <h2 class="text-[20px] sm:text-[24px] font-medium tracking-[-0.025em] text-[#F5F7FA]">The Garage</h2>
+          </div>
+          <span class="font-mono-telemetry text-[10.5px] sm:text-[11px] tracking-[0.08em] text-[#9BA4B5]">
+            DRAG TO SPIN IN SYNC • 2 VOXEL BUILDS
+          </span>
+        </div>
+
+        <!-- Interactive Frosted Labels for Both Spinning Bikes -->
+        <div class="garage-hud-fade absolute inset-x-0 bottom-0 z-20 p-5 sm:p-8 flex flex-col sm:flex-row items-stretch sm:items-end justify-between gap-3 pointer-events-none">
+          <div class="vision-glass-compact rounded-2xl px-4 py-3 pointer-events-auto flex items-center justify-between sm:justify-start gap-4">
+            <div>
+              <span class="font-mono-telemetry text-[10px] tracking-[0.08em] uppercase text-cyan-300/80 block">150CC DUAL-SPORT</span>
+              <h3 class="text-[15px] sm:text-[16px] font-medium text-[#F5F7FA]">Hero Impulse</h3>
+            </div>
+            <a href="/impulse.html" class="font-mono-telemetry text-[11px] px-3 py-1.5 rounded-full bg-cyan-400/15 hover:bg-cyan-400/28 border border-cyan-300/30 text-cyan-100 transition whitespace-nowrap">
+              Fullscreen ↗
+            </a>
+          </div>
+
+          <div class="vision-glass-compact rounded-2xl px-4 py-3 pointer-events-auto flex items-center justify-between sm:justify-start gap-4">
+            <div>
+              <span class="font-mono-telemetry text-[10px] tracking-[0.08em] uppercase text-cyan-300/80 block">230CC OFF-ROAD</span>
+              <h3 class="text-[15px] sm:text-[16px] font-medium text-[#F5F7FA]">Kawasaki KLX 230R</h3>
+            </div>
+            <a href="/klx230.html" class="font-mono-telemetry text-[11px] px-3 py-1.5 rounded-full bg-cyan-400/15 hover:bg-cyan-400/28 border border-cyan-300/30 text-cyan-100 transition whitespace-nowrap">
+              Fullscreen ↗
+            </a>
+          </div>
+        </div>
+      </div>
+
       <div id="forest-viewport-frame" class="forest-viewport-frame vision-glass">
-        <!-- Three.js 3D Canvas Mount -->
+        <!-- Three.js 3D Canvas Mount (Fixed 100vw x 100vh for Zero-Reflow Fullscreen Zoom) -->
         <div id="forest-3d-canvas-wrap"></div>
+
+        <!-- Lightweight Lazy-Load Placeholder -->
+        <div id="forest-loading-overlay" class="absolute inset-0 z-15 flex items-center justify-center bg-[#060911] transition-opacity duration-500 pointer-events-none">
+          <div class="vision-glass-compact px-4 py-2 rounded-full flex items-center gap-2.5">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span class="font-mono-telemetry text-[11px] tracking-[0.08em] text-[#9BA4B5]">LOADING 3D GARDEN</span>
+          </div>
+        </div>
 
         <!-- Brightly Lit 2D Ant Cavern Cutaway Canvas (Active when inspecting Ant Hills) -->
         <canvas id="ant-cavern-2d-canvas"></canvas>
@@ -911,6 +1114,11 @@
           <div class="w-14 sm:w-16 h-1 rounded-full bg-white/15 overflow-hidden">
             <div id="forest-zoom-bar" class="h-full bg-cyan-400 rounded-full w-0 transition-all duration-75"></div>
           </div>
+        </div>
+
+        <!-- Seamless Cue Into The Garage Once Fully Zoomed In -->
+        <div id="forest-garage-cue" class="vision-glass-compact absolute bottom-5 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full flex items-center gap-2 pointer-events-none opacity-0 transition-opacity duration-500">
+          <span class="font-mono-telemetry text-[11px] tracking-[0.06em] text-cyan-200/90 whitespace-nowrap">SCROLL DOWN INTO THE GARAGE ↓</span>
         </div>
 
         <!-- 4 Interactive 3D-Anchored Frosted-Glass Dialogue Pointers -->
@@ -1079,18 +1287,43 @@
     Copied ishaan@dalvigroup.co.in
   </div>
 
-  <script>
+  <script data-cfasync="false">
     /**
-     * 1. KINETIC 45° DIAGONAL HALFTONE GRADIENT CANVAS
-     * - Strict two-color palette: Pure Obsidian Black (#050608) & Glacier Cyan-Blue (#06b6d4).
-     * - Enhanced kinetic animation: travelling diagonal interference waves, subtle breathing tide,
-     *   and responsive cursor/touch proximity swells across the 45° Ben-Day lattice.
+     * 0. ON-DEMAND LAZY SCRIPT LOADER (Three.js + Garage 3D Module)
+     * - Keeps initial mobile page load lightweight; 3D scripts load only when scrolling near 3D sections.
+     */
+    (function initLazyLoaders() {
+      const loadedScripts = new Map();
+      window.loadScriptOnce = function (src) {
+        if (loadedScripts.has(src)) return loadedScripts.get(src);
+        const p = new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = src;
+          s.async = true;
+          s.setAttribute('data-cfasync', 'false');
+          s.onload = () => resolve();
+          s.onerror = (e) => reject(e);
+          document.head.appendChild(s);
+        });
+        loadedScripts.set(src, p);
+        return p;
+      };
+      window.ensureThreeJS = function () {
+        if (typeof window.THREE !== 'undefined') return Promise.resolve();
+        return window.loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js');
+      };
+      window.__fullscreen3DCovering = false;
+    })();
+
+    /**
+     * 1. KINETIC 45° DIAGONAL HALFTONE GRADIENT CANVAS (Mobile-Optimized & Auto-Pausing)
      */
     (function initHalftoneGradientCanvas() {
       const canvas = document.getElementById('bg-canvas');
       const ctx = canvas.getContext('2d', { alpha: false });
+      const isMobile = window.innerWidth < 768;
 
-      const PITCH = 13.5;
+      const PITCH = isMobile ? 16 : 13.5;
       const STEP = PITCH / Math.SQRT2;
       const MAX_RADIUS = PITCH * 0.74;
 
@@ -1098,6 +1331,7 @@
       let height = 0;
       let topDots = [];
       let bottomDots = [];
+      let lastDraw = 0;
 
       const pointer = { x: -9999, y: -9999, active: false };
 
@@ -1156,7 +1390,7 @@
       }
 
       function resizeCanvas() {
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 1.75);
         width = window.innerWidth;
         height = window.innerHeight;
         canvas.width = width * dpr;
@@ -1179,19 +1413,16 @@
             radius = MAX_RADIUS;
           } else {
             const edgeEnvelope = Math.sin(Math.PI * dot.t);
-
-            // Multi-layered travelling diagonal ripple + vertical tide
             const waveA = Math.sin(dot.x * 0.014 - dot.y * 0.011 + time * 1.15);
             const waveB = Math.cos(dot.x * 0.009 + dot.y * 0.016 - time * 0.85);
             const ripple = (waveA * 0.6 + waveB * 0.4) * 0.075 * edgeEnvelope;
 
-            // Interactive cursor/touch proximity swell
             let pointerBoost = 0;
-            if (pointer.active) {
+            if (pointer.active && !isMobile) {
               const dx = dot.x - pointer.x;
               const dy = dot.y - pointer.y;
               const distSq = dx * dx + dy * dy;
-              if (distSq < 32400) { // 180px radius
+              if (distSq < 32400) {
                 const falloff = 1 - Math.sqrt(distSq) / 180;
                 pointerBoost = -falloff * falloff * 0.22 * edgeEnvelope;
               }
@@ -1215,6 +1446,11 @@
       }
 
       function render(now) {
+        requestAnimationFrame(render);
+        if (document.hidden || window.__fullscreen3DCovering) return;
+        if (isMobile && now - lastDraw < 33) return;
+        lastDraw = now;
+
         const time = now * 0.001;
         const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
         const scrollRatio = window.scrollY / maxScroll;
@@ -1225,8 +1461,6 @@
         ctx.fillStyle = '#06b6d4';
         drawHalftoneBand(topDots, time, scrollRatio);
         drawHalftoneBand(bottomDots, time, scrollRatio);
-
-        requestAnimationFrame(render);
       }
 
       requestAnimationFrame(render);
@@ -1594,13 +1828,33 @@
      *   4. Soil      -> Rich multi-layer cross-section with moss, humus, mycelium, roots, ant tunnels &
      *      named earthworms with fun taglines.
      */
-    window.addEventListener('load', function initDetailedFoodForest3D() {
+    (function lazyBootFoodForest3D() {
+      const trackSection = document.getElementById('food-forest-section');
+      if (!trackSection) return;
+      let booted = false;
+      const bootObserver = new IntersectionObserver((entries) => {
+        if (booted || !entries[0].isIntersecting) return;
+        booted = true;
+        bootObserver.disconnect();
+        window.ensureThreeJS().then(() => {
+          initDetailedFoodForest3D();
+        }).catch((err) => console.error('Failed to lazy-load Three.js:', err));
+      }, { rootMargin: '600px 0px' });
+      bootObserver.observe(trackSection);
+    })();
+
+    function initDetailedFoodForest3D() {
       const mount = document.getElementById('forest-3d-canvas-wrap');
+      const stickyStage = document.getElementById('forest-sticky-stage');
+      const viewportFrame = document.getElementById('forest-viewport-frame');
+      const garageStageLayer = document.getElementById('garage-stage-layer');
+      const loadingOverlay = document.getElementById('forest-loading-overlay');
       const cavern2DCanvas = document.getElementById('ant-cavern-2d-canvas');
       const transitionVeil = document.getElementById('forest-view-transition-veil');
       const trackSection = document.getElementById('food-forest-section');
       const heroTitleOverlay = document.getElementById('forest-hero-title');
       const scrollHint = document.getElementById('forest-scroll-hint');
+      const garageCue = document.getElementById('forest-garage-cue');
       const zoomBar = document.getElementById('forest-zoom-bar');
       const focusCard = document.getElementById('hotspot-focus-card');
       const focusTitle = document.getElementById('focus-card-title');
@@ -1611,6 +1865,7 @@
 
       if (!mount || !trackSection || typeof THREE === 'undefined') return;
 
+      const isMobile = window.innerWidth < 768 || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
       const scene = new THREE.Scene();
 
       // Golden-Hour-Meets-Dusk Sky Gradient
@@ -1631,20 +1886,25 @@
       scene.fog = new THREE.FogExp2(0x131926, 0.0102);
 
       const camera = new THREE.PerspectiveCamera(
-        mount.clientWidth < 640 ? 54 : 45,
-        mount.clientWidth / mount.clientHeight,
+        window.innerWidth < 640 ? 54 : 45,
+        window.innerWidth / Math.max(1, window.innerHeight),
         0.15,
         260
       );
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-      renderer.setSize(mount.clientWidth, mount.clientHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      const renderer = new THREE.WebGLRenderer({ antialias: !isMobile, powerPreference: 'high-performance' });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 1.75));
       renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.shadowMap.type = isMobile ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.12;
       mount.appendChild(renderer.domElement);
+
+      if (loadingOverlay) {
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => { loadingOverlay.style.display = 'none'; }, 400);
+      }
 
       // Lighting
       const hemiLight = new THREE.HemisphereLight(0x6EE7B7, 0x2B211A, 0.92);
@@ -1653,8 +1913,8 @@
       const sunLight = new THREE.DirectionalLight(0xFBBF77, 1.65);
       sunLight.position.set(-30, 16, -34);
       sunLight.castShadow = true;
-      sunLight.shadow.mapSize.width = 2048;
-      sunLight.shadow.mapSize.height = 2048;
+      sunLight.shadow.mapSize.width = isMobile ? 512 : 1024;
+      sunLight.shadow.mapSize.height = isMobile ? 512 : 1024;
       sunLight.shadow.camera.near = 2;
       sunLight.shadow.camera.far = 100;
       const shadowBound = 26;
@@ -1791,6 +2051,14 @@
         forestGroup.add(mulchLip);
       }
 
+      // Batched InstancedMesh terrain (reduces 748 draw calls -> 4 draw calls for mobile performance)
+      const unitBoxGeo = new THREE.BoxGeometry(1, 1, 1);
+      const tileBuckets = new Map([
+        [mulchTopMat, []],
+        [groundGrassMats[0], []],
+        [groundGrassMats[1], []],
+        [groundGrassMats[2], []]
+      ]);
       for (let x = -HALF_W; x < HALF_W; x++) {
         for (let z = -HALF_D; z < HALF_D; z++) {
           const cx = x + 0.5;
@@ -1798,38 +2066,44 @@
           const surfY = getTerrainY(cx, cz);
           const inSwale = (cx >= 1.4 && cx <= 6.8 && cz >= -3.1 && cz <= -1.7);
           const tileH = inSwale ? 0.22 : surfY;
-
           const isMulchPatch = ((Math.abs(x * 7 + z * 3) % 5) === 0) || inSwale;
           const mat = isMulchPatch
             ? mulchTopMat
             : groundGrassMats[Math.abs(x + z * 2) % groundGrassMats.length];
-
-          const tile = new THREE.Mesh(new THREE.BoxGeometry(1.0, tileH, 1.0), mat);
-          tile.position.set(cx, tileH * 0.5, cz);
-          tile.receiveShadow = true;
-          forestGroup.add(tile);
+          tileBuckets.get(mat).push({ x: cx, y: tileH * 0.5, z: cz, h: tileH });
         }
       }
+      const instDummy = new THREE.Object3D();
+      tileBuckets.forEach((items, mat) => {
+        if (!items.length) return;
+        const inst = new THREE.InstancedMesh(unitBoxGeo, mat, items.length);
+        inst.receiveShadow = true;
+        for (let i = 0; i < items.length; i++) {
+          const it = items[i];
+          instDummy.position.set(it.x, it.y, it.z);
+          instDummy.rotation.set(0, 0, 0);
+          instDummy.scale.set(1.0, it.h, 1.0);
+          instDummy.updateMatrix();
+          inst.setMatrixAt(i, instDummy.matrix);
+        }
+        inst.instanceMatrix.needsUpdate = true;
+        forestGroup.add(inst);
+      });
 
-      // B. DECCAN BASALT STONE BUND WALLS WITH MOSS
+      // B. DECCAN BASALT STONE BUND WALLS WITH MOSS (Batched InstancedMesh)
+      const stoneLightList = [];
+      const stoneDarkList = [];
+      const mossList = [];
       function placeBundStone(x, y, z, w, h, d, addMoss = false) {
-        const stone = new THREE.Mesh(
-          new THREE.BoxGeometry(w, h, d),
-          rand() > 0.45 ? basaltStoneMat : basaltDarkMat
-        );
-        stone.position.set(x, y + h * 0.5, z);
-        stone.rotation.y = (rand() - 0.5) * 0.08;
-        stone.castShadow = true;
-        stone.receiveShadow = true;
-        forestGroup.add(stone);
-
+        const ry = (rand() - 0.5) * 0.08;
+        (rand() > 0.45 ? stoneLightList : stoneDarkList).push({ x, y: y + h * 0.5, z, w, h, d, ry });
         if (addMoss) {
-          const moss = new THREE.Mesh(
-            new THREE.BoxGeometry(w * 0.68, 0.08, d * 0.68),
-            mossMat
-          );
-          moss.position.set(x + (rand() - 0.5) * 0.12, y + h + 0.045, z + (rand() - 0.5) * 0.12);
-          forestGroup.add(moss);
+          mossList.push({
+            x: x + (rand() - 0.5) * 0.12,
+            y: y + h + 0.045,
+            z: z + (rand() - 0.5) * 0.12,
+            w: w * 0.68, h: 0.08, d: d * 0.68, ry: 0
+          });
         }
       }
 
@@ -1848,6 +2122,23 @@
         placeBundStone(-HALF_W + 0.45, baseH, z, 0.78, 0.42 + rand() * 0.18, 0.95, rand() > 0.5);
         placeBundStone(HALF_W - 0.45, baseH, z, 0.78, 0.42 + rand() * 0.18, 0.95, rand() > 0.5);
       }
+
+      [[stoneLightList, basaltStoneMat, true], [stoneDarkList, basaltDarkMat, true], [mossList, mossMat, false]].forEach(([arr, mat, cast]) => {
+        if (!arr.length) return;
+        const inst = new THREE.InstancedMesh(unitBoxGeo, mat, arr.length);
+        inst.castShadow = cast;
+        inst.receiveShadow = true;
+        for (let i = 0; i < arr.length; i++) {
+          const b = arr[i];
+          instDummy.position.set(b.x, b.y, b.z);
+          instDummy.rotation.set(0, b.ry, 0);
+          instDummy.scale.set(b.w, b.h, b.d);
+          instDummy.updateMatrix();
+          inst.setMatrixAt(i, instDummy.matrix);
+        }
+        inst.instanceMatrix.needsUpdate = true;
+        forestGroup.add(inst);
+      });
 
       // C. STEPPING-STONE FOREST PATH
       const pathStones = [
@@ -2899,8 +3190,8 @@
 
       function resize3D() {
         if (!mount) return;
-        const w = mount.clientWidth;
-        const h = mount.clientHeight;
+        const w = window.innerWidth;
+        const h = Math.max(1, window.innerHeight);
         camera.aspect = w / h;
         camera.fov = w < 640 ? 54 : 45;
         camera.updateProjectionMatrix();
@@ -2949,10 +3240,36 @@
         return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
       }
 
+      // Pause 3D Garden loop whenever off-screen or tab hidden to save mobile battery & GPU
+      let isForestInView = true;
+      let forestRafId = null;
       let lastFrameTime = performance.now();
+      let smoothedProgress = getScrollProgress();
+
+      const forestVisObserver = new IntersectionObserver((entries) => {
+        isForestInView = entries[0].isIntersecting;
+        if (!isForestInView) {
+          window.__fullscreen3DCovering = false;
+        } else if (!document.hidden && forestRafId === null) {
+          lastFrameTime = performance.now();
+          forestRafId = requestAnimationFrame(animateForest);
+        }
+      }, { rootMargin: '160px 0px' });
+      forestVisObserver.observe(trackSection);
+
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && isForestInView && forestRafId === null) {
+          lastFrameTime = performance.now();
+          forestRafId = requestAnimationFrame(animateForest);
+        }
+      });
 
       function animateForest(now) {
-        requestAnimationFrame(animateForest);
+        if (!isForestInView || document.hidden) {
+          forestRafId = null;
+          return;
+        }
+        forestRafId = requestAnimationFrame(animateForest);
 
         const dt = Math.min((now - lastFrameTime) * 0.001, 0.05);
         lastFrameTime = now;
@@ -3000,30 +3317,104 @@
         dustMotes.position.y = Math.sin(time * 0.55) * 0.16;
         dustMotes.rotation.y = time * 0.025;
 
-        // 3. Scroll-Coupled Zoom Progress & "Bio Engineering Nature" Title Fade-Out
+        // 3. 4-Phase Unified Scroll Track (Garden -> Smooth 3D Backwards Dolly From Corner Window -> Interactive Garage):
+        //    Phase 1 (0.00..0.28): Zoom into 3D garden from centered VisionOS card
+        //    Phase 2 (0.28..0.52): Full-screen 1st-person clearing hold with hotspots
+        //    Phase 3 (0.52..0.82): 3D Garage camera moves backwards away from the real corner window (garden stays live inside it!)
+        //    Phase 4 (0.82..1.00): Full interactive 3D Garage hold
         const rawProgress = getScrollProgress();
-        const zoomT = easeInOutCubic(clampVal(rawProgress / 0.72, 0, 1));
+        smoothedProgress = THREE.MathUtils.damp(smoothedProgress, rawProgress, 7.5, dt);
+        if (Math.abs(smoothedProgress - rawProgress) < 0.0004) smoothedProgress = rawProgress;
+
+        const exitLinear = clampVal((rawProgress - 0.52) / 0.30, 0, 1);
+        const isGarageActive = smoothedProgress >= 0.44 || exitLinear > 0;
+
+        if (typeof window.setGaragePullbackProgress === 'function') {
+          window.setGaragePullbackProgress(exitLinear);
+        }
+        if (typeof window.setGarageRenderActive === 'function') {
+          window.setGarageRenderActive(isGarageActive);
+        }
+
+        const garagePullCurrent = (typeof window.getGaragePullbackCurrent === 'function')
+          ? window.getGaragePullbackCurrent()
+          : exitLinear;
+        const inGarageHold = garagePullCurrent >= 0.992;
+
+        let zoomLinear = 1;
+        if (smoothedProgress < 0.28) {
+          zoomLinear = clampVal(smoothedProgress / 0.28, 0, 1);
+        } else if (garagePullCurrent > 0) {
+          // Gently settle garden framing behind the window so trees & sunset stay lush through the glass
+          zoomLinear = 1 - garagePullCurrent * 0.22;
+        }
+        const zoomT = easeInOutCubic(zoomLinear);
+
+        if (stickyStage) {
+          stickyStage.style.backgroundColor = isGarageActive ? '#000000' : 'transparent';
+        }
+        if (garageStageLayer) {
+          const layerAlpha = clampVal(garagePullCurrent / 0.06, 0, 1);
+          garageStageLayer.style.opacity = layerAlpha.toFixed(3);
+          garageStageLayer.classList.toggle('is-interactive', garagePullCurrent > 0.52);
+        }
+
+        if (viewportFrame) {
+          const screenW = window.innerWidth;
+          const screenH = window.innerHeight;
+          const pad = screenW >= 640 ? 40 : 28;
+          const startW = Math.min(1240, screenW - pad);
+          const startH = Math.min(820, screenH - pad);
+          const startRadius = screenW >= 640 ? 28 : 24;
+
+          if (smoothedProgress >= 0.28) {
+            // Full-bleed behind the transparent 3D garage window — zero layout reflow, window never disappears!
+            viewportFrame.style.width = `${screenW}px`;
+            viewportFrame.style.height = `${screenH}px`;
+            viewportFrame.style.transform = '';
+            viewportFrame.style.borderRadius = '0px';
+            viewportFrame.style.borderColor = 'transparent';
+            viewportFrame.style.opacity = '1';
+            viewportFrame.style.pointerEvents = garagePullCurrent > 0.15 ? 'none' : 'auto';
+          } else {
+            const curW = startW + (screenW - startW) * zoomT;
+            const curH = startH + (screenH - startH) * zoomT;
+            const curR = startRadius * (1 - zoomT);
+
+            viewportFrame.style.width = `${curW.toFixed(1)}px`;
+            viewportFrame.style.height = `${curH.toFixed(1)}px`;
+            viewportFrame.style.transform = '';
+            viewportFrame.style.borderRadius = `${curR.toFixed(1)}px`;
+            viewportFrame.style.borderColor = zoomT > 0.96 ? 'transparent' : '';
+            viewportFrame.style.opacity = '1';
+            viewportFrame.style.pointerEvents = 'auto';
+          }
+          window.__fullscreen3DCovering = zoomT > 0.96 || isGarageActive;
+        }
 
         if (heroTitleOverlay) {
-          const titleFade = 1 - clampVal(rawProgress / 0.28, 0, 1);
+          const titleFade = 1 - clampVal(smoothedProgress / 0.14, 0, 1);
           heroTitleOverlay.style.opacity = titleFade.toFixed(3);
-          heroTitleOverlay.style.transform = `translateY(${(-rawProgress * 85).toFixed(1)}px) scale(${(1 - rawProgress * 0.12).toFixed(3)})`;
+          heroTitleOverlay.style.transform = `translateY(${(-Math.min(smoothedProgress, 0.20) * 140).toFixed(1)}px) scale(${(1 - Math.min(smoothedProgress, 0.20) * 0.24).toFixed(3)})`;
         }
 
         if (zoomBar) {
           zoomBar.style.width = `${Math.round(zoomT * 100)}%`;
         }
         if (scrollHint) {
-          scrollHint.style.opacity = (rawProgress >= 0.66 || activeHotspotKey !== null) ? '0' : '1';
+          scrollHint.style.opacity = (smoothedProgress >= 0.26 || activeHotspotKey !== null) ? '0' : '1';
+        }
+        if (garageCue) {
+          garageCue.style.opacity = (smoothedProgress >= 0.34 && rawProgress <= 0.54 && activeHotspotKey === null) ? '1' : '0';
         }
 
-        if (rawProgress < 0.65 && activeHotspotKey !== null) {
+        if ((rawProgress < 0.26 || rawProgress > 0.53) && activeHotspotKey !== null) {
           resetHotspotFocus();
         }
 
         // 4. Smoothly Damp Look-Around Offsets
-        const activeTargetYaw = (activeHotspotKey === null && zoomT > 0.7) ? targetYawOffset : 0;
-        const activeTargetPitch = (activeHotspotKey === null && zoomT > 0.7) ? targetPitchOffset : 0;
+        const activeTargetYaw = (activeHotspotKey === null && zoomT > 0.75) ? targetYawOffset : 0;
+        const activeTargetPitch = (activeHotspotKey === null && zoomT > 0.75) ? targetPitchOffset : 0;
 
         smoothedYawOffset = THREE.MathUtils.damp(smoothedYawOffset, activeTargetYaw, 4.5, dt);
         smoothedPitchOffset = THREE.MathUtils.damp(smoothedPitchOffset, activeTargetPitch, 4.5, dt);
@@ -3038,7 +3429,7 @@
           baseLookAt.lerpVectors(LOOK_START, LOOK_END, zoomT);
 
           const forwardDist = targetCamPos.distanceTo(baseLookAt);
-          const lookInfluence = clampVal((zoomT - 0.7) / 0.3, 0, 1);
+          const lookInfluence = clampVal((zoomT - 0.75) / 0.25, 0, 1);
 
           targetLookAt.set(
             baseLookAt.x + Math.sin(smoothedYawOffset) * forwardDist * lookInfluence,
@@ -3058,10 +3449,10 @@
         camera.position.copy(currentCamPos);
         camera.lookAt(currentLookAt);
 
-        // 6. Project 4 Frosted-Glass Dialogue Pointers at 1st-Person POV
-        const showPointers = (rawProgress >= 0.72) && (activeHotspotKey === null);
-        const viewW = mount.clientWidth;
-        const viewH = mount.clientHeight;
+        // 6. Project 4 Frosted-Glass Dialogue Pointers during the Full-Screen Hold
+        const showPointers = (rawProgress >= 0.28 && rawProgress <= 0.54) && (activeHotspotKey === null);
+        const viewW = window.innerWidth;
+        const viewH = window.innerHeight;
 
         const minX = viewW * 0.15;
         const maxX = viewW * 0.85;
@@ -3093,13 +3484,44 @@
           el.classList.add('is-active');
         });
 
-        if (!is2DCavernActive) {
+        // Skip rendering the 3D garden once fully inside The Garage hold to save GPU
+        if (!is2DCavernActive && !inGarageHold) {
           renderer.render(scene, camera);
         }
       }
 
-      requestAnimationFrame(animateForest);
-    });
+      forestRafId = requestAnimationFrame(animateForest);
+    }
+
+    /**
+     * 7. LAZY-LOADED 3D GARAGE (Unified Behind the 3D Garden Corner Window)
+     */
+    (function lazyBootGarage3D() {
+      const trackSection = document.getElementById('food-forest-section');
+      const garageLayer = document.getElementById('garage-stage-layer');
+      const canvasWrap = document.getElementById('garage-3d-canvas-wrap');
+      const loadingEl = document.getElementById('garage-loading-overlay');
+      if (!trackSection || !garageLayer || !canvasWrap) return;
+
+      let booted = false;
+      const bootObserver = new IntersectionObserver((entries) => {
+        if (booted || !entries[0].isIntersecting) return;
+        booted = true;
+        bootObserver.disconnect();
+        window.ensureThreeJS()
+          .then(() => window.loadScriptOnce('garage-bikes.js?v=7'))
+          .then(() => {
+            if (typeof window.initGarageBikes3D === 'function') {
+              window.initGarageBikes3D(garageLayer, canvasWrap, loadingEl);
+              if (typeof window.setGarageRenderActive === 'function') {
+                window.setGarageRenderActive(false);
+              }
+            }
+          })
+          .catch((err) => console.error('Failed to lazy-load 3D garage:', err));
+      }, { rootMargin: '600px 0px' });
+      bootObserver.observe(trackSection);
+    })();
   </script>
 </body>
 </html>
